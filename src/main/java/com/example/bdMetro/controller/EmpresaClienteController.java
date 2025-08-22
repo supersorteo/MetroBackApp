@@ -5,42 +5,145 @@ import com.example.bdMetro.entity.Empresa;
 import com.example.bdMetro.services.ClienteService;
 import com.example.bdMetro.services.EmpresaService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
 @CrossOrigin(value = "http://localhost:4200")
 public class EmpresaClienteController {
 
+
     @Autowired
     private EmpresaService empresaService;
     @Autowired
     private ClienteService clienteService;
 
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
+
+    private static final String UPLOAD_DIR_LOCAL = "src/main/resources/static/uploads/";
+    private static final String UPLOAD_DIR_PROD = "/app/uploads/";
+
+    private String getUploadDir() {
+        String env = System.getenv("RAILWAY_ENVIRONMENT");
+        return env != null && !env.isEmpty() ? UPLOAD_DIR_PROD : UPLOAD_DIR_LOCAL;
+    }
+
+
     @PostMapping("/upload/image")
-    public ResponseEntity<String> uploadImage(@RequestParam("file") MultipartFile file, @RequestParam("userCode") String userCode) {
+    public ResponseEntity<Map<String, Object>> uploadImage(
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam("userCode") String userCode) {
+        List<String> urls = new ArrayList<>();
+        Map<String, Object> response = new HashMap<>();
         try {
-            String fileName = StringUtils.cleanPath(userCode + "_" + file.getOriginalFilename());
-            Path path = Paths.get("uploads/" + fileName);
-            Files.createDirectories(path.getParent());
-            Files.copy(file.getInputStream(), path, StandardCopyOption.REPLACE_EXISTING);
-            return ResponseEntity.ok("/uploads/" + fileName);
+            File uploadDir = new File(getUploadDir());
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            for (MultipartFile file : files) {
+                if (!file.isEmpty()) {
+                    String fileName = StringUtils.cleanPath(userCode + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename());
+                    Path filePath = Paths.get(getUploadDir() + fileName);
+                    Files.write(filePath, file.getBytes());
+                    String fileUrl = baseUrl + "/api/uploads/" + fileName;
+                    urls.add(fileUrl);
+                }
+            }
+            response.put("urls", urls);
+            return ResponseEntity.ok(response);
         } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir la imagen");
+            response.put("error", "Error al subir las imágenes");
+            response.put("details", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+    }
+
+
+
+    @GetMapping("/uploads/{filename:.+}")
+    public ResponseEntity<byte[]> getImage(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get(getUploadDir() + StringUtils.cleanPath(filename));
+            File file = filePath.toFile();
+            if (!file.exists()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            byte[] imageBytes = Files.readAllBytes(filePath);
+            String contentType = Files.probeContentType(filePath);
+            if (contentType == null) {
+                contentType = "application/octet-stream";
+            }
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(contentType));
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+            return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @GetMapping("/uploads/all")
+    public ResponseEntity<List<String>> getAllImages() {
+        try {
+            File folder = new File(getUploadDir());
+            File[] files = folder.listFiles();
+            if (files != null) {
+                List<String> fileUrls = new ArrayList<>();
+                for (File file : files) {
+                    if (file.isFile()) {
+                        String fileUrl = baseUrl + "/api/uploads/" + file.getName();
+                        fileUrls.add(fileUrl);
+                    }
+                }
+                return ResponseEntity.ok(fileUrls);
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Collections.singletonList("No se pudieron obtener las imágenes"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonList("Error al obtener las imágenes"));
+        }
+    }
+
+    @DeleteMapping("/uploads/{filename:.+}")
+    public ResponseEntity<Map<String, Object>> deleteImage(@PathVariable String filename) {
+        try {
+            Path filePath = Paths.get(getUploadDir() + StringUtils.cleanPath(filename));
+            File file = filePath.toFile();
+            if (!file.exists()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Imagen no encontrada"));
+            }
+            boolean deleted = file.delete();
+            if (deleted) {
+                return ResponseEntity.ok(Map.of("message", "Imagen eliminada con éxito"));
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "No se pudo eliminar la imagen"));
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error al eliminar la imagen", "details", e.getMessage()));
         }
     }
 
@@ -81,18 +184,24 @@ public class EmpresaClienteController {
 
 
     @PostMapping("/empresas")
-    public ResponseEntity<?> pathsEmpresa(@RequestBody Empresa empresa) {
+    public ResponseEntity<?> postEmpresa(@RequestBody Empresa empresa) {
         try {
+            if (empresa.getName() == null || empresa.getName().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "El nombre de la empresa es obligatorio"));
+            }
+            if (empresa.getUserCode() == null || empresa.getUserCode().trim().isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "El userCode es obligatorio"));
+            }
             Empresa savedEmpresa = empresaService.saveEmpresa(empresa);
             return ResponseEntity.ok(savedEmpresa);
         } catch (IllegalArgumentException e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Error interno del servidor al guardar la empresa: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno al guardar la empresa", "details", e.getMessage()));
         }
     }
 
@@ -113,7 +222,7 @@ public class EmpresaClienteController {
             errorResponse.put("error", "Error interno del servidor al actualizar la empresa: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-    }
+    } 
 
     @DeleteMapping("/empresas/id/{id}")
     public ResponseEntity<?> deleteEmpresa(@PathVariable Long id) {

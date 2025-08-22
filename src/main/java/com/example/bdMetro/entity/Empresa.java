@@ -12,6 +12,7 @@ public class Empresa {
     private String phone;
     private String email;
     private String description;
+    @Column(length = 500)
     private String logoUrl;
     private String userCode;
 
