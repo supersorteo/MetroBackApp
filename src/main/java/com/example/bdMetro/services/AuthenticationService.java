@@ -23,34 +23,19 @@ public class AuthenticationService {
             "Andr0meda656", "Yo9eiP", "NsUUbN", "ONkJCl", "03qEbm", "9ErI7P", "W3nnik", "rE5LIs", "U2uNlC", "AsIjg1", "ZEOqc7", "HjUjzp", "SIpeud", "TUpc5S", "CeeM6E", "RpfCY1", "EVCaxp", "T4OXZ2", "8BAg3W", "GcNEET", "lctnJq", "YqJS15", "0Uw9PB", "XURkW0", "5xb3PL", "ORfpbg", "MQsghI", "opUXHQ", "tZTZmn", "QQxfi3", "o3dqkU" );
 
 
-  /*  @PostConstruct
-    public void initDatabase() {
-        PROMOCIONALES.forEach(code -> {
-            if (accessCodeRepository.findByCode(code) == null) {
-                AccessCode accessCode = new AccessCode();
-                accessCode.setCode(code);
-                accessCode.setEmail("promo@example.com");
-                accessCodeRepository.save(accessCode);
-            }
-        });
-        CONTRASENAS.forEach(code -> {
-            if (accessCodeRepository.findByCode(code) == null) {
-                AccessCode accessCode = new AccessCode();
-                accessCode.setCode(code);
-                accessCode.setEmail("user@example.com");
-                accessCodeRepository.save(accessCode);
-            }
-        });
-    }*/
 
     public String login(String code) {
         AccessCode accessCode = accessCodeRepository.findByCode(code);
-        if (accessCode != null) {
-            return accessCode.getEmail();
-        } else {
+        if (accessCode == null) {
             return "Código no encontrado";
+        } else if (accessCode.getEmail() == null) {
+            return "Código existe pero no asignado a un usuario";
+        } else {
+            return accessCode.getEmail();
         }
     }
+
+
 
 
     public List<AccessCode> getAllCodes() {
@@ -61,7 +46,7 @@ public class AuthenticationService {
         return accessCodeRepository.findByCode(code);
     }
 
-
+/*
    public AccessCode updateCode(String code, String email, String username, String telefono, String provincia) {
        AccessCode accessCode = accessCodeRepository.findByCode(code);
        if (accessCode == null) {
@@ -80,7 +65,27 @@ public class AuthenticationService {
        accessCode.setTelefono(telefono);
        accessCode.setProvincia(provincia);
        return accessCodeRepository.save(accessCode);
-   }
+   }*/
+
+
+    public AccessCode updateCode(String code, String email, String username, String telefono, String provincia, String pais) { // Added pais
+        AccessCode accessCode = accessCodeRepository.findByCode(code);
+        if (accessCode == null) {
+            throw new IllegalArgumentException("Este código no existe en la base de datos");
+        }
+
+        AccessCode emailAssignedCode = accessCodeRepository.findByEmail(email);
+        if (emailAssignedCode != null && !emailAssignedCode.getCode().equals(code)) {
+            throw new IllegalArgumentException("Este email está en la base de datos");
+        }
+
+        accessCode.setEmail(email);
+        //accessCode.setUsername(username);
+        accessCode.setTelefono(telefono);
+        accessCode.setProvincia(provincia);
+        accessCode.setPais(pais); // Added
+        return accessCodeRepository.save(accessCode);
+    }
 
 
 
@@ -108,7 +113,7 @@ public class AuthenticationService {
         } return accessCodeRepository.saveAll(accessCodes);
     }
 
-
+/*
     public AccessCode addCode(AccessCode accessCode) {
         AccessCode existingCode = accessCodeRepository.findByCode(accessCode.getCode());
         if (existingCode == null) {
@@ -123,6 +128,31 @@ public class AuthenticationService {
         existingCode.setUsername(accessCode.getUsername());
         existingCode.setTelefono(accessCode.getTelefono());
         existingCode.setProvincia(accessCode.getProvincia());
+        existingCode.setFechaRegistro(LocalDate.now());
+        existingCode.setFechaVencimiento(calcularFechaVencimiento(existingCode.getCode()));
+        return accessCodeRepository.save(existingCode);
+    }*/
+
+
+    public AccessCode addCode(AccessCode accessCode) {
+        AccessCode existingCode = accessCodeRepository.findByCode(accessCode.getCode());
+        if (existingCode == null) {
+            throw new IllegalArgumentException("Código no encontrado");
+        } else if (existingCode.getEmail() != null) {
+            throw new IllegalArgumentException("Código ya tiene un email asignado");
+        }
+        AccessCode emailAssignedCode = accessCodeRepository.findAll().stream()
+                .filter(code -> accessCode.getEmail().equals(code.getEmail()))
+                .findFirst()
+                .orElse(null);
+        if (emailAssignedCode != null) {
+            throw new IllegalArgumentException("El email ya está asignado a otro código");
+        }
+        existingCode.setEmail(accessCode.getEmail());
+       // existingCode.setUsername(accessCode.getUsername());
+        existingCode.setTelefono(accessCode.getTelefono());
+        existingCode.setProvincia(accessCode.getProvincia());
+        existingCode.setPais(accessCode.getPais()); // Added
         existingCode.setFechaRegistro(LocalDate.now());
         existingCode.setFechaVencimiento(calcularFechaVencimiento(existingCode.getCode()));
         return accessCodeRepository.save(existingCode);

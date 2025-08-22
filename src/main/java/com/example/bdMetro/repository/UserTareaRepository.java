@@ -1,14 +1,13 @@
 package com.example.bdMetro.repository;
 
-import com.example.bdMetro.entity.Provincia;
+import com.example.bdMetro.entity.UserTarea;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 @Repository
-public interface ProvinciaRepository extends JpaRepository<Provincia, Long> {
+public interface UserTareaRepository extends JpaRepository<UserTarea, Long> {
 
-    List<Provincia> findByPais(String pais);
-
+    List<UserTarea> findByUserCode(String userCode);
 }

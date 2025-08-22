@@ -10,9 +10,10 @@ public class AccessCode {
     private String code;
     @Column(unique = true)
     private String email;
-    private String username;
+    //private String username;
     private String telefono;
     private String provincia;
+    private String pais;
 
     private LocalDate fechaRegistro;
     private LocalDate fechaVencimiento;
@@ -32,14 +33,14 @@ public class AccessCode {
     public void setEmail(String email) {
         this.email = email;
     }
-
+/*
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
-    }
+    }*/
 
     public String getTelefono() {
         return telefono;
@@ -56,6 +57,16 @@ public class AccessCode {
     public void setProvincia(String provincia) {
         this.provincia = provincia;
     }
+
+
+    public String getPais() {
+        return pais;
+    }
+
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
+
 
     public LocalDate getFechaRegistro() {
         return fechaRegistro;

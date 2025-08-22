@@ -26,17 +26,21 @@ public class AuthenticationController {
 
     @CrossOrigin(value = "http://localhost:4200")
 
+
     @PostMapping("/login")
-    public ResponseEntity<Map<String, String>> login(@RequestBody Map<String, String> request) {
+    public ResponseEntity<AccessCode> login(@RequestBody Map<String, String> request) {
         String code = request.get("code");
-        String result = authenticationService.login(code);
-        Map<String, String> response = new HashMap<>();
-        response.put("email", result);
-        if (!result.equals("Código no encontrado")) {
-            return ResponseEntity.ok(response);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        AccessCode accessCode = authenticationService.getCode(code);
+        if (accessCode == null) {
+            AccessCode errorResponse = new AccessCode();
+            errorResponse.setEmail("Código no encontrado");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        } else if (accessCode.getEmail() == null) {
+            AccessCode errorResponse = new AccessCode();
+            errorResponse.setEmail("Código existe pero no asignado a un usuario");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
+        return ResponseEntity.ok(accessCode);
     }
 
 
@@ -89,8 +93,9 @@ public class AuthenticationController {
             response.put("message", "Datos asignados con éxito");
             response.put("code", updatedCode.getCode());
             response.put("email", updatedCode.getEmail());
-            response.put("username", updatedCode.getUsername());
+           // response.put("username", updatedCode.getUsername());
             response.put("telefono", updatedCode.getTelefono());
+            response.put("pais", updatedCode.getPais());
             response.put("provincia", updatedCode.getProvincia());
             response.put("fechaRegistro", updatedCode.getFechaRegistro().toString());
             response.put("fechaVencimiento", updatedCode.getFechaVencimiento().toString());
@@ -116,22 +121,26 @@ public class AuthenticationController {
     }
 
 
+
+
     @PutMapping("/codes/{code}")
     public ResponseEntity<Map<String, String>> updateCode(@PathVariable String code, @RequestBody Map<String, String> request) {
         String email = request.get("email");
         String username = request.get("username");
         String telefono = request.get("telefono");
         String provincia = request.get("provincia");
+        String pais = request.get("pais"); // Added
 
         Map<String, String> response = new HashMap<>();
         try {
-            AccessCode updatedAccessCode = authenticationService.updateCode(code, email, username, telefono, provincia);
+            AccessCode updatedAccessCode = authenticationService.updateCode(code, email, username, telefono, provincia, pais); // Added pais
             response.put("message", "Código actualizado con éxito");
             response.put("code", updatedAccessCode.getCode());
             response.put("email", updatedAccessCode.getEmail());
-            response.put("username", updatedAccessCode.getUsername());
+           // response.put("username", updatedAccessCode.getUsername());
             response.put("telefono", updatedAccessCode.getTelefono());
             response.put("provincia", updatedAccessCode.getProvincia());
+            response.put("pais", updatedAccessCode.getPais()); // Added
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             response.put("message", e.getMessage());
@@ -141,6 +150,7 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
+
 
     @CrossOrigin(value = "http://localhost:4200")
     @DeleteMapping("/codes/{code}")
