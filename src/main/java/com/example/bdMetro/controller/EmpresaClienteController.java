@@ -36,7 +36,8 @@ public class EmpresaClienteController {
     @Autowired
     private ClienteService clienteService;
 
-    @Value("${app.base-url:http://localhost:8080}")
+    //@Value("${app.base-url:http://localhost:8080}")
+    @Value("${app.base-url:${APP_BASE_URL}}")
     private String baseUrl;
 
     private static final String UPLOAD_DIR_LOCAL = "src/main/resources/static/uploads/";
