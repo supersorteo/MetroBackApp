@@ -17,7 +17,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(value = "http://localhost:4200")
+//@CrossOrigin(value = "http://localhost:4200")
 public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
@@ -152,7 +152,7 @@ public class AuthenticationController {
     }
 
 
-    @CrossOrigin(value = "http://localhost:4200")
+    //@CrossOrigin(value = "http://localhost:4200")
     @DeleteMapping("/codes/{code}")
     public void deleteCode(@PathVariable String code) {
         authenticationService.deleteCode(code);
