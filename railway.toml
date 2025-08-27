@@ -1,0 +1,9 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "java -Dspring.profiles.active=production -jar target/*.jar"
+
+[[volumes]]
+name = "uploads"
+mountPath = "/data"

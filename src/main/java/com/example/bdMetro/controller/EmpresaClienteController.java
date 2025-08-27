@@ -36,16 +36,29 @@ public class EmpresaClienteController {
     @Autowired
     private ClienteService clienteService;
 
-    //@Value("${app.base-url:http://localhost:8080}")
-    @Value("${app.base-url:${APP_BASE_URL}}")
+    @Value("${app.base-url:http://localhost:8080}")
+    //@Value("${app.base-url:${APP_BASE_URL}}")
     private String baseUrl;
 
     private static final String UPLOAD_DIR_LOCAL = "src/main/resources/static/uploads/";
-    private static final String UPLOAD_DIR_PROD = "/app/uploads/";
+    //private static final String UPLOAD_DIR_PROD = "/app/uploads/";
 
-    private String getUploadDir() {
+    private static final String UPLOAD_DIR_PROD = "/data/uploads/";
+
+
+   /* private String getUploadDir() {
         String env = System.getenv("RAILWAY_ENVIRONMENT");
         return env != null && !env.isEmpty() ? UPLOAD_DIR_PROD : UPLOAD_DIR_LOCAL;
+    }*/
+
+    private String getUploadDir() {
+        String port = System.getenv("PORT");
+        String railwayEnv = System.getenv("RAILWAY_ENVIRONMENT");
+
+        if (port != null || railwayEnv != null) {
+            return UPLOAD_DIR_PROD;
+        }
+        return UPLOAD_DIR_LOCAL;
     }
 
 
