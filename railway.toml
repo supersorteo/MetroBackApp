@@ -1,7 +1,0 @@
-[build]
-builder = "DOCKERFILE"
-dockerfilePath = "Dockerfile"
-
-[[volumes]]
-name = "uploads"
-mountPath = "/data"

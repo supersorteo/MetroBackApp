@@ -1,8 +1,13 @@
 HELP.md
 target/
+*.jar
+*.war
+*.ear
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+src/main/resources/static/uploads/
+/app/uploads/
 
 ### STS ###
 .apt_generated
@@ -14,7 +19,7 @@ target/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea
+.idea/
 *.iws
 *.iml
 *.ipr
@@ -31,3 +36,19 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Railway specific ###
+railway.toml
+
+### Logs and Temporary Files ###
+*.log
+*.tmp
+*.bak
+*.swp
+*~.nib
+.DS_Store
+
+### Environment files ###
+.env
+.env.local
+.env.production

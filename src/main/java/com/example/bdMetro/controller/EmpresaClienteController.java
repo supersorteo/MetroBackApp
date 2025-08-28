@@ -41,9 +41,9 @@ public class EmpresaClienteController {
     private String baseUrl;
 
     private static final String UPLOAD_DIR_LOCAL = "src/main/resources/static/uploads/";
-    //private static final String UPLOAD_DIR_PROD = "/app/uploads/";
+    private static final String UPLOAD_DIR_PROD = "/app/uploads/";
 
-    private static final String UPLOAD_DIR_PROD = "/data/uploads/";
+   // private static final String UPLOAD_DIR_PROD = "/data/uploads/";
 
 
    /* private String getUploadDir() {
