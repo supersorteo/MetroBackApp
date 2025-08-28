@@ -1,16 +1,5 @@
 HELP.md
 #target/
-target/classes/
-target/generated-sources/
-target/maven-archiver/
-target/maven-status/
-target/surefire-reports/
-target/test-classes/
-# Mantener solo el JAR
-!target/*.jar
-*.jar
-*.war
-*.ear
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
@@ -27,7 +16,7 @@ src/main/resources/static/uploads/
 .sts4-cache
 
 ### IntelliJ IDEA ###
-.idea/
+.idea
 *.iws
 *.iml
 *.ipr
@@ -44,9 +33,6 @@ build/
 
 ### VS Code ###
 .vscode/
-
-### Railway specific ###
-railway.toml
 
 ### Logs and Temporary Files ###
 *.log
