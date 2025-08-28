@@ -12,7 +12,7 @@
 #ENTRYPOINT ["java", "-jar", "java-app.jar"]
 
 # Usar imagen base de Eclipse Temurin Java 21
-FROM eclipse-temurin:21-jre-jammy
+FROM eclipse-temurin:21-jdk
 
 # Crear directorio para uploads
 RUN mkdir -p /app/uploads
