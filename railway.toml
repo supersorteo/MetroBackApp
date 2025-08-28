@@ -1,9 +1,12 @@
 [build]
 builder = "NIXPACKS"
 
+[build.env]
+NIXPACKS_JDK_VERSION = "21"
+
 [deploy]
 startCommand = "java -Dspring.profiles.active=production -jar target/*.jar"
 
 [[volumes]]
 name = "uploads"
-mountPath = "/data"
+mountPath = "/data"/data"
