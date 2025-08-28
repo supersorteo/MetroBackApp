@@ -1,5 +1,13 @@
 HELP.md
-target/
+#target/
+target/classes/
+target/generated-sources/
+target/maven-archiver/
+target/maven-status/
+target/surefire-reports/
+target/test-classes/
+# Mantener solo el JAR
+!target/*.jar
 *.jar
 *.war
 *.ear
