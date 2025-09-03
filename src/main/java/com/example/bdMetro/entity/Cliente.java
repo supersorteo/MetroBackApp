@@ -18,13 +18,13 @@ public class Cliente {
     private String email;
     private String clave; // o CUIT
     private String direccion;
-
+    private Long empresaId;
 
     public Cliente() {
     }
 
     // Constructor completo
-    public Cliente(String name, String contact, LocalDate budgetDate, String additionalDetails, String userCode, String email, String clave, String direccion) {
+   /* public Cliente(String name, String contact, LocalDate budgetDate, String additionalDetails, String userCode, String email, String clave, String direccion) {
         this.name = name;
         this.contact = contact;
         this.budgetDate = budgetDate;
@@ -33,6 +33,18 @@ public class Cliente {
         this.email = email;
         this.clave = clave;
         this.direccion = direccion;
+    }*/
+
+    public Cliente(String name, String contact, LocalDate budgetDate, String additionalDetails, String userCode, String email, String clave, String direccion, Long empresaId) {
+        this.name = name;
+        this.contact = contact;
+        this.budgetDate = budgetDate;
+        this.additionalDetails = additionalDetails;
+        this.userCode = userCode;
+        this.email = email;
+        this.clave = clave;
+        this.direccion = direccion;
+        this.empresaId = empresaId;
     }
 
     public Long getId() {
@@ -105,5 +117,13 @@ public class Cliente {
 
     public void setDireccion(String direccion) {
         this.direccion = direccion;
+    }
+
+    public Long getEmpresaId() {
+        return empresaId;
+    }
+
+    public void setEmpresaId(Long empresaId) {
+        this.empresaId = empresaId;
     }
 }

@@ -24,7 +24,7 @@ public class AuthenticationController {
 
     private AccessCodeRepository accessCodeRepository;
 
-    @CrossOrigin(value = "http://localhost:4200")
+   // @CrossOrigin(value = "http://localhost:4200")
 
 
     @PostMapping("/login")

@@ -14,7 +14,8 @@ public class UserTarea {
     private String descripcion;
     private Double descuento;
     private Double totalCost;
-    private String userCode; // Enlace al usuario
+   // private String userCode; // Enlace al usuario
+    private Long clienteId;
     private String pais; // Para consistencia con el país del usuario
     private String rubro; // Añadido
     private String categoria;
@@ -23,6 +24,7 @@ public class UserTarea {
     public UserTarea() {
     }
 
+    /*
     public UserTarea(String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, String userCode, String pais, String rubro, String categoria) {
         this.tarea = tarea;
         this.costo = costo;
@@ -31,6 +33,19 @@ public class UserTarea {
         this.descuento = descuento;
         this.totalCost = totalCost;
         this.userCode = userCode;
+        this.pais = pais;
+        this.rubro = rubro;
+        this.categoria = categoria;
+    }*/
+
+    public UserTarea(String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, Long clienteId, String pais, String rubro, String categoria) {
+        this.tarea = tarea;
+        this.costo = costo;
+        this.area = area;
+        this.descripcion = descripcion;
+        this.descuento = descuento;
+        this.totalCost = totalCost;
+        this.clienteId = clienteId;
         this.pais = pais;
         this.rubro = rubro;
         this.categoria = categoria;
@@ -92,12 +107,22 @@ public class UserTarea {
         this.totalCost = totalCost;
     }
 
+    /*
     public String getUserCode() {
         return userCode;
     }
 
     public void setUserCode(String userCode) {
         this.userCode = userCode;
+    }
+    */
+
+    public Long getClienteId() {
+        return clienteId;
+    }
+
+    public void setClienteId(Long clienteId) {
+        this.clienteId = clienteId;
     }
 
     public String getPais() {

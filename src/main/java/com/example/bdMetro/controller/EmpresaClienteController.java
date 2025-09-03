@@ -36,8 +36,8 @@ public class EmpresaClienteController {
     @Autowired
     private ClienteService clienteService;
 
-    @Value("${app.base-url:http://localhost:8080}")
-    //@Value("${app.base-url:${APP_BASE_URL}}")
+    //@Value("${app.base-url:http://localhost:8080}")
+    @Value("${app.base-url:${APP_BASE_URL}}")
     private String baseUrl;
 
     private static final String UPLOAD_DIR_LOCAL = "src/main/resources/static/uploads/";
@@ -318,6 +318,8 @@ public class EmpresaClienteController {
     }
 
 
+
+
     /*
     @PutMapping("/clientes/id/{id}")
     public ResponseEntity<Cliente> updateCliente(@PathVariable Long id, @RequestBody Cliente clienteDetails) {
@@ -360,5 +362,16 @@ public class EmpresaClienteController {
     @GetMapping("/clientes")
     public List<Cliente> getAllClientes() {
         return clienteService.getAllClientes();
+    }
+
+    @GetMapping("/clientes/by-empresa/{empresaId}")
+    public ResponseEntity<?> getClientesByEmpresaId(@PathVariable Long empresaId) {
+        List<Cliente> clientes = clienteService.getClientesByEmpresaId(empresaId);
+        if (clientes.isEmpty()) {
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("error", "No se encontraron clientes para la empresa con ID: " + empresaId);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+        }
+        return ResponseEntity.ok(clientes);
     }
 }
