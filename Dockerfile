@@ -26,4 +26,4 @@ EXPOSE 8080
 
 # Configurar el comando de entrada para ejecutar la aplicación
 #ENTRYPOINT ["java", "-jar", "java-app.jar"]
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]
+ENTRYPOINT ["java", "-jar", "java-app.jar", "--spring.profiles.active=prod"]
