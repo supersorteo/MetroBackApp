@@ -19,11 +19,11 @@ RUN mkdir -p /app/uploads
 RUN chmod -R 777 /app/uploads
 
 # Copiar el JAR compilado localmente
-COPY target/bdMetro-0.0.1-SNAPSHOT.jar java-app.jar
+COPY target/bdMetro-0.0.1-SNAPSHOT.jar app.jar
 
 # Exponer el puerto 8080
 EXPOSE 8080
 
 # Configurar el comando de entrada para ejecutar la aplicación
-#ENTRYPOINT ["java", "-jar", "java-app.jar"]
-ENTRYPOINT ["java", "-jar", "java-app.jar", "--spring.profiles.active=prod"]
+
+ ENTRYPOINT ["java", "-jar", "app.jar", "--spring.profiles.active=prod"]
