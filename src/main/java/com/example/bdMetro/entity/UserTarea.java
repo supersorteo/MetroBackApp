@@ -1,44 +1,47 @@
 package com.example.bdMetro.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
+@Table(name = "user_tarea")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserTarea {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String tarea;
     private Double costo;
     private Double area;
     private String descripcion;
     private Double descuento;
     private Double totalCost;
-   // private String userCode; // Enlace al usuario
+
     private Long clienteId;
-    private String pais; // Para consistencia con el país del usuario
-    private String rubro; // Añadido
+    private String pais;
+    private String rubro;
     private String categoria;
 
-    // Constructor sin argumentos (requerido por JPA)
-    public UserTarea() {
+    @ManyToMany(mappedBy = "tareas", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Presupuesto> presupuestos = new ArrayList<>();
+
+
+    public UserTarea() {}
+
+    // Constructor con solo ID (CLAVE para que Jackson mapee { "id": 4 })
+    public UserTarea(Long id) {
+        this.id = id;
     }
 
-    /*
-    public UserTarea(String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, String userCode, String pais, String rubro, String categoria) {
-        this.tarea = tarea;
-        this.costo = costo;
-        this.area = area;
-        this.descripcion = descripcion;
-        this.descuento = descuento;
-        this.totalCost = totalCost;
-        this.userCode = userCode;
-        this.pais = pais;
-        this.rubro = rubro;
-        this.categoria = categoria;
-    }*/
-
-    public UserTarea(String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, Long clienteId, String pais, String rubro, String categoria) {
+    public UserTarea(Long id, String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, Long clienteId, String pais, String rubro, String categoria, List<Presupuesto> presupuestos) {
+        this.id = id;
         this.tarea = tarea;
         this.costo = costo;
         this.area = area;
@@ -49,6 +52,7 @@ public class UserTarea {
         this.pais = pais;
         this.rubro = rubro;
         this.categoria = categoria;
+        this.presupuestos = presupuestos;
     }
 
     public Long getId() {
@@ -107,16 +111,6 @@ public class UserTarea {
         this.totalCost = totalCost;
     }
 
-    /*
-    public String getUserCode() {
-        return userCode;
-    }
-
-    public void setUserCode(String userCode) {
-        this.userCode = userCode;
-    }
-    */
-
     public Long getClienteId() {
         return clienteId;
     }
@@ -148,5 +142,14 @@ public class UserTarea {
     public void setCategoria(String categoria) {
         this.categoria = categoria;
     }
+
+    public List<Presupuesto> getPresupuestos() {
+        return presupuestos;
+    }
+
+    public void setPresupuestos(List<Presupuesto> presupuestos) {
+        this.presupuestos = presupuestos;
+    }
+
 
 }

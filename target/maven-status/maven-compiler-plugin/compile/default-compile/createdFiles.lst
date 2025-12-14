@@ -5,6 +5,7 @@ com\example\bdMetro\services\ClienteService.class
 com\example\bdMetro\configuration\CorsConfig.class
 com\example\bdMetro\services\EmpresaService.class
 com\example\bdMetro\controller\TareaController.class
+com\example\bdMetro\entity\Presupuesto.class
 com\example\bdMetro\entity\UserTarea.class
 com\example\bdMetro\services\TareaService.class
 com\example\bdMetro\controller\UserTareaController.class
@@ -18,6 +19,8 @@ com\example\bdMetro\repository\ClienteRepository.class
 com\example\bdMetro\BdMetroApplication.class
 com\example\bdMetro\entity\Cliente.class
 com\example\bdMetro\entity\Empresa.class
+com\example\bdMetro\services\PresupuestoService.class
+com\example\bdMetro\repository\PresupuestoRepository.class
 com\example\bdMetro\controller\AuthenticationController.class
 com\example\bdMetro\controller\ProvinciaController.class
 com\example\bdMetro\entity\Tarea.class

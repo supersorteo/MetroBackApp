@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "tarea")
 public class Tarea {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

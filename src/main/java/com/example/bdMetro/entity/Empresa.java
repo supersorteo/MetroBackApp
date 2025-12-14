@@ -3,6 +3,7 @@ package com.example.bdMetro.entity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "empresa")
 public class Empresa {
 
     @Id

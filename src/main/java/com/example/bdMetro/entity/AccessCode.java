@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 @Entity
+@Table(name = "access_code")
 public class AccessCode {
     @Id
 

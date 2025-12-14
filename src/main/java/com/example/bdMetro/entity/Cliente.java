@@ -6,6 +6,7 @@ import java.time.LocalDate;
 
 
 @Entity
+@Table(name = "cliente")
 public class Cliente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,17 +24,7 @@ public class Cliente {
     public Cliente() {
     }
 
-    // Constructor completo
-   /* public Cliente(String name, String contact, LocalDate budgetDate, String additionalDetails, String userCode, String email, String clave, String direccion) {
-        this.name = name;
-        this.contact = contact;
-        this.budgetDate = budgetDate;
-        this.additionalDetails = additionalDetails;
-        this.userCode = userCode;
-        this.email = email;
-        this.clave = clave;
-        this.direccion = direccion;
-    }*/
+
 
     public Cliente(String name, String contact, LocalDate budgetDate, String additionalDetails, String userCode, String email, String clave, String direccion, Long empresaId) {
         this.name = name;
