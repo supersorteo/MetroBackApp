@@ -25,6 +25,6 @@ COPY target/bdMetro-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 
 # Configurar el comando de entrada para ejecutar la aplicación
-ENV SPRING_PROFILES_ACTIVE=prod
+ENV SPRING_PROFILES_ACTIVE=production
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
