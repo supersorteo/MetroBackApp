@@ -416,7 +416,9 @@ public class EmpresaClienteController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{presupuestoId}/tareas/{tareaId}")
+
+
+    @PostMapping("/presupuestos/{presupuestoId}/tareas/{tareaId}")
     public ResponseEntity<?> addTareaToPresupuesto(
             @PathVariable Long presupuestoId,
             @PathVariable Long tareaId) {
@@ -428,7 +430,7 @@ public class EmpresaClienteController {
         }
     }
 
-    @DeleteMapping("/{presupuestoId}/tareas/{tareaId}")
+    @DeleteMapping("/presupuestos/{presupuestoId}/tareas/{tareaId}")
     public ResponseEntity<?> removeTareaFromPresupuesto(
             @PathVariable Long presupuestoId,
             @PathVariable Long tareaId) {
@@ -455,6 +457,36 @@ public class EmpresaClienteController {
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("error", "Error interno al obtener todos los presupuestos: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+
+    @PutMapping("/presupuestos/{id}")
+    public ResponseEntity<?> updatePresupuesto(
+            @PathVariable Long id,
+            @RequestBody Presupuesto presupuestoActualizado) {
+
+        System.out.println("=== ACTUALIZAR PRESUPUESTO ===");
+        System.out.println("ID: " + id);
+        System.out.println("Nombre: " + presupuestoActualizado.getName());
+        System.out.println("Cliente ID: " + (presupuestoActualizado.getCliente() != null ?
+                presupuestoActualizado.getCliente().getId() : "null"));
+        System.out.println("Cantidad de tareas: " +
+                (presupuestoActualizado.getTareas() != null ? presupuestoActualizado.getTareas().size() : 0));
+        System.out.println("=== FIN DATOS ===");
+
+        try {
+            Presupuesto actualizado = presupuestoService.updatePresupuesto(id, presupuestoActualizado);
+            return ResponseEntity.ok(actualizado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno: " + e.getMessage()));
         }
     }
 }

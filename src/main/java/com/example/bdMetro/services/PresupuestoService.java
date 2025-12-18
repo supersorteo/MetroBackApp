@@ -75,9 +75,7 @@ public class PresupuestoService {
         return presupuestoRepository.save(presupuesto);
     }
 
-    /*public List<Presupuesto> getPresupuestosByClienteId(Long clienteId) {
-        return presupuestoRepository.findByClienteId(clienteId);
-    }*/
+
 
     public List<Presupuesto> getPresupuestosByClienteId(Long clienteId) {
         return presupuestoRepository.findByClienteIdWithTareas(clienteId);
@@ -94,23 +92,6 @@ public class PresupuestoService {
                 .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
     }
 
-    public void deletePresupuesto0(Long id) {
-        presupuestoRepository.deleteById(id);
-    }
-
-    /*public void deletePresupuesto(Long id) {
-        Presupuesto presupuesto = presupuestoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
-
-        // Desasociar todas las tareas (poner presupuesto_id = null)
-        for (UserTarea tarea : presupuesto.getTareas()) {
-            tarea.setPresupuesto(null);
-            userTareaRepository.save(tarea); // Necesario para actualizar la FK
-        }
-
-        // Ahora sí eliminar el presupuesto
-        presupuestoRepository.delete(presupuesto);
-    }*/
 
     @Transactional
     public void deletePresupuesto(Long id) {
@@ -160,5 +141,68 @@ public class PresupuestoService {
         presupuesto.removeTarea(tarea);
         return presupuestoRepository.save(presupuesto);
     }
+
+
+
+
+    @Transactional
+    public Presupuesto updatePresupuesto(Long id, Presupuesto presupuestoActualizado) {
+        // Validación 1: Presupuesto debe existir
+        Presupuesto presupuesto = presupuestoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Presupuesto no encontrado"));
+
+        // Validación 2: Nombre requerido
+        if (presupuestoActualizado.getName() == null ||
+                presupuestoActualizado.getName().trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del presupuesto es requerido");
+        }
+
+        // Validación 3: Cliente requerido
+        if (presupuestoActualizado.getCliente() == null ||
+                presupuestoActualizado.getCliente().getId() == null) {
+            throw new IllegalArgumentException("El cliente es requerido");
+        }
+
+        // PASO 1: Actualizar campos básicos
+        presupuesto.setName(presupuestoActualizado.getName());
+        presupuesto.setCliente(presupuestoActualizado.getCliente());
+
+        // PASO 2: Procesar las tareas (REEMPLAZAR COMPLETAMENTE)
+        if (presupuestoActualizado.getTareas() != null && !presupuestoActualizado.getTareas().isEmpty()) {
+            List<UserTarea> tareasVerificadas = new ArrayList<>();
+
+            for (UserTarea tarea : presupuestoActualizado.getTareas()) {
+                if (tarea.getId() != null) {
+                    Optional<UserTarea> tareaExistente = userTareaRepository.findById(tarea.getId());
+
+                    if (tareaExistente.isPresent()) {
+                        UserTarea tareaEnBD = tareaExistente.get();
+
+                        // Verificar que la tarea pertenece al cliente
+                        if (!tareaEnBD.getClienteId().equals(presupuestoActualizado.getCliente().getId())) {
+                            throw new IllegalArgumentException(
+                                    "La tarea " + tarea.getId() + " no pertenece a este cliente"
+                            );
+                        }
+
+                        tareasVerificadas.add(tareaEnBD);
+                    } else {
+                        throw new IllegalArgumentException(
+                                "La tarea con ID " + tarea.getId() + " no existe"
+                        );
+                    }
+                }
+            }
+
+            // Reemplazar completamente la lista de tareas
+            presupuesto.setTareas(tareasVerificadas);
+        } else {
+            presupuesto.setTareas(new ArrayList<>());
+        }
+
+        // PASO 3: Guardar y devolver
+        return presupuestoRepository.save(presupuesto);
+    }
+
 
 }

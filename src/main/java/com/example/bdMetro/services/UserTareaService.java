@@ -4,6 +4,7 @@ import com.example.bdMetro.entity.UserTarea;
 import com.example.bdMetro.repository.UserTareaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -59,7 +60,20 @@ public class UserTareaService {
         return userTareaRepository.save(userTarea);
     }
 
+    /*public void deleteUserTarea(Long id) {
+        userTareaRepository.deleteById(id);
+    }*/
+
+    @Transactional
     public void deleteUserTarea(Long id) {
+        UserTarea tarea = userTareaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
+
+        // Verificar si la tarea está asociada a algún presupuesto
+        if (!tarea.getPresupuestos().isEmpty()) {
+            throw new IllegalStateException("No se puede eliminar la tarea porque está asociada a uno o más presupuestos");
+        }
+
         userTareaRepository.deleteById(id);
     }
 }

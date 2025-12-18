@@ -60,9 +60,23 @@ public class UserTareaController {
         return ResponseEntity.ok(updatedUserTarea);
     }
 
-    @DeleteMapping("/{id}")
+   /* @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUserTarea(@PathVariable Long id) {
         userTareaService.deleteUserTarea(id);
         return ResponseEntity.noContent().build();
+    }*/
+
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteUserTarea(@PathVariable Long id) {
+        try {
+            userTareaService.deleteUserTarea(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
+
 }
