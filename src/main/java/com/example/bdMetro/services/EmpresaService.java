@@ -89,6 +89,12 @@ public class EmpresaService {
         empresa.setEmail(empresaDetails.getEmail());
         empresa.setDescription(empresaDetails.getDescription());
         empresa.setLogoUrl(empresaDetails.getLogoUrl());
+        empresa.setUserCode(empresaDetails.getUserCode());
+        empresa.setWebsite(empresaDetails.getWebsite());
+        empresa.setTiktok(empresaDetails.getTiktok());
+        empresa.setInstagram(empresaDetails.getInstagram());
+        empresa.setFacebook(empresaDetails.getFacebook());
+        empresa.setCuilCuit(empresaDetails.getCuilCuit());
         return empresaRepository.save(empresa);
     }
 
