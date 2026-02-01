@@ -6,6 +6,9 @@ import com.example.bdMetro.entity.Presupuesto;
 import com.example.bdMetro.services.ClienteService;
 import com.example.bdMetro.services.EmpresaService;
 import com.example.bdMetro.services.PresupuestoService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -21,11 +24,9 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 import java.util.*;
+
 
 @RestController
 @RequestMapping("/api")
@@ -47,6 +48,7 @@ public class EmpresaClienteController {
 
     private static final String UPLOAD_DIR_LOCAL = "src/main/resources/static/uploads/";
     private static final String UPLOAD_DIR_PROD = "/app/uploads/";
+    private static final Logger log = LoggerFactory.getLogger(EmpresaClienteController.class);
 
    // private static final String UPLOAD_DIR_PROD = "/data/uploads/";
 
@@ -144,7 +146,7 @@ public class EmpresaClienteController {
         }
     }
 
-    @DeleteMapping("/uploads/{filename:.+}")
+   /* @DeleteMapping("/uploads/{filename:.+}")
     public ResponseEntity<Map<String, Object>> deleteImage(@PathVariable String filename) {
         try {
             Path filePath = Paths.get(getUploadDir() + StringUtils.cleanPath(filename));
@@ -163,6 +165,34 @@ public class EmpresaClienteController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "Error al eliminar la imagen", "details", e.getMessage()));
+        }
+    }*/
+
+    @DeleteMapping("/uploads/{filename:.+}")
+    public ResponseEntity<Map<String, Object>> deleteImage(@PathVariable String filename) {
+        try {
+            String safeFilename = StringUtils.cleanPath(filename);
+            Path filePath = Paths.get(getUploadDir() + safeFilename);
+
+            if (!Files.exists(filePath)) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "Imagen no encontrada: " + safeFilename));
+            }
+
+            Files.delete(filePath);
+            return ResponseEntity.ok(Map.of("message", "Imagen eliminada con éxito: " + safeFilename));
+        } catch (AccessDeniedException e) {
+            log.error("Permisos insuficientes para eliminar: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Permisos insuficientes para eliminar la imagen"));
+        } catch (IOException e) {
+            log.error("Error IO al eliminar imagen: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo eliminar la imagen", "details", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error inesperado al eliminar imagen: {}", filename, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error interno al eliminar imagen"));
         }
     }
 
@@ -243,7 +273,7 @@ public class EmpresaClienteController {
         }
     } 
 
-    @DeleteMapping("/empresas/id/{id}")
+   /* @DeleteMapping("/empresas/id/{id}")
     public ResponseEntity<?> deleteEmpresa(@PathVariable Long id) {
         try {
             empresaService.deleteEmpresa(id);
@@ -257,8 +287,63 @@ public class EmpresaClienteController {
             errorResponse.put("error", "Error interno del servidor al eliminar la empresa: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-    }
+    }*/
 
+    /*@DeleteMapping("/empresas/id/{id}")
+    public ResponseEntity<?> deleteEmpresa(@PathVariable Long id) {
+        try {
+            Empresa empresa = empresaService.getEmpresaById(id)
+                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
+
+            // Eliminar imagen del volumen si existe
+            if (empresa.getLogoUrl() != null) {
+                String fileName = empresa.getLogoUrl().substring(empresa.getLogoUrl().lastIndexOf("/") + 1);
+                Path filePath = Paths.get("/app/uploads/" + fileName);
+                Files.deleteIfExists(filePath);
+            }
+
+            empresaService.deleteEmpresa(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }*/
+
+    @DeleteMapping("/empresas/id/{id}")
+    public ResponseEntity<?> deleteEmpresa(@PathVariable Long id) {
+        try {
+            Empresa empresa = empresaService.getEmpresaById(id)
+                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
+
+            // Eliminar imagen si existe
+            if (empresa.getLogoUrl() != null) {
+                String fileName = empresa.getLogoUrl().substring(empresa.getLogoUrl().lastIndexOf("/") + 1);
+                String safeFileName = StringUtils.cleanPath(fileName);
+                Path filePath = Paths.get(getUploadDir() + safeFileName);
+
+                if (Files.exists(filePath)) {
+                    Files.delete(filePath);
+                    log.info("Imagen eliminada al borrar empresa {}: {}", id, safeFileName);
+                }
+            }
+
+            empresaService.deleteEmpresa(id);
+            return ResponseEntity.noContent().build();
+        } catch (AccessDeniedException e) {
+            log.error("Permisos insuficientes al eliminar imagen de empresa {}: {}", id, e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Permisos insuficientes al eliminar imagen"));
+        } catch (IOException e) {
+            log.error("Error IO al eliminar imagen de empresa {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo eliminar la imagen", "details", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error al eliminar empresa {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
 
 
 
