@@ -60,11 +60,7 @@ public class UserTareaController {
         return ResponseEntity.ok(updatedUserTarea);
     }
 
-   /* @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUserTarea(@PathVariable Long id) {
-        userTareaService.deleteUserTarea(id);
-        return ResponseEntity.noContent().build();
-    }*/
+
 
 
     @DeleteMapping("/{id}")

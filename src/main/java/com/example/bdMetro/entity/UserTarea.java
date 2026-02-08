@@ -32,6 +32,9 @@ public class UserTarea {
     @JsonIgnore
     private List<Presupuesto> presupuestos = new ArrayList<>();
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
 
     public UserTarea() {}
 
@@ -40,7 +43,7 @@ public class UserTarea {
         this.id = id;
     }
 
-    public UserTarea(Long id, String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, Long clienteId, String pais, String rubro, String categoria, List<Presupuesto> presupuestos) {
+    public UserTarea(Long id, String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, Long clienteId, String pais, String rubro, String categoria, List<Presupuesto> presupuestos, boolean deleted) {
         this.id = id;
         this.tarea = tarea;
         this.costo = costo;
@@ -53,6 +56,7 @@ public class UserTarea {
         this.rubro = rubro;
         this.categoria = categoria;
         this.presupuestos = presupuestos;
+        this.deleted = deleted;
     }
 
     public Long getId() {
@@ -151,5 +155,11 @@ public class UserTarea {
         this.presupuestos = presupuestos;
     }
 
+    public boolean isDeleted() {
+        return deleted;
+    }
 
+    public void setDeleted(boolean deleted) {
+        this.deleted = deleted;
+    }
 }

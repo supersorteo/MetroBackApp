@@ -14,6 +14,19 @@ public interface UserTareaRepository extends JpaRepository<UserTarea, Long> {
 
     List<UserTarea> findByClienteId(Long clienteId); // Buscar tareas por clienteId
 
-    @Query("SELECT ut FROM UserTarea ut JOIN Cliente c ON ut.clienteId = c.id WHERE c.userCode = :userCode")
+    //@Query("SELECT ut FROM UserTarea ut JOIN Cliente c ON ut.clienteId = c.id WHERE c.userCode = :userCode")
+    //List<UserTarea> findByUserCode(String userCode);
+
+    List<UserTarea> findByClienteIdAndDeletedFalse(Long clienteId);
+
+
+
+
+    @Query("SELECT ut FROM UserTarea ut JOIN Cliente c ON ut.clienteId = c.id WHERE c.userCode = :userCode AND ut.deleted = false")
     List<UserTarea> findByUserCode(String userCode);
+
+    @Query("SELECT ut FROM UserTarea ut WHERE ut.deleted = false")
+    List<UserTarea> findAllActive();
+
+
 }

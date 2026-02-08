@@ -15,13 +15,18 @@ public class UserTareaService {
     @Autowired
     private UserTareaRepository userTareaRepository;
 
-    public List<UserTarea> getAllTareas() {
+    public List<UserTarea> getAllTareas0() {
         return userTareaRepository.findAll(); // Nuevo método para obtener todas las tareas
+    }
+
+    public List<UserTarea> getAllTareas() {
+        return userTareaRepository.findAllActive();
     }
 
     public List<UserTarea> getTareasByUserCode(String userCode) {
         return userTareaRepository.findByUserCode(userCode);
     }
+
 
 
 
@@ -31,18 +36,30 @@ public class UserTareaService {
 
 
 
-    public UserTarea addUserTarea(UserTarea userTarea) {
+    /*public UserTarea addUserTarea(UserTarea userTarea) {
         // Validación opcional: Asegurar que clienteId esté presente
         if (userTarea.getClienteId() == null) {
             throw new IllegalArgumentException("clienteId es requerido");
         }
         return userTareaRepository.save(userTarea);
+    }*/
+
+    public UserTarea addUserTarea(UserTarea userTarea) {
+        if (userTarea.getClienteId() == null) {
+            throw new IllegalArgumentException("clienteId es requerido");
+        }
+        userTarea.setDeleted(false);
+        return userTareaRepository.save(userTarea);
     }
 
-    public List<UserTarea> getTareasByClienteId(Long clienteId) {
+
+    public List<UserTarea> getTareasByClienteId0(Long clienteId) {
         return userTareaRepository.findByClienteId(clienteId); // Nueva método para tareas por cliente
     }
 
+    public List<UserTarea> getTareasByClienteId(Long clienteId) {
+        return userTareaRepository.findByClienteIdAndDeletedFalse(clienteId);
+    }
 
 
     public UserTarea updateUserTarea(Long id, UserTarea userTareaDetails) {
@@ -64,7 +81,7 @@ public class UserTareaService {
         userTareaRepository.deleteById(id);
     }*/
 
-    @Transactional
+   /* @Transactional
     public void deleteUserTarea(Long id) {
         UserTarea tarea = userTareaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
@@ -75,5 +92,15 @@ public class UserTareaService {
         }
 
         userTareaRepository.deleteById(id);
+    }*/
+
+    @Transactional
+    public void deleteUserTarea(Long id) {
+        UserTarea tarea = userTareaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
+
+        tarea.setDeleted(true);
+        userTareaRepository.save(tarea);
     }
+
 }
