@@ -10,5 +10,5 @@ public interface MembershipPaymentOrderRepository extends JpaRepository<Membersh
 
     Optional<MembershipPaymentOrder> findByExternalId(String externalId);
 
-    Optional<MembershipPaymentOrder> findByDlocalPaymentId(String dlocalPaymentId);
+    Optional<MembershipPaymentOrder> findByProviderPaymentId(String providerPaymentId);
 }

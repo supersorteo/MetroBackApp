@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,28 +39,34 @@ public class FxRateService {
             return cachedRate.rate();
         }
 
-        JsonNode response = fxRestClient.get()
-                .uri("/{baseCurrency}", properties.getBaseCurrency())
-                .retrieve()
-                .body(JsonNode.class);
+        try {
+            JsonNode response = fxRestClient.get()
+                    .uri("/{baseCurrency}", properties.getBaseCurrency())
+                    .retrieve()
+                    .body(JsonNode.class);
 
-        if (response == null || response.path("result").isMissingNode()) {
-            throw new IllegalStateException("No se pudo obtener respuesta del proveedor FX");
+            if (response == null || response.path("result").isMissingNode()) {
+                throw new IllegalStateException("No se pudo obtener respuesta del proveedor FX");
+            }
+
+            String result = response.path("result").asText("");
+            if (!"success".equalsIgnoreCase(result)) {
+                throw new IllegalStateException("El proveedor FX devolvio un estado invalido: " + result);
+            }
+
+            JsonNode rateNode = response.path("rates").path(normalizedCurrency);
+            if (!rateNode.isNumber()) {
+                throw new IllegalArgumentException("No existe tasa de cambio para la moneda " + normalizedCurrency);
+            }
+
+            BigDecimal rate = rateNode.decimalValue().setScale(6, RoundingMode.HALF_UP);
+            cache.put(normalizedCurrency, new CachedRate(rate, Instant.now()));
+            return rate;
+        } catch (Exception exception) {
+            BigDecimal fallbackRate = resolveFallbackRate(normalizedCurrency);
+            cache.put(normalizedCurrency, new CachedRate(fallbackRate, Instant.now()));
+            return fallbackRate;
         }
-
-        String result = response.path("result").asText("");
-        if (!"success".equalsIgnoreCase(result)) {
-            throw new IllegalStateException("El proveedor FX devolvio un estado invalido: " + result);
-        }
-
-        JsonNode rateNode = response.path("rates").path(normalizedCurrency);
-        if (!rateNode.isNumber()) {
-            throw new IllegalArgumentException("No existe tasa de cambio para la moneda " + normalizedCurrency);
-        }
-
-        BigDecimal rate = rateNode.decimalValue().setScale(6, RoundingMode.HALF_UP);
-        cache.put(normalizedCurrency, new CachedRate(rate, Instant.now()));
-        return rate;
     }
 
     public BigDecimal convertFromUsd(BigDecimal usdAmount, String targetCurrency) {
@@ -76,6 +83,21 @@ public class FxRateService {
             throw new IllegalArgumentException("La moneda destino es obligatoria");
         }
         return currencyCode.trim().toUpperCase();
+    }
+
+    private BigDecimal resolveFallbackRate(String normalizedCurrency) {
+        Map<String, BigDecimal> fallbackRates = new LinkedHashMap<>(properties.getFallbackRates());
+        if (fallbackRates.isEmpty()) {
+            fallbackRates.put("ARS", new BigDecimal("1080.00"));
+            fallbackRates.put("UYU", new BigDecimal("42.00"));
+            fallbackRates.put("COP", new BigDecimal("3950.00"));
+        }
+
+        BigDecimal fallbackRate = fallbackRates.get(normalizedCurrency);
+        if (fallbackRate == null) {
+            throw new IllegalStateException("No se pudo obtener tasa FX y no existe fallback para " + normalizedCurrency);
+        }
+        return fallbackRate.setScale(6, RoundingMode.HALF_UP);
     }
 
     private record CachedRate(BigDecimal rate, Instant fetchedAt) {

@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "payments.membership")
 public class MembershipCatalogProperties {
 
-    private String notificationPath = "/api/payments/memberships/dlocal/webhook";
+    private String notificationPath = "/api/payments/memberships/mercadopago/webhook";
     private String defaultCallbackUrl;
     private final Map<String, BigDecimal> basePlansUsd = new LinkedHashMap<>();
     private final Map<String, CountryCatalog> catalog = new LinkedHashMap<>();

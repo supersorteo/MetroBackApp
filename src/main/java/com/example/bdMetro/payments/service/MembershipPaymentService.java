@@ -1,12 +1,13 @@
 package com.example.bdMetro.payments.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -15,19 +16,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.bdMetro.entity.AccessCode;
-import com.example.bdMetro.payments.config.DlocalProperties;
 import com.example.bdMetro.payments.config.MembershipCatalogProperties;
+import com.example.bdMetro.payments.config.MercadoPagoProperties;
 import com.example.bdMetro.payments.dto.CreateMembershipPaymentRequest;
 import com.example.bdMetro.payments.dto.CreateMembershipPaymentResponse;
-import com.example.bdMetro.payments.dto.DlocalCreatePaymentRequest;
-import com.example.bdMetro.payments.dto.DlocalPaymentResponse;
 import com.example.bdMetro.payments.dto.MembershipCatalogResponse;
 import com.example.bdMetro.payments.dto.MembershipPaymentStatusResponse;
 import com.example.bdMetro.payments.entity.MembershipPaymentOrder;
 import com.example.bdMetro.payments.repository.MembershipPaymentOrderRepository;
 import com.example.bdMetro.repository.AccessCodeRepository;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class MembershipPaymentService {
@@ -39,32 +37,29 @@ public class MembershipPaymentService {
     private final MembershipPaymentOrderRepository orderRepository;
     private final AccessCodeRepository accessCodeRepository;
     private final MembershipCatalogProperties catalogProperties;
-    private final DlocalProperties dlocalProperties;
-    private final DlocalClient dlocalClient;
-    private final DlocalSignatureService signatureService;
+    private final MercadoPagoProperties mercadoPagoProperties;
+    private final MercadoPagoClient mercadoPagoClient;
+    private final MercadoPagoWebhookSignatureService webhookSignatureService;
     private final FxRateService fxRateService;
-    private final ObjectMapper objectMapper;
     private final String appBaseUrl;
 
     public MembershipPaymentService(
             MembershipPaymentOrderRepository orderRepository,
             AccessCodeRepository accessCodeRepository,
             MembershipCatalogProperties catalogProperties,
-            DlocalProperties dlocalProperties,
-            DlocalClient dlocalClient,
-            DlocalSignatureService signatureService,
+            MercadoPagoProperties mercadoPagoProperties,
+            MercadoPagoClient mercadoPagoClient,
+            MercadoPagoWebhookSignatureService webhookSignatureService,
             FxRateService fxRateService,
-            ObjectMapper objectMapper,
             @Value("${app.base-url:http://localhost:8080}") String appBaseUrl
     ) {
         this.orderRepository = orderRepository;
         this.accessCodeRepository = accessCodeRepository;
         this.catalogProperties = catalogProperties;
-        this.dlocalProperties = dlocalProperties;
-        this.dlocalClient = dlocalClient;
-        this.signatureService = signatureService;
+        this.mercadoPagoProperties = mercadoPagoProperties;
+        this.mercadoPagoClient = mercadoPagoClient;
+        this.webhookSignatureService = webhookSignatureService;
         this.fxRateService = fxRateService;
-        this.objectMapper = objectMapper;
         this.appBaseUrl = appBaseUrl;
     }
 
@@ -75,12 +70,11 @@ public class MembershipPaymentService {
             if (!country.isEnabled()) {
                 continue;
             }
-            Map<String, BigDecimal> localizedPlans = buildLocalizedPlans(country);
             countries.put(entry.getKey(), new MembershipCatalogResponse.CountryCatalogItem(
                     country.getDisplayName(),
                     country.getCurrency(),
                     country.getDocumentLabel(),
-                    localizedPlans,
+                    buildLocalizedPlans(country),
                     new LinkedHashMap<>(catalogProperties.getBasePlansUsd())
             ));
         }
@@ -89,7 +83,7 @@ public class MembershipPaymentService {
 
     @Transactional
     public CreateMembershipPaymentResponse createCheckout(CreateMembershipPaymentRequest request) {
-        requireDlocalEnabled();
+        requireMercadoPagoEnabled();
 
         String countryCode = normalizeCountry(request.countryCode());
         MembershipCatalogProperties.CountryCatalog countryCatalog = getCountryCatalog(countryCode);
@@ -117,24 +111,10 @@ public class MembershipPaymentService {
         order.setNotificationUrl(notificationUrl);
         orderRepository.save(order);
 
-        DlocalCreatePaymentRequest providerRequest = new DlocalCreatePaymentRequest(
-                quote.localizedAmount(),
-                countryCatalog.getCurrency(),
-                countryCode,
-                "REDIRECT",
-                blankToNull(request.paymentMethodId()),
-                new DlocalCreatePaymentRequest.Payer(order.getPayerName(), order.getPayerEmail(), order.getPayerDocument()),
-                externalId,
-                "Membresia Metro " + request.planMonths() + " meses - " + countryCode,
-                notificationUrl,
-                callbackUrl
-        );
-
-        DlocalPaymentResponse providerResponse = dlocalClient.createPayment(providerRequest);
-        order.setDlocalPaymentId(providerResponse.id());
-        order.setStatus(providerResponse.status());
-        order.setStatusDetail(providerResponse.statusDetail());
-        order.setRedirectUrl(providerResponse.redirectUrl());
+        JsonNode preference = mercadoPagoClient.createPreference(buildPreferencePayload(order, countryCatalog));
+        order.setProviderPaymentId(text(preference, "id"));
+        order.setRedirectUrl(resolveInitPoint(preference));
+        order.setStatusDetail("Preferencia de Mercado Pago creada");
         orderRepository.save(order);
 
         return toCreateResponse(order);
@@ -145,9 +125,11 @@ public class MembershipPaymentService {
         MembershipPaymentOrder order = orderRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new IllegalArgumentException("No existe la orden " + externalId));
 
-        if (order.getDlocalPaymentId() != null && !isFinalStatus(order.getStatus())) {
-            DlocalPaymentResponse providerPayment = dlocalClient.getPayment(order.getDlocalPaymentId());
-            applyProviderState(order, providerPayment, null);
+        if (order.getProviderPaymentId() != null
+                && !isFinalStatus(order.getStatus())
+                && isNumeric(order.getProviderPaymentId())) {
+            JsonNode payment = mercadoPagoClient.getPayment(order.getProviderPaymentId());
+            applyMercadoPagoState(order, payment, payment.toString());
             orderRepository.save(order);
         }
 
@@ -155,43 +137,73 @@ public class MembershipPaymentService {
     }
 
     @Transactional
-    public void processWebhook(String authorizationHeader, String xDate, String rawBody) {
-        requireDlocalEnabled();
+    public void processMercadoPagoWebhook(String xSignature, String xRequestId, String dataId, String type, String rawBody) {
+        requireMercadoPagoEnabled();
 
-        if (!signatureService.isValidAuthorization(authorizationHeader, xDate, rawBody)) {
-            throw new IllegalArgumentException("La firma del webhook de dLocal no es válida");
+        if (!"payment".equalsIgnoreCase(type) || dataId == null || dataId.isBlank()) {
+            return;
         }
 
-        JsonNode root = parseBody(rawBody);
-        String providerPaymentId = text(root, "id");
-        String orderId = text(root, "order_id");
-        if (providerPaymentId == null && orderId == null) {
-            throw new IllegalArgumentException("Webhook de dLocal sin identificadores");
+        if (!webhookSignatureService.isValid(xSignature, xRequestId, dataId)) {
+            throw new IllegalArgumentException("La firma del webhook de Mercado Pago no es valida");
         }
 
-        MembershipPaymentOrder order = findOrder(providerPaymentId, orderId);
-        DlocalPaymentResponse confirmedPayment = order.getDlocalPaymentId() != null
-                ? dlocalClient.getPayment(order.getDlocalPaymentId())
-                : mapProviderPayment(root);
+        JsonNode payment = mercadoPagoClient.getPayment(dataId);
+        String externalReference = text(payment, "external_reference");
+        if (externalReference == null || externalReference.isBlank()) {
+            throw new IllegalArgumentException("El pago de Mercado Pago no tiene external_reference");
+        }
 
-        applyProviderState(order, confirmedPayment, rawBody);
+        MembershipPaymentOrder order = orderRepository.findByExternalId(externalReference)
+                .orElseThrow(() -> new IllegalArgumentException("No existe la orden " + externalReference));
+
+        applyMercadoPagoState(order, payment, rawBody != null && !rawBody.isBlank() ? rawBody : payment.toString());
         orderRepository.save(order);
     }
 
-    private void applyProviderState(MembershipPaymentOrder order, DlocalPaymentResponse payment, String rawPayload) {
-        if (payment.id() != null) {
-            order.setDlocalPaymentId(payment.id());
+    private Map<String, Object> buildPreferencePayload(
+            MembershipPaymentOrder order,
+            MembershipCatalogProperties.CountryCatalog countryCatalog
+    ) {
+        return Map.of(
+                "items", List.of(Map.of(
+                        "id", "membership-" + order.getPlanMonths(),
+                        "title", "Membresia Metro " + order.getPlanMonths() + " meses",
+                        "description", "Acceso a precios y tareas por pais",
+                        "quantity", 1,
+                        "currency_id", countryCatalog.getCurrency(),
+                        "unit_price", order.getAmount()
+                )),
+                "payer", Map.of(
+                        "name", order.getPayerName(),
+                        "email", order.getPayerEmail()
+                ),
+                "external_reference", order.getExternalId(),
+                "notification_url", order.getNotificationUrl(),
+                "back_urls", Map.of(
+                        "success", resolveSuccessUrl(order.getCallbackUrl()),
+                        "failure", resolveFailureUrl(order.getCallbackUrl()),
+                        "pending", resolvePendingUrl(order.getCallbackUrl())
+                ),
+                "auto_return", "approved"
+        );
+    }
+
+    private void applyMercadoPagoState(MembershipPaymentOrder order, JsonNode payment, String rawPayload) {
+        String paymentId = text(payment, "id");
+        if (paymentId != null) {
+            order.setProviderPaymentId(paymentId);
         }
-        order.setStatus(payment.status());
-        order.setStatusDetail(payment.statusDetail());
-        if (payment.redirectUrl() != null) {
-            order.setRedirectUrl(payment.redirectUrl());
-        }
+
+        String mercadoPagoStatus = text(payment, "status");
+        order.setStatus(mapProviderStatus(mercadoPagoStatus));
+        order.setStatusDetail(firstNonBlank(text(payment, "status_detail"), mercadoPagoStatus, "Estado actualizado por Mercado Pago"));
+
         if (rawPayload != null) {
             order.setRawProviderPayload(rawPayload);
         }
 
-        if (STATUS_PAID.equalsIgnoreCase(payment.status())) {
+        if (STATUS_PAID.equals(order.getStatus())) {
             issueOrRenewAccess(order);
             if (order.getPaidAt() == null) {
                 order.setPaidAt(LocalDateTime.now());
@@ -243,21 +255,10 @@ public class MembershipPaymentService {
         }
     }
 
-    private MembershipPaymentOrder findOrder(String providerPaymentId, String orderId) {
-        Optional<MembershipPaymentOrder> byProvider = providerPaymentId == null
-                ? Optional.empty()
-                : orderRepository.findByDlocalPaymentId(providerPaymentId);
-        if (byProvider.isPresent()) {
-            return byProvider.get();
-        }
-        return orderRepository.findByExternalId(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("No existe una orden para el webhook recibido"));
-    }
-
     private MembershipCatalogProperties.CountryCatalog getCountryCatalog(String countryCode) {
         MembershipCatalogProperties.CountryCatalog catalog = catalogProperties.getCatalog().get(countryCode);
         if (catalog == null || !catalog.isEnabled()) {
-            throw new IllegalArgumentException("El país " + countryCode + " no está habilitado para pagos");
+            throw new IllegalArgumentException("El pais " + countryCode + " no esta habilitado para pagos");
         }
         return catalog;
     }
@@ -269,7 +270,7 @@ public class MembershipPaymentService {
             throw new IllegalArgumentException("No existe precio base en USD para " + planMonths + " meses");
         }
         BigDecimal exchangeRate = fxRateService.getRate(catalog.getCurrency());
-        BigDecimal localizedAmount = baseUsdAmount.multiply(exchangeRate).setScale(2, java.math.RoundingMode.HALF_UP);
+        BigDecimal localizedAmount = baseUsdAmount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
         return new PlanQuote(baseUsdAmount, exchangeRate, localizedAmount);
     }
 
@@ -288,12 +289,36 @@ public class MembershipPaymentService {
         if (catalogProperties.getDefaultCallbackUrl() != null && !catalogProperties.getDefaultCallbackUrl().isBlank()) {
             return catalogProperties.getDefaultCallbackUrl().trim();
         }
-        return appBaseUrl + "/payments/result";
+        return appBaseUrl + "/payment-result";
     }
 
-    private void requireDlocalEnabled() {
-        if (!dlocalProperties.isEnabled()) {
-            throw new IllegalStateException("dLocal no está habilitado. Configure las credenciales antes de usar pagos.");
+    private String resolveSuccessUrl(String callbackUrl) {
+        return firstNonBlank(mercadoPagoProperties.getSuccessUrl(), callbackUrl);
+    }
+
+    private String resolveFailureUrl(String callbackUrl) {
+        return firstNonBlank(mercadoPagoProperties.getFailureUrl(), callbackUrl);
+    }
+
+    private String resolvePendingUrl(String callbackUrl) {
+        return firstNonBlank(mercadoPagoProperties.getPendingUrl(), callbackUrl);
+    }
+
+    private String resolveInitPoint(JsonNode preference) {
+        String initPoint = text(preference, "init_point");
+        if (initPoint != null && !initPoint.isBlank()) {
+            return initPoint;
+        }
+        String sandboxInitPoint = text(preference, "sandbox_init_point");
+        if (sandboxInitPoint != null && !sandboxInitPoint.isBlank()) {
+            return sandboxInitPoint;
+        }
+        throw new IllegalStateException("Mercado Pago no devolvio una URL de checkout");
+    }
+
+    private void requireMercadoPagoEnabled() {
+        if (!mercadoPagoProperties.isEnabled()) {
+            throw new IllegalStateException("Mercado Pago no esta habilitado. Configure el access token antes de usar pagos.");
         }
     }
 
@@ -318,26 +343,15 @@ public class MembershipPaymentService {
         };
     }
 
-    private DlocalPaymentResponse mapProviderPayment(JsonNode root) {
-        return new DlocalPaymentResponse(
-                text(root, "id"),
-                root.path("amount").isNumber() ? root.path("amount").decimalValue() : null,
-                text(root, "currency"),
-                text(root, "country"),
-                text(root, "status"),
-                text(root, "status_detail"),
-                text(root, "status_code"),
-                text(root, "redirect_url"),
-                text(root, "order_id")
-        );
-    }
-
-    private JsonNode parseBody(String rawBody) {
-        try {
-            return objectMapper.readTree(rawBody);
-        } catch (Exception exception) {
-            throw new IllegalArgumentException("No se pudo parsear el webhook de dLocal", exception);
+    private String mapProviderStatus(String providerStatus) {
+        if (providerStatus == null || providerStatus.isBlank()) {
+            return STATUS_PENDING;
         }
+        return switch (providerStatus.toLowerCase(Locale.ROOT)) {
+            case "approved" -> STATUS_PAID;
+            case "rejected", "cancelled", "cancelled_by_user", "refunded", "charged_back" -> STATUS_REJECTED;
+            default -> STATUS_PENDING;
+        };
     }
 
     private String text(JsonNode root, String field) {
@@ -345,14 +359,23 @@ public class MembershipPaymentService {
         return node == null || node.isNull() ? null : node.asText();
     }
 
-    private String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
+    private boolean isNumeric(String value) {
+        return value != null && value.matches("\\d+");
+    }
+
+    private String firstNonBlank(String... values) {
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value.trim();
+            }
+        }
+        return null;
     }
 
     private CreateMembershipPaymentResponse toCreateResponse(MembershipPaymentOrder order) {
         return new CreateMembershipPaymentResponse(
                 order.getExternalId(),
-                order.getDlocalPaymentId(),
+                order.getProviderPaymentId(),
                 order.getStatus(),
                 order.getStatusDetail(),
                 order.getRedirectUrl(),
@@ -368,7 +391,7 @@ public class MembershipPaymentService {
     private MembershipPaymentStatusResponse toStatusResponse(MembershipPaymentOrder order) {
         return new MembershipPaymentStatusResponse(
                 order.getExternalId(),
-                order.getDlocalPaymentId(),
+                order.getProviderPaymentId(),
                 order.getStatus(),
                 order.getStatusDetail(),
                 order.getAccessCode(),

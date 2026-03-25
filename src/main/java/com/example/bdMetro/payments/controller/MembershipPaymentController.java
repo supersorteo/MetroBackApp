@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -45,13 +46,15 @@ public class MembershipPaymentController {
         return membershipPaymentService.getOrderStatus(externalId);
     }
 
-    @PostMapping(value = "/dlocal/webhook", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/mercadopago/webhook", consumes = MediaType.ALL_VALUE)
     public ResponseEntity<Void> receiveWebhook(
-            @RequestHeader("Authorization") String authorization,
-            @RequestHeader("X-Date") String xDate,
-            @RequestBody String rawBody
+            @RequestHeader(value = "x-signature", required = false) String xSignature,
+            @RequestHeader(value = "x-request-id", required = false) String xRequestId,
+            @RequestParam(value = "data.id", required = false) String dataId,
+            @RequestParam(value = "type", required = false) String type,
+            @RequestBody(required = false) String rawBody
     ) {
-        membershipPaymentService.processWebhook(authorization, xDate, rawBody);
+        membershipPaymentService.processMercadoPagoWebhook(xSignature, xRequestId, dataId, type, rawBody);
         return ResponseEntity.ok().build();
     }
 }

@@ -6,11 +6,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
 @Configuration
-@EnableConfigurationProperties({DlocalProperties.class, MembershipCatalogProperties.class, FxRateProperties.class})
+@EnableConfigurationProperties({MercadoPagoProperties.class, MembershipCatalogProperties.class, FxRateProperties.class})
 public class PaymentsConfig {
 
     @Bean
-    RestClient dlocalRestClient(DlocalProperties properties) {
+    RestClient mercadoPagoRestClient(MercadoPagoProperties properties) {
         return RestClient.builder()
                 .baseUrl(properties.getBaseUrl())
                 .build();

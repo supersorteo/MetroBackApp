@@ -25,7 +25,7 @@ public class MembershipPaymentOrder {
     private String externalId;
 
     @Column(unique = true, length = 80)
-    private String dlocalPaymentId;
+    private String providerPaymentId;
 
     @Column(nullable = false, length = 30)
     private String status;
@@ -109,12 +109,12 @@ public class MembershipPaymentOrder {
         this.externalId = externalId;
     }
 
-    public String getDlocalPaymentId() {
-        return dlocalPaymentId;
+    public String getProviderPaymentId() {
+        return providerPaymentId;
     }
 
-    public void setDlocalPaymentId(String dlocalPaymentId) {
-        this.dlocalPaymentId = dlocalPaymentId;
+    public void setProviderPaymentId(String providerPaymentId) {
+        this.providerPaymentId = providerPaymentId;
     }
 
     public String getStatus() {
