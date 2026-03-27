@@ -42,8 +42,11 @@ public class MembershipPaymentController {
     }
 
     @GetMapping("/{externalId}")
-    public MembershipPaymentStatusResponse getStatus(@PathVariable String externalId) {
-        return membershipPaymentService.getOrderStatus(externalId);
+    public MembershipPaymentStatusResponse getStatus(
+            @PathVariable String externalId,
+            @RequestParam(required = false) String paymentId
+    ) {
+        return membershipPaymentService.getOrderStatus(externalId, paymentId);
     }
 
     @PostMapping(value = "/mercadopago/webhook", consumes = MediaType.ALL_VALUE)

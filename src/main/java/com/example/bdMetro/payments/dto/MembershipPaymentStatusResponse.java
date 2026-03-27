@@ -16,6 +16,7 @@ public record MembershipPaymentStatusResponse(
         BigDecimal amount,
         BigDecimal baseUsdAmount,
         BigDecimal exchangeRateApplied,
-        LocalDateTime paidAt
+        LocalDateTime paidAt,
+        String payerPhone
 ) {
 }

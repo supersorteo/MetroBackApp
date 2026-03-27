@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 @Service
 public class MembershipPaymentService {
 
+    private static final Logger log = LoggerFactory.getLogger(MembershipPaymentService.class);
     private static final String STATUS_PENDING = "PENDING";
     private static final String STATUS_PAID = "PAID";
     private static final String STATUS_REJECTED = "REJECTED";
@@ -113,7 +116,7 @@ public class MembershipPaymentService {
 
         JsonNode preference = mercadoPagoClient.createPreference(buildPreferencePayload(order, countryCatalog));
         order.setProviderPaymentId(text(preference, "id"));
-        order.setRedirectUrl(resolveInitPoint(preference));
+        order.setRedirectUrl(resolveInitPoint(preference, order.getCallbackUrl()));
         order.setStatusDetail("Preferencia de Mercado Pago creada");
         orderRepository.save(order);
 
@@ -121,13 +124,23 @@ public class MembershipPaymentService {
     }
 
     @Transactional
-    public MembershipPaymentStatusResponse getOrderStatus(String externalId) {
+    public MembershipPaymentStatusResponse getOrderStatus(String externalId, String paymentId) {
         MembershipPaymentOrder order = orderRepository.findByExternalId(externalId)
                 .orElseThrow(() -> new IllegalArgumentException("No existe la orden " + externalId));
 
-        if (order.getProviderPaymentId() != null
-                && !isFinalStatus(order.getStatus())
-                && isNumeric(order.getProviderPaymentId())) {
+        if (isFinalStatus(order.getStatus())) {
+            return toStatusResponse(order);
+        }
+
+        // Si MP nos redirigió con el payment_id real, lo guardamos
+        if (paymentId != null && !paymentId.isBlank() && isNumeric(paymentId)) {
+            log.info("[STATUS] paymentId recibido del redirect de MP: {}", paymentId);
+            order.setProviderPaymentId(paymentId);
+            orderRepository.save(order);
+        }
+
+        // Consultamos el estado real en MP si tenemos un ID numérico
+        if (order.getProviderPaymentId() != null && isNumeric(order.getProviderPaymentId())) {
             JsonNode payment = mercadoPagoClient.getPayment(order.getProviderPaymentId());
             applyMercadoPagoState(order, payment, payment.toString());
             orderRepository.save(order);
@@ -250,6 +263,8 @@ public class MembershipPaymentService {
             existingByEmail.setFechaVencimiento(baseDate.plusMonths(order.getPlanMonths()));
             accessCodeRepository.save(existingByEmail);
             order.setAccessCode(existingByEmail.getCode());
+            log.info("[CODIGO] Renovado para email={} | codigo={} | vence={}",
+                    order.getPayerEmail(), existingByEmail.getCode(), existingByEmail.getFechaVencimiento());
             return;
         }
 
@@ -263,6 +278,8 @@ public class MembershipPaymentService {
         accessCode.setFechaVencimiento(LocalDate.now().plusMonths(order.getPlanMonths()));
         accessCodeRepository.save(accessCode);
         order.setAccessCode(accessCode.getCode());
+        log.info("[CODIGO] Generado nuevo | email={} | codigo={} | vence={}",
+                order.getPayerEmail(), accessCode.getCode(), accessCode.getFechaVencimiento());
     }
 
     private String generateUniqueCode(int planMonths) {
@@ -329,12 +346,20 @@ public class MembershipPaymentService {
         return firstNonBlank(mercadoPagoProperties.getPendingUrl(), callbackUrl);
     }
 
-    private String resolveInitPoint(JsonNode preference) {
-        String initPoint = text(preference, "init_point");
+    private String resolveInitPoint(JsonNode preference, String callbackUrl) {
+        String sandboxInitPoint = text(preference, "sandbox_init_point");
+        String initPoint        = text(preference, "init_point");
+
+        boolean isLocal = callbackUrl != null &&
+                (callbackUrl.contains("localhost") || callbackUrl.contains("127.0.0.1"));
+
+        if (isLocal && sandboxInitPoint != null && !sandboxInitPoint.isBlank()) {
+            log.info("[MP] Usando sandbox_init_point para entorno local");
+            return sandboxInitPoint;
+        }
         if (initPoint != null && !initPoint.isBlank()) {
             return initPoint;
         }
-        String sandboxInitPoint = text(preference, "sandbox_init_point");
         if (sandboxInitPoint != null && !sandboxInitPoint.isBlank()) {
             return sandboxInitPoint;
         }
@@ -427,7 +452,8 @@ public class MembershipPaymentService {
                 order.getAmount(),
                 order.getBaseUsdAmount(),
                 order.getExchangeRateApplied(),
-                order.getPaidAt()
+                order.getPaidAt(),
+                order.getPayerPhone()
         );
     }
 
