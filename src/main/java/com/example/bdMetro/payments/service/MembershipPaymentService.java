@@ -165,28 +165,53 @@ public class MembershipPaymentService {
             MembershipPaymentOrder order,
             MembershipCatalogProperties.CountryCatalog countryCatalog
     ) {
-        return Map.of(
-                "items", List.of(Map.of(
-                        "id", "membership-" + order.getPlanMonths(),
-                        "title", "Membresia Metro " + order.getPlanMonths() + " meses",
-                        "description", "Acceso a precios y tareas por pais",
-                        "quantity", 1,
-                        "currency_id", countryCatalog.getCurrency(),
-                        "unit_price", order.getAmount()
-                )),
-                "payer", Map.of(
-                        "name", order.getPayerName(),
-                        "email", order.getPayerEmail()
-                ),
-                "external_reference", order.getExternalId(),
-                "notification_url", order.getNotificationUrl(),
-                "back_urls", Map.of(
-                        "success", resolveSuccessUrl(order.getCallbackUrl()),
-                        "failure", resolveFailureUrl(order.getCallbackUrl()),
-                        "pending", resolvePendingUrl(order.getCallbackUrl())
-                ),
-                "auto_return", "approved"
-        );
+        String successUrl = resolveSuccessUrl(order.getCallbackUrl());
+        String failureUrl = resolveFailureUrl(order.getCallbackUrl());
+        String pendingUrl = resolvePendingUrl(order.getCallbackUrl());
+
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("items", List.of(Map.of(
+                "id", "membership-" + order.getPlanMonths(),
+                "title", "Membresia Metro " + order.getPlanMonths() + " meses",
+                "description", "Acceso a precios y tareas por pais",
+                "quantity", 1,
+                "currency_id", countryCatalog.getCurrency(),
+                "unit_price", order.getAmount()
+        )));
+        payload.put("payer", buildPayerPayload(order));
+        payload.put("external_reference", order.getExternalId());
+        payload.put("notification_url", order.getNotificationUrl());
+        payload.put("back_urls", Map.of(
+                "success", successUrl,
+                "failure", failureUrl,
+                "pending", pendingUrl
+        ));
+        if (successUrl != null && !successUrl.contains("localhost") && !successUrl.contains("127.0.0.1")) {
+            payload.put("auto_return", "approved");
+        }
+        return payload;
+    }
+
+    private Map<String, Object> buildPayerPayload(MembershipPaymentOrder order) {
+        Map<String, Object> payer = new LinkedHashMap<>();
+        payer.put("name", order.getPayerName());
+        payer.put("email", order.getPayerEmail());
+        if (order.getPayerDocument() != null && !order.getPayerDocument().isBlank()) {
+            payer.put("identification", Map.of(
+                    "type", resolveDocumentType(order.getCountryCode()),
+                    "number", order.getPayerDocument()
+            ));
+        }
+        return payer;
+    }
+
+    private String resolveDocumentType(String countryCode) {
+        return switch (countryCode) {
+            case "AR" -> "DNI";
+            case "UY" -> "CI";
+            case "CO" -> "CC";
+            default -> "DNI";
+        };
     }
 
     private void applyMercadoPagoState(MembershipPaymentOrder order, JsonNode payment, String rawPayload) {

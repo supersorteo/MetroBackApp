@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestClient;
 
 @Configuration
-@EnableConfigurationProperties({MercadoPagoProperties.class, MembershipCatalogProperties.class, FxRateProperties.class})
+@EnableConfigurationProperties({MercadoPagoProperties.class, MembershipCatalogProperties.class, FxRateProperties.class, PayPalProperties.class})
 public class PaymentsConfig {
 
     @Bean
@@ -18,6 +18,13 @@ public class PaymentsConfig {
 
     @Bean
     RestClient fxRestClient(FxRateProperties properties) {
+        return RestClient.builder()
+                .baseUrl(properties.getBaseUrl())
+                .build();
+    }
+
+    @Bean
+    RestClient payPalRestClient(PayPalProperties properties) {
         return RestClient.builder()
                 .baseUrl(properties.getBaseUrl())
                 .build();
