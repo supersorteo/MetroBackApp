@@ -19,22 +19,12 @@ public class ClienteService {
     private EmpresaRepository empresaRepository;
 
     public List<Cliente> getClienteByUserCode(String userCode) {
-        return clienteRepository.findByUserCode(userCode); // Changed to return List
+        return clienteRepository.findByUserCode(userCode); 
     }
 
 
 
-/*
-    public Cliente saveCliente(Cliente cliente) {
-        if (cliente.getEmail() == null || cliente.getEmail().isEmpty()) {
-            throw new IllegalArgumentException("El email es requerido para guardar el cliente");
-        }
-        List<Cliente> existingClientes = clienteRepository.findByEmail(cliente.getEmail());
-        if (!existingClientes.isEmpty()) {
-            throw new IllegalArgumentException("Ya existe un cliente registrado con el email '" + cliente.getEmail() + "'");
-        }
-        return clienteRepository.save(cliente);
-    }*/
+
 
     public Cliente saveCliente(Cliente cliente) {
         if (cliente.getEmail() == null || cliente.getEmail().isEmpty()) {
@@ -59,22 +49,10 @@ public class ClienteService {
     }
 
     public List<Cliente> getClientesByEmpresaId(Long empresaId) {
-        return clienteRepository.findByEmpresaId(empresaId); // Nuevo método
+        return clienteRepository.findByEmpresaId(empresaId); 
     }
 
 
-/*
-    public Cliente updateCliente(Long id, Cliente clienteDetails) {
-        Cliente cliente = clienteRepository.findById(id).orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));
-        cliente.setName(clienteDetails.getName());
-        cliente.setContact(clienteDetails.getContact());
-        cliente.setBudgetDate(clienteDetails.getBudgetDate());
-        cliente.setAdditionalDetails(clienteDetails.getAdditionalDetails());
-        cliente.setEmail(clienteDetails.getEmail());
-        cliente.setClave(clienteDetails.getClave());
-        cliente.setDireccion(clienteDetails.getDireccion());
-        return clienteRepository.save(cliente);
-    }*/
 
     public Cliente updateCliente(Long id, Cliente clienteDetails) {
         Cliente cliente = clienteRepository.findById(id).orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));

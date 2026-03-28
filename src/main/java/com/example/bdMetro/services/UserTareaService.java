@@ -15,10 +15,6 @@ public class UserTareaService {
     @Autowired
     private UserTareaRepository userTareaRepository;
 
-    public List<UserTarea> getAllTareas0() {
-        return userTareaRepository.findAll(); // Nuevo método para obtener todas las tareas
-    }
-
     public List<UserTarea> getAllTareas() {
         return userTareaRepository.findAllActive();
     }
@@ -36,14 +32,6 @@ public class UserTareaService {
 
 
 
-    /*public UserTarea addUserTarea(UserTarea userTarea) {
-        // Validación opcional: Asegurar que clienteId esté presente
-        if (userTarea.getClienteId() == null) {
-            throw new IllegalArgumentException("clienteId es requerido");
-        }
-        return userTareaRepository.save(userTarea);
-    }*/
-
     public UserTarea addUserTarea(UserTarea userTarea) {
         if (userTarea.getClienteId() == null) {
             throw new IllegalArgumentException("clienteId es requerido");
@@ -52,10 +40,6 @@ public class UserTareaService {
         return userTareaRepository.save(userTarea);
     }
 
-
-    public List<UserTarea> getTareasByClienteId0(Long clienteId) {
-        return userTareaRepository.findByClienteId(clienteId); // Nueva método para tareas por cliente
-    }
 
     public List<UserTarea> getTareasByClienteId(Long clienteId) {
         return userTareaRepository.findByClienteIdAndDeletedFalse(clienteId);
@@ -70,29 +54,12 @@ public class UserTareaService {
         userTarea.setDescripcion(userTareaDetails.getDescripcion());
         userTarea.setDescuento(userTareaDetails.getDescuento());
         userTarea.setTotalCost(userTareaDetails.getTotalCost());
-        userTarea.setClienteId(userTareaDetails.getClienteId()); // Actualizar clienteId si es necesario
+        userTarea.setClienteId(userTareaDetails.getClienteId());
         userTarea.setPais(userTareaDetails.getPais());
         userTarea.setRubro(userTareaDetails.getRubro());
         userTarea.setCategoria(userTareaDetails.getCategoria());
         return userTareaRepository.save(userTarea);
     }
-
-    /*public void deleteUserTarea(Long id) {
-        userTareaRepository.deleteById(id);
-    }*/
-
-   /* @Transactional
-    public void deleteUserTarea(Long id) {
-        UserTarea tarea = userTareaRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
-
-        // Verificar si la tarea está asociada a algún presupuesto
-        if (!tarea.getPresupuestos().isEmpty()) {
-            throw new IllegalStateException("No se puede eliminar la tarea porque está asociada a uno o más presupuestos");
-        }
-
-        userTareaRepository.deleteById(id);
-    }*/
 
     @Transactional
     public void deleteUserTarea(Long id) {

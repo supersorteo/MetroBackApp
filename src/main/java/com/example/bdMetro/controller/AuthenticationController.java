@@ -1,6 +1,5 @@
 package com.example.bdMetro.controller;
 
-import com.example.bdMetro.repository.AccessCodeRepository;
 import com.example.bdMetro.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -11,20 +10,16 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
 import com.example.bdMetro.entity.AccessCode;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/auth")
-//@CrossOrigin(value = "http://localhost:4200")
 public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
-
-    private AccessCodeRepository accessCodeRepository;
-
-   // @CrossOrigin(value = "http://localhost:4200")
 
 
     @PostMapping("/login")
@@ -39,12 +34,15 @@ public class AuthenticationController {
             AccessCode errorResponse = new AccessCode();
             errorResponse.setEmail("Código existe pero no asignado a un usuario");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        } else if (accessCode.getFechaVencimiento() != null && accessCode.getFechaVencimiento().isBefore(LocalDate.now())) {
+            AccessCode errorResponse = new AccessCode();
+            errorResponse.setEmail("Código vencido. Renovar membresía para continuar.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
         return ResponseEntity.ok(accessCode);
     }
 
 
-   //http://localhost:8080/auth/codes
     @GetMapping("/codes")
     public List<AccessCode> getAllCodes() {
         return authenticationService.getAllCodes();
@@ -93,7 +91,6 @@ public class AuthenticationController {
             response.put("message", "Datos asignados con éxito");
             response.put("code", updatedCode.getCode());
             response.put("email", updatedCode.getEmail());
-           // response.put("username", updatedCode.getUsername());
             response.put("telefono", updatedCode.getTelefono());
             response.put("pais", updatedCode.getPais());
             response.put("provincia", updatedCode.getProvincia());
@@ -137,7 +134,6 @@ public class AuthenticationController {
             response.put("message", "Código actualizado con éxito");
             response.put("code", updatedAccessCode.getCode());
             response.put("email", updatedAccessCode.getEmail());
-           // response.put("username", updatedAccessCode.getUsername());
             response.put("telefono", updatedAccessCode.getTelefono());
             response.put("provincia", updatedAccessCode.getProvincia());
             response.put("pais", updatedAccessCode.getPais()); // Added
@@ -152,7 +148,6 @@ public class AuthenticationController {
     }
 
 
-    //@CrossOrigin(value = "http://localhost:4200")
     @DeleteMapping("/codes/{code}")
     public void deleteCode(@PathVariable String code) {
         authenticationService.deleteCode(code);
@@ -160,7 +155,7 @@ public class AuthenticationController {
 
     @GetMapping("/user-code/{code}")
     public ResponseEntity<AccessCode> getUserCode(@PathVariable String code) {
-        AccessCode accessCode = accessCodeRepository.findByCode(code);
+        AccessCode accessCode = authenticationService.getCode(code);
         if (accessCode == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }

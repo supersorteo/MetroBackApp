@@ -3,6 +3,8 @@ package com.example.bdMetro.services;
 import com.example.bdMetro.entity.Tarea;
 import com.example.bdMetro.repository.TareaRepository;
 import jakarta.annotation.PostConstruct;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +13,7 @@ import java.util.Optional;
 
 @Service
 public class TareaService {
+    private static final Logger log = LoggerFactory.getLogger(TareaService.class);
     @Autowired
     private TareaRepository tareaRepository;
 
@@ -85,7 +88,7 @@ public class TareaService {
         tareaRepository.save(new Tarea("Impermeabilización de techos", 98.0, "Construcción", "Techos", "Uruguay", "Membrana asfáltica", 0.0, 1.0));
         tareaRepository.save(new Tarea("Tarea genérica", 48.0, "General", "Otros", "Uruguay", "Tarea personalizable", 0.0, 1.0));
 
-        System.out.println("Tareas cargadas correctamente");
+        log.info("[TareaService] Tareas de ejemplo cargadas correctamente");
     }
 
 

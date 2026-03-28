@@ -46,29 +46,7 @@ public class AuthenticationService {
         return accessCodeRepository.findByCode(code);
     }
 
-/*
-   public AccessCode updateCode(String code, String email, String username, String telefono, String provincia) {
-       AccessCode accessCode = accessCodeRepository.findByCode(code);
-       if (accessCode == null) {
-           throw new IllegalArgumentException("Este código no existe en la base de datos");
-       }
-
-       // Verificar que el email no esté ya asignado a otro código
-       AccessCode emailAssignedCode = accessCodeRepository.findByEmail(email);
-       if (emailAssignedCode != null && !emailAssignedCode.getCode().equals(code)) {
-           throw new IllegalArgumentException("Este email está en la base de datos");
-       }
-
-       // Actualizar los campos
-       accessCode.setEmail(email);
-       accessCode.setUsername(username);
-       accessCode.setTelefono(telefono);
-       accessCode.setProvincia(provincia);
-       return accessCodeRepository.save(accessCode);
-   }*/
-
-
-    public AccessCode updateCode(String code, String email, String username, String telefono, String provincia, String pais) { // Added pais
+    public AccessCode updateCode(String code, String email, String username, String telefono, String provincia, String pais) {
         AccessCode accessCode = accessCodeRepository.findByCode(code);
         if (accessCode == null) {
             throw new IllegalArgumentException("Este código no existe en la base de datos");
@@ -80,7 +58,6 @@ public class AuthenticationService {
         }
 
         accessCode.setEmail(email);
-        //accessCode.setUsername(username);
         accessCode.setTelefono(telefono);
         accessCode.setProvincia(provincia);
         accessCode.setPais(pais); // Added
@@ -113,27 +90,6 @@ public class AuthenticationService {
         } return accessCodeRepository.saveAll(accessCodes);
     }
 
-/*
-    public AccessCode addCode(AccessCode accessCode) {
-        AccessCode existingCode = accessCodeRepository.findByCode(accessCode.getCode());
-        if (existingCode == null) {
-            throw new IllegalArgumentException("Código no encontrado");
-        } else if (existingCode.getEmail() != null) {
-            throw new IllegalArgumentException("Código ya tiene un email asignado");
-        } AccessCode emailAssignedCode = accessCodeRepository.findAll().stream() .filter(code -> accessCode.getEmail().equals(code.getEmail())) .findFirst() .orElse(null);
-        if (emailAssignedCode != null) {
-            throw new IllegalArgumentException("El email ya está asignado a otro código");
-        }
-        existingCode.setEmail(accessCode.getEmail());
-        existingCode.setUsername(accessCode.getUsername());
-        existingCode.setTelefono(accessCode.getTelefono());
-        existingCode.setProvincia(accessCode.getProvincia());
-        existingCode.setFechaRegistro(LocalDate.now());
-        existingCode.setFechaVencimiento(calcularFechaVencimiento(existingCode.getCode()));
-        return accessCodeRepository.save(existingCode);
-    }*/
-
-
     public AccessCode addCode(AccessCode accessCode) {
         AccessCode existingCode = accessCodeRepository.findByCode(accessCode.getCode());
         if (existingCode == null) {
@@ -141,15 +97,11 @@ public class AuthenticationService {
         } else if (existingCode.getEmail() != null) {
             throw new IllegalArgumentException("Código ya tiene un email asignado");
         }
-        AccessCode emailAssignedCode = accessCodeRepository.findAll().stream()
-                .filter(code -> accessCode.getEmail().equals(code.getEmail()))
-                .findFirst()
-                .orElse(null);
+        AccessCode emailAssignedCode = accessCodeRepository.findByEmail(accessCode.getEmail());
         if (emailAssignedCode != null) {
             throw new IllegalArgumentException("El email ya está asignado a otro código");
         }
         existingCode.setEmail(accessCode.getEmail());
-       // existingCode.setUsername(accessCode.getUsername());
         existingCode.setTelefono(accessCode.getTelefono());
         existingCode.setProvincia(accessCode.getProvincia());
         existingCode.setPais(accessCode.getPais()); // Added

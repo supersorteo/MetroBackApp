@@ -30,7 +30,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api")
-//@CrossOrigin(value = "http://localhost:4200")
 public class EmpresaClienteController {
 
 
@@ -48,14 +47,6 @@ public class EmpresaClienteController {
     private static final String UPLOAD_DIR_LOCAL = "src/main/resources/static/uploads/";
     private static final String UPLOAD_DIR_PROD = "/app/uploads/";
     private static final Logger log = LoggerFactory.getLogger(EmpresaClienteController.class);
-
-   // private static final String UPLOAD_DIR_PROD = "/data/uploads/";
-
-
-   /* private String getUploadDir() {
-        String env = System.getenv("RAILWAY_ENVIRONMENT");
-        return env != null && !env.isEmpty() ? UPLOAD_DIR_PROD : UPLOAD_DIR_LOCAL;
-    }*/
 
     private String getUploadDir() {
         String port = System.getenv("PORT");
@@ -145,28 +136,6 @@ public class EmpresaClienteController {
         }
     }
 
-   /* @DeleteMapping("/uploads/{filename:.+}")
-    public ResponseEntity<Map<String, Object>> deleteImage(@PathVariable String filename) {
-        try {
-            Path filePath = Paths.get(getUploadDir() + StringUtils.cleanPath(filename));
-            File file = filePath.toFile();
-            if (!file.exists()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Imagen no encontrada"));
-            }
-            boolean deleted = file.delete();
-            if (deleted) {
-                return ResponseEntity.ok(Map.of("message", "Imagen eliminada con éxito"));
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("error", "No se pudo eliminar la imagen"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error al eliminar la imagen", "details", e.getMessage()));
-        }
-    }*/
-
     @DeleteMapping("/uploads/{filename:.+}")
     public ResponseEntity<Map<String, Object>> deleteImage(@PathVariable String filename) {
         try {
@@ -206,7 +175,6 @@ public class EmpresaClienteController {
         return ResponseEntity.ok(empresas);
     }
 
-    //http://localhost:8080/api/empresas/id/1
     @GetMapping("/empresas/id/{id}")
     public ResponseEntity<?> getEmpresaById(@PathVariable Long id) {
         Optional<Empresa> empresa = empresaService.getEmpresaById(id);
@@ -218,7 +186,6 @@ public class EmpresaClienteController {
         return ResponseEntity.ok(empresa.get());
     }
 
-    // http://localhost:8080/api/empresas
     @GetMapping("/empresas")
     public ResponseEntity<?> getAllEmpresas() {
         List<Empresa> empresas = empresaService.getAllEmpresas();
@@ -272,43 +239,6 @@ public class EmpresaClienteController {
         }
     } 
 
-   /* @DeleteMapping("/empresas/id/{id}")
-    public ResponseEntity<?> deleteEmpresa(@PathVariable Long id) {
-        try {
-            empresaService.deleteEmpresa(id);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", e.getMessage());
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-        } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Error interno del servidor al eliminar la empresa: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }*/
-
-    /*@DeleteMapping("/empresas/id/{id}")
-    public ResponseEntity<?> deleteEmpresa(@PathVariable Long id) {
-        try {
-            Empresa empresa = empresaService.getEmpresaById(id)
-                    .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
-
-            // Eliminar imagen del volumen si existe
-            if (empresa.getLogoUrl() != null) {
-                String fileName = empresa.getLogoUrl().substring(empresa.getLogoUrl().lastIndexOf("/") + 1);
-                Path filePath = Paths.get("/app/uploads/" + fileName);
-                Files.deleteIfExists(filePath);
-            }
-
-            empresaService.deleteEmpresa(id);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", e.getMessage()));
-        }
-    }*/
-
     @DeleteMapping("/empresas/id/{id}")
     public ResponseEntity<?> deleteEmpresa(@PathVariable Long id) {
         try {
@@ -347,14 +277,12 @@ public class EmpresaClienteController {
 
 
 
-    //http://localhost:8080/api/clientes/{userCode}
     @GetMapping("/clientes/{userCode}")
     public ResponseEntity<List<Cliente>> getClienteByUserCode(@PathVariable String userCode) {
         List<Cliente> clientes = clienteService.getClienteByUserCode(userCode);
         return clientes.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(clientes); // Changed to return List
     }
 
-    //http://localhost:8080/api/clientes/id/{id}
     @GetMapping("/clientes/id/{id}")
     public ResponseEntity<Cliente> getClienteById(@PathVariable Long id) {
         return clienteService.getClienteById(id)
@@ -439,60 +367,31 @@ public class EmpresaClienteController {
     }
 
 
-    //PRESUPUESTOS
-
     @PostMapping("/presupuestos")
     public ResponseEntity<?> savePresupuesto(@RequestBody Presupuesto presupuesto) {
-        // *** IMPRIME EN CONSOLA EL JSON QUE LLEGA ***
-        System.out.println("=== DATOS RECIBIDOS EN LA PETICIÓN POST /api/presupuestos ===");
-        System.out.println(presupuesto); // Imprime el objeto completo (Jackson lo muestra como JSON)
-        System.out.println("Nombre: " + presupuesto.getName());
-        System.out.println("Cliente ID: " + (presupuesto.getCliente() != null ? presupuesto.getCliente().getId() : "null"));
-        System.out.println("Cantidad de tareas enviadas: " + (presupuesto.getTareas() != null ? presupuesto.getTareas().size() : 0));
-        if (presupuesto.getTareas() != null) {
-            presupuesto.getTareas().forEach(tarea ->
-                    System.out.println("  Tarea ID: " + tarea.getId())
-            );
-        }
-        System.out.println("=== FIN DE DATOS RECIBIDOS ===");
-
-        try {
-            Presupuesto saved = presupuestoService.savePresupuesto(presupuesto);
-            return ResponseEntity.ok(saved);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace(); // Esto imprime el stack trace completo del error
-            return ResponseEntity.status(500).body(Map.of("error", "Error interno: " + e.getMessage()));
-        }
+        log.debug("[Presupuesto] POST nombre={} clienteId={} tareas={}",
+                presupuesto.getName(),
+                presupuesto.getCliente() != null ? presupuesto.getCliente().getId() : "null",
+                presupuesto.getTareas() != null ? presupuesto.getTareas().size() : 0);
+        Presupuesto saved = presupuestoService.savePresupuesto(presupuesto);
+        return ResponseEntity.ok(saved);
     }
 
 
-    // Presupuestos de un cliente específico
     @GetMapping("/presupuestos/cliente/{clienteId}")
     public ResponseEntity<List<Presupuesto>> getPresupuestosByClienteId(@PathVariable Long clienteId) {
         return ResponseEntity.ok(presupuestoService.getPresupuestosByClienteId(clienteId));
     }
 
-    // Todos los presupuestos del usuario (empresa)
     @GetMapping("/presupuestos/user/{userCode}")
     public ResponseEntity<List<Presupuesto>> getAllPresupuestosByUserCode(@PathVariable String userCode) {
         return ResponseEntity.ok(presupuestoService.getAllPresupuestosByUserCode(userCode));
     }
 
-
-    // GET - Por ID
     @GetMapping("/presupuestos/{id}")
     public ResponseEntity<Presupuesto> getPresupuestoById(@PathVariable Long id) {
         return ResponseEntity.ok(presupuestoService.getPresupuestoById(id));
     }
-
-    // DELETE - Por ID
-   /* @DeleteMapping("/presupuestos/{id}")
-    public ResponseEntity<Void> deletePresupuesto(@PathVariable Long id) {
-        presupuestoService.deletePresupuesto(id);
-        return ResponseEntity.noContent().build();
-    }*/
 
     @DeleteMapping("/presupuestos/{id}")
     public ResponseEntity<Void> deletePresupuesto(@PathVariable Long id) {
@@ -526,7 +425,6 @@ public class EmpresaClienteController {
         }
     }
 
-    // GET /api/presupuestos (todos)
     @GetMapping("/presupuestos")
     public ResponseEntity<?> getAllPresupuestos() {
         try {
@@ -550,27 +448,11 @@ public class EmpresaClienteController {
             @PathVariable Long id,
             @RequestBody Presupuesto presupuestoActualizado) {
 
-        System.out.println("=== ACTUALIZAR PRESUPUESTO ===");
-        System.out.println("ID: " + id);
-        System.out.println("Nombre: " + presupuestoActualizado.getName());
-        System.out.println("Cliente ID: " + (presupuestoActualizado.getCliente() != null ?
-                presupuestoActualizado.getCliente().getId() : "null"));
-        System.out.println("Cantidad de tareas: " +
-                (presupuestoActualizado.getTareas() != null ? presupuestoActualizado.getTareas().size() : 0));
-        System.out.println("=== FIN DATOS ===");
-
-        try {
-            Presupuesto actualizado = presupuestoService.updatePresupuesto(id, presupuestoActualizado);
-            return ResponseEntity.ok(actualizado);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("error", e.getMessage()));
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error interno: " + e.getMessage()));
-        }
+        log.debug("[Presupuesto] PUT id={} nombre={} clienteId={} tareas={}",
+                id, presupuestoActualizado.getName(),
+                presupuestoActualizado.getCliente() != null ? presupuestoActualizado.getCliente().getId() : "null",
+                presupuestoActualizado.getTareas() != null ? presupuestoActualizado.getTareas().size() : 0);
+        Presupuesto actualizado = presupuestoService.updatePresupuesto(id, presupuestoActualizado);
+        return ResponseEntity.ok(actualizado);
     }
 }

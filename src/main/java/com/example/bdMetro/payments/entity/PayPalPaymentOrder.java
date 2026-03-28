@@ -43,6 +43,7 @@ public class PayPalPaymentOrder {
 
     private String payerName;
     private String payerEmail;
+    private String payerPhone;
     private String payerDocument;
     private String province;
     private String approvalUrl;
@@ -86,6 +87,8 @@ public class PayPalPaymentOrder {
     public void setPayerName(String payerName) { this.payerName = payerName; }
     public String getPayerEmail() { return payerEmail; }
     public void setPayerEmail(String payerEmail) { this.payerEmail = payerEmail; }
+    public String getPayerPhone() { return payerPhone; }
+    public void setPayerPhone(String payerPhone) { this.payerPhone = payerPhone; }
     public String getPayerDocument() { return payerDocument; }
     public void setPayerDocument(String payerDocument) { this.payerDocument = payerDocument; }
     public String getProvince() { return province; }

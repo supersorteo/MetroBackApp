@@ -1,5 +1,6 @@
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\BdMetroApplication.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\configuration\CorsConfig.java
+D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\configuration\GlobalExceptionHandler.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\AuthenticationController.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\EmpresaClienteController.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\ProvinciaController.java

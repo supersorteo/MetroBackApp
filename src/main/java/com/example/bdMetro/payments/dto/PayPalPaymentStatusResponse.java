@@ -9,6 +9,7 @@ public record PayPalPaymentStatusResponse(
         String status,
         String statusDetail,
         String accessCode,
+        String payerPhone,
         String countryCode,
         String currencyCode,
         Integer planMonths,

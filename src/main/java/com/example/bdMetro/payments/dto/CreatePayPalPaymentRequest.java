@@ -12,7 +12,8 @@ public record CreatePayPalPaymentRequest(
         @Min(3) @Max(12) Integer planMonths,
         @NotBlank @Size(max = 100) String payerName,
         @NotBlank @Email @Size(max = 120) String payerEmail,
-        @NotBlank @Size(max = 40) String payerDocument,
+        /* @NotBlank */ @Size(max = 40) String payerPhone,
+        /* @NotBlank */ @Size(max = 40) String payerDocument,
         @NotBlank @Size(max = 120) String province,
         @Size(max = 500) String callbackUrl
 ) {

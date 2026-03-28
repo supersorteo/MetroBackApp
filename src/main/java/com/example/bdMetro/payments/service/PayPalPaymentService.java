@@ -82,7 +82,8 @@ public class PayPalPaymentService {
         order.setAmount(localAmount);
         order.setPayerName(request.payerName().trim());
         order.setPayerEmail(request.payerEmail().trim().toLowerCase(Locale.ROOT));
-        order.setPayerDocument(request.payerDocument().trim());
+        order.setPayerPhone(request.payerPhone() != null ? request.payerPhone().trim() : "");
+        order.setPayerDocument(request.payerDocument() != null ? request.payerDocument().trim() : "");
         order.setProvince(request.province().trim());
         orderRepository.save(order);
 
@@ -302,7 +303,7 @@ public class PayPalPaymentService {
 
     private PayPalPaymentStatusResponse toStatusResponse(PayPalPaymentOrder o) {
         return new PayPalPaymentStatusResponse(o.getExternalId(), o.getPaypalOrderId(), o.getStatus(),
-                o.getStatusDetail(), o.getAccessCode(), o.getCountryCode(), o.getCurrencyCode(),
+                o.getStatusDetail(), o.getAccessCode(), o.getPayerPhone(), o.getCountryCode(), o.getCurrencyCode(),
                 o.getPlanMonths(), o.getAmount(), o.getBaseUsdAmount(), o.getExchangeRateApplied(), o.getPaidAt());
     }
 }
