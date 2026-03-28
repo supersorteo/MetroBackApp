@@ -13,7 +13,7 @@ public record CreateMembershipPaymentRequest(
         @NotBlank @Size(max = 100) String payerName,
         @NotBlank @Email @Size(max = 120) String payerEmail,
         /* @NotBlank */ @Size(max = 40) String payerPhone,
-        @NotBlank @Size(max = 40) String payerDocument,
+        /* @NotBlank */ @Size(max = 40) String payerDocument,
         @NotBlank @Size(max = 120) String province,
         @Size(max = 500) String callbackUrl,
         @Size(max = 30) String paymentMethodId

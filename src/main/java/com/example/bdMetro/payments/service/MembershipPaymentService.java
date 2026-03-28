@@ -107,8 +107,8 @@ public class MembershipPaymentService {
         order.setAmount(quote.localizedAmount());
         order.setPayerName(request.payerName().trim());
         order.setPayerEmail(request.payerEmail().trim().toLowerCase(Locale.ROOT));
-        order.setPayerPhone(request.payerPhone().trim());
-        order.setPayerDocument(sanitizeDocument(request.payerDocument()));
+        order.setPayerPhone(request.payerPhone() != null ? request.payerPhone().trim() : "");
+        order.setPayerDocument(request.payerDocument() != null ? sanitizeDocument(request.payerDocument()) : "");
         order.setProvince(request.province().trim());
         order.setCallbackUrl(callbackUrl);
         order.setNotificationUrl(notificationUrl);
