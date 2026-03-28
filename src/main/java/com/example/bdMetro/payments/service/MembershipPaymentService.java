@@ -352,9 +352,10 @@ public class MembershipPaymentService {
 
         boolean isLocal = callbackUrl != null &&
                 (callbackUrl.contains("localhost") || callbackUrl.contains("127.0.0.1"));
+        boolean useSandbox = isLocal || mercadoPagoProperties.isSandbox();
 
-        if (isLocal && sandboxInitPoint != null && !sandboxInitPoint.isBlank()) {
-            log.info("[MP] Usando sandbox_init_point para entorno local");
+        if (useSandbox && sandboxInitPoint != null && !sandboxInitPoint.isBlank()) {
+            log.info("[MP] Usando sandbox_init_point (sandbox={}, local={})", mercadoPagoProperties.isSandbox(), isLocal);
             return sandboxInitPoint;
         }
         if (initPoint != null && !initPoint.isBlank()) {

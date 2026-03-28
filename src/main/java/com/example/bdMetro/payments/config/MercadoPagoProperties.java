@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class MercadoPagoProperties {
 
     private boolean enabled;
+    private boolean sandbox = false;
     private String accessToken;
     private String webhookSecret;
     private String baseUrl = "https://api.mercadopago.com";
@@ -19,6 +20,14 @@ public class MercadoPagoProperties {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean isSandbox() {
+        return sandbox;
+    }
+
+    public void setSandbox(boolean sandbox) {
+        this.sandbox = sandbox;
     }
 
     public String getAccessToken() {
