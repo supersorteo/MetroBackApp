@@ -10,5 +10,5 @@ import java.util.List;
 public interface AccessCodeRepository extends JpaRepository<AccessCode, String> {
     AccessCode findByCode(String code);
     AccessCode findByEmail(String email);
-    List<AccessCode> findByPais(String pais);
+    List<AccessCode> findByPaisIgnoreCase(String pais);
 }
