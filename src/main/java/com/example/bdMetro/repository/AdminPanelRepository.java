@@ -9,5 +9,6 @@ import java.util.Optional;
 @Repository
 public interface AdminPanelRepository extends JpaRepository<AdminPanel, String> {
     Optional<AdminPanel> findByPais(String pais);
+    Optional<AdminPanel> findByPaisIgnoreCase(String pais);
     Optional<AdminPanel> findByUsername(String username);
 }

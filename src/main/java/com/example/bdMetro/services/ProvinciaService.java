@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.bdMetro.entity.Provincia;
 import com.example.bdMetro.repository.ProvinciaRepository;
+import com.example.bdMetro.util.CountryCatalog;
 
 import jakarta.annotation.PostConstruct;
 
@@ -38,7 +39,7 @@ public class ProvinciaService {
     }
 
     public List<Provincia> getProvinciasByPais(String pais) {
-        return provinciaRepository.findByPais(pais);
+        return provinciaRepository.findByPaisIgnoreCase(CountryCatalog.displayName(pais));
     }
 
     public Optional<Provincia> getProvinciaById(Long id) {
@@ -49,7 +50,7 @@ public class ProvinciaService {
         Provincia provincia = provinciaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Provincia no encontrada"));
         provincia.setNombre(provinciaDetails.getNombre());
-        provincia.setPais(provinciaDetails.getPais());
+        provincia.setPais(CountryCatalog.displayName(provinciaDetails.getPais()));
         return provinciaRepository.save(provincia);
     }
 

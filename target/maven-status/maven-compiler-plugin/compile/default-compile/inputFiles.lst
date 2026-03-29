@@ -1,12 +1,14 @@
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\BdMetroApplication.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\configuration\CorsConfig.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\configuration\GlobalExceptionHandler.java
+D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\AdminPanelController.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\AuthenticationController.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\EmpresaClienteController.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\ProvinciaController.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\TareaController.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\UserTareaController.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\entity\AccessCode.java
+D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\entity\AdminPanel.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\entity\Cliente.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\entity\Empresa.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\entity\Presupuesto.java
@@ -38,12 +40,14 @@ D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\paymen
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\payments\service\PayPalClient.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\payments\service\PayPalPaymentService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\repository\AccessCodeRepository.java
+D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\repository\AdminPanelRepository.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\repository\ClienteRepository.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\repository\EmpresaRepository.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\repository\PresupuestoRepository.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\repository\ProvinciaRepository.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\repository\TareaRepository.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\repository\UserTareaRepository.java
+D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\AdminPanelService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\AuthenticationService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\ClienteService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\EmpresaService.java
@@ -51,3 +55,4 @@ D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\servic
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\ProvinciaService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\TareaService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\UserTareaService.java
+D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\util\CountryCatalog.java

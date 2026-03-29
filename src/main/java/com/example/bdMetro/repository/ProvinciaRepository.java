@@ -10,5 +10,6 @@ import java.util.List;
 public interface ProvinciaRepository extends JpaRepository<Provincia, Long> {
 
     List<Provincia> findByPais(String pais);
+    List<Provincia> findByPaisIgnoreCase(String pais);
 
 }

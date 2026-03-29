@@ -10,4 +10,5 @@ import java.util.List;
 public interface TareaRepository extends JpaRepository<Tarea, Long> {
 
     List<Tarea> findByPais(String pais);
+    List<Tarea> findByPaisIgnoreCase(String pais);
 }

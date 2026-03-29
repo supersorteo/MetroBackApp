@@ -2,6 +2,7 @@ package com.example.bdMetro.services;
 
 import com.example.bdMetro.entity.AdminPanel;
 import com.example.bdMetro.repository.AdminPanelRepository;
+import com.example.bdMetro.util.CountryCatalog;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,9 @@ public class AdminPanelService {
         if (adminPanelRepository.count() > 0) return; 
 
         List<AdminPanel> defaults = Arrays.asList(
-            buildAdmin("ar", "argentina", "Admin Argentina", "admin_ar", "metro2025ar", "\uD83C\uDDE6\uD83C\uDDF7"),
-            buildAdmin("uy", "uruguay",   "Admin Uruguay",   "admin_uy", "metro2025uy", "\uD83C\uDDFA\uD83C\uDDFE"),
-            buildAdmin("co", "colombia",  "Admin Colombia",  "admin_co", "metro2025co", "\uD83C\uDDE8\uD83C\uDDF4")
+            buildAdmin("ar", "AR", "Admin Argentina", "admin_ar", "metro2025ar", "\uD83C\uDDE6\uD83C\uDDF7"),
+            buildAdmin("uy", "UY", "Admin Uruguay", "admin_uy", "metro2025uy", "\uD83C\uDDFA\uD83C\uDDFE"),
+            buildAdmin("co", "CO", "Admin Colombia", "admin_co", "metro2025co", "\uD83C\uDDE8\uD83C\uDDF4")
         );
         adminPanelRepository.saveAll(defaults);
     }
@@ -33,7 +34,7 @@ public class AdminPanelService {
                                   String username, String password, String flag) {
         AdminPanel a = new AdminPanel();
         a.setId(id);
-        a.setPais(pais);
+        a.setPais(CountryCatalog.normalizeCode(pais));
         a.setNombre(nombre);
         a.setUsername(username);
         a.setPassword(password);
@@ -50,7 +51,8 @@ public class AdminPanelService {
     }
 
     public Optional<AdminPanel> getByPais(String pais) {
-        return adminPanelRepository.findByPais(pais);
+        return adminPanelRepository.findByPaisIgnoreCase(CountryCatalog.normalizeCode(pais))
+                .or(() -> adminPanelRepository.findByPaisIgnoreCase(CountryCatalog.adminKey(pais)));
     }
 
     /** Verify credentials — returns the admin if valid, empty otherwise */

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.bdMetro.entity.AccessCode;
 import com.example.bdMetro.repository.AccessCodeRepository;
+import com.example.bdMetro.util.CountryCatalog;
 
 @Service
 public class AuthenticationService {
@@ -37,7 +38,7 @@ public class AuthenticationService {
     }
 
     public List<AccessCode> getCodesByPais(String pais) {
-        return accessCodeRepository.findByPaisIgnoreCase(normalizeCountry(pais));
+        return accessCodeRepository.findByPaisIgnoreCase(CountryCatalog.displayName(pais));
     }
 
     public AccessCode getCode(String code) {
@@ -71,7 +72,7 @@ public class AuthenticationService {
         if (existingEmail != null) {
             throw new IllegalArgumentException("Este email ya está creado");
         }
-        accessCode.setPais(normalizeCountry(accessCode.getPais()));
+        accessCode.setPais(CountryCatalog.displayName(accessCode.getPais()));
         accessCode.setFechaRegistro(LocalDate.now());
         accessCode.setFechaVencimiento(calcularFechaVencimiento(accessCode.getCode()));
         return accessCodeRepository.save(accessCode);
@@ -83,7 +84,7 @@ public class AuthenticationService {
             if (existingCode != null) {
                 throw new IllegalArgumentException("El código " + accessCode.getCode() + " ya está creado");
             }
-            accessCode.setPais(normalizeCountry(accessCode.getPais()));
+            accessCode.setPais(CountryCatalog.displayName(accessCode.getPais()));
             accessCode.setFechaRegistro(LocalDate.now());
             accessCode.setFechaVencimiento(calcularFechaVencimiento(accessCode.getCode()));
         }
@@ -122,8 +123,8 @@ public class AuthenticationService {
     }
 
     private String resolveCountryForRegistration(String existingCountry, String requestedCountry) {
-        String normalizedExistingCountry = normalizeCountry(existingCountry);
-        String normalizedRequestedCountry = normalizeCountry(requestedCountry);
+        String normalizedExistingCountry = CountryCatalog.displayName(existingCountry);
+        String normalizedRequestedCountry = CountryCatalog.displayName(requestedCountry);
 
         if (normalizedExistingCountry != null && !normalizedExistingCountry.isBlank()) {
             if (normalizedRequestedCountry != null
@@ -137,23 +138,5 @@ public class AuthenticationService {
         }
 
         return normalizedRequestedCountry;
-    }
-
-    private String normalizeCountry(String country) {
-        if (country == null) {
-            return null;
-        }
-
-        String trimmed = country.trim();
-        if (trimmed.isBlank()) {
-            return trimmed;
-        }
-
-        return switch (trimmed.toLowerCase()) {
-            case "ar", "argentina" -> "Argentina";
-            case "uy", "uruguay" -> "Uruguay";
-            case "co", "colombia" -> "Colombia";
-            default -> trimmed;
-        };
     }
 }

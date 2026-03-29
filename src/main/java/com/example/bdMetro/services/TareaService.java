@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.bdMetro.util.CountryCatalog;
+
 @Service
 public class TareaService {
     private static final Logger log = LoggerFactory.getLogger(TareaService.class);
@@ -97,7 +99,7 @@ public class TareaService {
     }
 
     public List<Tarea> getTareasByPais(String pais) {
-        return tareaRepository.findByPais(pais); // Added for country filtering
+        return tareaRepository.findByPaisIgnoreCase(CountryCatalog.displayName(pais));
     }
 
     public Optional<Tarea> getTareaById(Long id) {
@@ -114,7 +116,7 @@ public class TareaService {
         tarea.setCosto(tareaDetails.getCosto());
         tarea.setRubro(tareaDetails.getRubro());
         tarea.setCategoria(tareaDetails.getCategoria());
-        tarea.setPais(tareaDetails.getPais());
+        tarea.setPais(CountryCatalog.displayName(tareaDetails.getPais()));
         tarea.setDescripcion(tareaDetails.getDescripcion());
         tarea.setDescuento(tareaDetails.getDescuento());
         tarea.setArea(tareaDetails.getArea());
