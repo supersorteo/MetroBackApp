@@ -1,0 +1,76 @@
+package com.example.bdMetro.services;
+
+import com.example.bdMetro.entity.AdminPanel;
+import com.example.bdMetro.repository.AdminPanelRepository;
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class AdminPanelService {
+
+    @Autowired
+    private AdminPanelRepository adminPanelRepository;
+
+    /** Seed 3 default admins on first startup if the table is empty */
+    @PostConstruct
+    public void seedDefaults() {
+        if (adminPanelRepository.count() > 0) return; 
+
+        List<AdminPanel> defaults = Arrays.asList(
+            buildAdmin("ar", "argentina", "Admin Argentina", "admin_ar", "metro2025ar", "\uD83C\uDDE6\uD83C\uDDF7"),
+            buildAdmin("uy", "uruguay",   "Admin Uruguay",   "admin_uy", "metro2025uy", "\uD83C\uDDFA\uD83C\uDDFE"),
+            buildAdmin("co", "colombia",  "Admin Colombia",  "admin_co", "metro2025co", "\uD83C\uDDE8\uD83C\uDDF4")
+        );
+        adminPanelRepository.saveAll(defaults);
+    }
+
+    private AdminPanel buildAdmin(String id, String pais, String nombre,
+                                  String username, String password, String flag) {
+        AdminPanel a = new AdminPanel();
+        a.setId(id);
+        a.setPais(pais);
+        a.setNombre(nombre);
+        a.setUsername(username);
+        a.setPassword(password);
+        a.setFlag(flag);
+        return a;
+    }
+
+    public List<AdminPanel> getAll() {
+        return adminPanelRepository.findAll();
+    }
+
+    public Optional<AdminPanel> getById(String id) {
+        return adminPanelRepository.findById(id);
+    }
+
+    public Optional<AdminPanel> getByPais(String pais) {
+        return adminPanelRepository.findByPais(pais);
+    }
+
+    /** Verify credentials — returns the admin if valid, empty otherwise */
+    public Optional<AdminPanel> login(String username, String password) {
+        return adminPanelRepository.findByUsername(username)
+                .filter(a -> a.getPassword().equals(password));
+    }
+
+    /** Update nombre, username and/or password */
+    public Optional<AdminPanel> update(String id, String nombre, String username, String password) {
+        return adminPanelRepository.findById(id).map(a -> {
+            if (nombre   != null && !nombre.isBlank())   a.setNombre(nombre);
+            if (username != null && !username.isBlank()) a.setUsername(username);
+            if (password != null && !password.isBlank()) a.setPassword(password);
+            return adminPanelRepository.save(a);
+        });
+    }
+
+    /** Delete — intentionally only available in the service/controller, not wired to frontend */
+    public void delete(String id) {
+        adminPanelRepository.deleteById(id);
+    }
+}

@@ -42,6 +42,10 @@ public class AuthenticationService {
         return accessCodeRepository.findAll();
     }
 
+    public List<AccessCode> getCodesByPais(String pais) {
+        return accessCodeRepository.findByPais(pais);
+    }
+
     public AccessCode getCode(String code) {
         return accessCodeRepository.findByCode(code);
     }

@@ -48,11 +48,17 @@ public class AuthenticationController {
         return authenticationService.getAllCodes();
     }
 
+    /** GET /auth/codes/pais/{pais} — códigos filtrados por país */
+    @GetMapping("/codes/pais/{pais}")
+    public List<AccessCode> getCodesByPais(@PathVariable String pais) {
+        return authenticationService.getCodesByPais(pais);
+    }
+
     @PostMapping("/agg-codes")
     public ResponseEntity<Map<String, String>> agregarCodes(@RequestBody List<AccessCode> accessCodes) {
         Map<String, String> response = new HashMap<>();
         try {
-            List<AccessCode> nuevosCodes = authenticationService.agregarCodes(accessCodes);
+            authenticationService.agregarCodes(accessCodes);
             response.put("message", "Códigos agregados con éxito");
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
