@@ -61,6 +61,7 @@ public class PayPalPaymentService {
         requirePayPalEnabled();
 
         String countryCode = request.countryCode().trim().toUpperCase(Locale.ROOT);
+        validateExistingEmailCountry(request.payerEmail(), countryCode);
         MembershipCatalogProperties.CountryCatalog countryCatalog = getCountryCatalog(countryCode);
 
         BigDecimal baseUsdAmount = getBaseUsdAmount(request.planMonths());
@@ -153,8 +154,10 @@ public class PayPalPaymentService {
     private void issueOrRenewAccess(PayPalPaymentOrder order) {
         AccessCode existing = accessCodeRepository.findByEmail(order.getPayerEmail());
         if (existing != null) {
+            validateExistingAccessCountry(existing, order.getCountryCode());
             LocalDate base = existing.getFechaVencimiento() != null && existing.getFechaVencimiento().isAfter(LocalDate.now())
                     ? existing.getFechaVencimiento() : LocalDate.now();
+            existing.setTelefono(order.getPayerPhone());
             existing.setPais(expandCountry(order.getCountryCode()));
             existing.setProvincia(order.getProvince());
             existing.setFechaRegistro(LocalDate.now());
@@ -166,6 +169,7 @@ public class PayPalPaymentService {
         AccessCode code = new AccessCode();
         code.setCode(generateUniqueCode(order.getPlanMonths()));
         code.setEmail(order.getPayerEmail());
+        code.setTelefono(order.getPayerPhone());
         code.setPais(expandCountry(order.getCountryCode()));
         code.setProvincia(order.getProvince());
         code.setFechaRegistro(LocalDate.now());
@@ -261,12 +265,50 @@ public class PayPalPaymentService {
         return c;
     }
 
+    private void validateExistingEmailCountry(String payerEmail, String requestedCountryCode) {
+        String normalizedEmail = payerEmail == null ? "" : payerEmail.trim().toLowerCase(Locale.ROOT);
+        if (normalizedEmail.isBlank()) {
+            return;
+        }
+
+        AccessCode existing = accessCodeRepository.findByEmail(normalizedEmail);
+        if (existing != null) {
+            validateExistingAccessCountry(existing, requestedCountryCode);
+        }
+    }
+
+    private void validateExistingAccessCountry(AccessCode existing, String requestedCountryCode) {
+        String existingCountryCode = normalizeCountryCodeFromAccess(existing.getPais());
+        String normalizedRequestedCountryCode = requestedCountryCode == null ? "" : requestedCountryCode.trim().toUpperCase(Locale.ROOT);
+        if (!existingCountryCode.isBlank()
+                && !normalizedRequestedCountryCode.isBlank()
+                && !existingCountryCode.equals(normalizedRequestedCountryCode)) {
+            throw new IllegalArgumentException(
+                    "El email ya tiene un codigo asociado a " + expandCountry(existingCountryCode)
+                            + " y no puede comprar una membresia para " + expandCountry(normalizedRequestedCountryCode)
+            );
+        }
+    }
+
     private String expandCountry(String code) {
         return switch (code) {
             case "AR" -> "Argentina";
             case "UY" -> "Uruguay";
             case "CO" -> "Colombia";
             default -> code;
+        };
+    }
+
+    private String normalizeCountryCodeFromAccess(String country) {
+        if (country == null) {
+            return "";
+        }
+
+        return switch (country.trim().toUpperCase(Locale.ROOT)) {
+            case "ARGENTINA", "AR" -> "AR";
+            case "URUGUAY", "UY" -> "UY";
+            case "COLOMBIA", "CO" -> "CO";
+            default -> country.trim().toUpperCase(Locale.ROOT);
         };
     }
 

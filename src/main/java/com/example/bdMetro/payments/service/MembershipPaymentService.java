@@ -89,6 +89,7 @@ public class MembershipPaymentService {
         requireMercadoPagoEnabled();
 
         String countryCode = normalizeCountry(request.countryCode());
+        validateExistingEmailCountry(request.payerEmail(), countryCode);
         MembershipCatalogProperties.CountryCatalog countryCatalog = getCountryCatalog(countryCode);
         PlanQuote quote = getPlanQuote(countryCode, request.planMonths());
         String externalId = "MTR-" + UUID.randomUUID();
@@ -252,6 +253,7 @@ public class MembershipPaymentService {
     private void issueOrRenewAccess(MembershipPaymentOrder order) {
         AccessCode existingByEmail = accessCodeRepository.findByEmail(order.getPayerEmail());
         if (existingByEmail != null) {
+            validateExistingAccessCountry(existingByEmail, order.getCountryCode());
             LocalDate baseDate = existingByEmail.getFechaVencimiento() != null && existingByEmail.getFechaVencimiento().isAfter(LocalDate.now())
                     ? existingByEmail.getFechaVencimiento()
                     : LocalDate.now();
@@ -324,6 +326,31 @@ public class MembershipPaymentService {
         return localizedPlans;
     }
 
+    private void validateExistingEmailCountry(String payerEmail, String requestedCountryCode) {
+        String normalizedEmail = payerEmail == null ? "" : payerEmail.trim().toLowerCase(Locale.ROOT);
+        if (normalizedEmail.isBlank()) {
+            return;
+        }
+
+        AccessCode existing = accessCodeRepository.findByEmail(normalizedEmail);
+        if (existing != null) {
+            validateExistingAccessCountry(existing, requestedCountryCode);
+        }
+    }
+
+    private void validateExistingAccessCountry(AccessCode existing, String requestedCountryCode) {
+        String existingCountryCode = normalizeCountryCodeFromAccess(existing.getPais());
+        String normalizedRequestedCountryCode = normalizeCountry(requestedCountryCode);
+        if (!existingCountryCode.isBlank()
+                && !normalizedRequestedCountryCode.isBlank()
+                && !existingCountryCode.equals(normalizedRequestedCountryCode)) {
+            throw new IllegalArgumentException(
+                    "El email ya tiene un codigo asociado a " + expandCountry(existingCountryCode)
+                            + " y no puede comprar una membresia para " + expandCountry(normalizedRequestedCountryCode)
+            );
+        }
+    }
+
     private String resolveCallbackUrl(String callbackUrl) {
         if (callbackUrl != null && !callbackUrl.isBlank()) {
             return callbackUrl.trim();
@@ -391,6 +418,19 @@ public class MembershipPaymentService {
             case "UY" -> "Uruguay";
             case "CO" -> "Colombia";
             default -> countryCode;
+        };
+    }
+
+    private String normalizeCountryCodeFromAccess(String country) {
+        if (country == null) {
+            return "";
+        }
+
+        return switch (country.trim().toUpperCase(Locale.ROOT)) {
+            case "ARGENTINA", "AR" -> "AR";
+            case "URUGUAY", "UY" -> "UY";
+            case "COLOMBIA", "CO" -> "CO";
+            default -> normalizeCountry(country);
         };
     }
 
