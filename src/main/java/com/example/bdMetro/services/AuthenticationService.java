@@ -1,4 +1,4 @@
-package com.example.bdMetro.services;
+﻿package com.example.bdMetro.services;
 
 import java.time.LocalDate;
 import java.util.Arrays;
@@ -25,9 +25,9 @@ public class AuthenticationService {
     public String login(String code) {
         AccessCode accessCode = accessCodeRepository.findByCode(code);
         if (accessCode == null) {
-            return "Código no encontrado";
+            return "Codigo no encontrado";
         } else if (accessCode.getEmail() == null) {
-            return "Código existe pero no asignado a un usuario";
+            return "Codigo existe pero no asignado a un usuario";
         } else {
             return accessCode.getEmail();
         }
@@ -48,15 +48,16 @@ public class AuthenticationService {
     public AccessCode updateCode(String code, String email, String username, String telefono, String provincia, String pais) {
         AccessCode accessCode = accessCodeRepository.findByCode(code);
         if (accessCode == null) {
-            throw new IllegalArgumentException("Este código no existe en la base de datos");
+            throw new IllegalArgumentException("Este codigo no existe en la base de datos");
         }
 
-        AccessCode emailAssignedCode = accessCodeRepository.findByEmail(email);
+        String normalizedEmail = normalizeEmail(email);
+        AccessCode emailAssignedCode = normalizedEmail == null ? null : accessCodeRepository.findByEmail(normalizedEmail);
         if (emailAssignedCode != null && !emailAssignedCode.getCode().equals(code)) {
-            throw new IllegalArgumentException("Este email está en la base de datos");
+            throw new IllegalArgumentException("Este email ya esta en la base de datos");
         }
 
-        accessCode.setEmail(email);
+        accessCode.setEmail(normalizedEmail);
         accessCode.setTelefono(telefono);
         accessCode.setProvincia(provincia);
         accessCode.setPais(resolveCountryForRegistration(accessCode.getPais(), pais));
@@ -64,14 +65,17 @@ public class AuthenticationService {
     }
 
     public AccessCode agregarCode(AccessCode accessCode) {
+        validateCodeFormat(accessCode.getCode());
         AccessCode existingCode = accessCodeRepository.findByCode(accessCode.getCode());
-        AccessCode existingEmail = accessCodeRepository.findByEmail(accessCode.getEmail());
+        String normalizedEmail = normalizeEmail(accessCode.getEmail());
+        AccessCode existingEmail = normalizedEmail == null ? null : accessCodeRepository.findByEmail(normalizedEmail);
         if (existingCode != null) {
-            throw new IllegalArgumentException("Este código ya está creado");
+            throw new IllegalArgumentException("Este codigo ya esta creado");
         }
         if (existingEmail != null) {
-            throw new IllegalArgumentException("Este email ya está creado");
+            throw new IllegalArgumentException("Este email ya esta creado");
         }
+        accessCode.setEmail(normalizedEmail);
         accessCode.setPais(CountryCatalog.displayName(accessCode.getPais()));
         accessCode.setFechaRegistro(LocalDate.now());
         accessCode.setFechaVencimiento(calcularFechaVencimiento(accessCode.getCode()));
@@ -80,10 +84,12 @@ public class AuthenticationService {
 
     public List<AccessCode> agregarCodes(List<AccessCode> accessCodes) {
         for (AccessCode accessCode : accessCodes) {
+            validateCodeFormat(accessCode.getCode());
             AccessCode existingCode = accessCodeRepository.findByCode(accessCode.getCode());
             if (existingCode != null) {
-                throw new IllegalArgumentException("El código " + accessCode.getCode() + " ya está creado");
+                throw new IllegalArgumentException("El codigo " + accessCode.getCode() + " ya esta creado");
             }
+            accessCode.setEmail(normalizeEmail(accessCode.getEmail()));
             accessCode.setPais(CountryCatalog.displayName(accessCode.getPais()));
             accessCode.setFechaRegistro(LocalDate.now());
             accessCode.setFechaVencimiento(calcularFechaVencimiento(accessCode.getCode()));
@@ -94,17 +100,22 @@ public class AuthenticationService {
     public AccessCode addCode(AccessCode accessCode) {
         AccessCode existingCode = accessCodeRepository.findByCode(accessCode.getCode());
         if (existingCode == null) {
-            throw new IllegalArgumentException("Código no encontrado");
+            throw new IllegalArgumentException("Codigo no encontrado");
         } else if (existingCode.getEmail() != null) {
-            throw new IllegalArgumentException("Código ya tiene un email asignado");
+            throw new IllegalArgumentException("Codigo ya tiene un email asignado");
         }
 
-        AccessCode emailAssignedCode = accessCodeRepository.findByEmail(accessCode.getEmail());
+        String normalizedEmail = normalizeEmail(accessCode.getEmail());
+        if (normalizedEmail == null) {
+            throw new IllegalArgumentException("El email es obligatorio");
+        }
+
+        AccessCode emailAssignedCode = accessCodeRepository.findByEmail(normalizedEmail);
         if (emailAssignedCode != null) {
-            throw new IllegalArgumentException("El email ya está asignado a otro código");
+            throw new IllegalArgumentException("El email ya esta asignado a otro codigo");
         }
 
-        existingCode.setEmail(accessCode.getEmail());
+        existingCode.setEmail(normalizedEmail);
         existingCode.setTelefono(accessCode.getTelefono());
         existingCode.setProvincia(accessCode.getProvincia());
         existingCode.setPais(resolveCountryForRegistration(existingCode.getPais(), accessCode.getPais()));
@@ -114,6 +125,7 @@ public class AuthenticationService {
     }
 
     private LocalDate calcularFechaVencimiento(String code) {
+        validateCodeFormat(code);
         LocalDate fechaRegistro = LocalDate.now();
         return code.length() == 5 ? fechaRegistro.plusMonths(3) : fechaRegistro.plusMonths(6);
     }
@@ -138,5 +150,31 @@ public class AuthenticationService {
         }
 
         return normalizedRequestedCountry;
+    }
+
+    private String normalizeEmail(String email) {
+        if (email == null) {
+            return null;
+        }
+
+        String normalized = email.trim().toLowerCase();
+        return normalized.isBlank() ? null : normalized;
+    }
+
+    private void validateCodeFormat(String code) {
+        if (code == null) {
+            throw new IllegalArgumentException("El codigo es obligatorio");
+        }
+
+        String normalizedCode = code.trim().toUpperCase();
+        if (!normalizedCode.matches("^[A-Z0-9]{5,6}$")) {
+            throw new IllegalArgumentException(
+                    "El codigo manual debe tener solo letras y numeros, con 5 caracteres para 3 meses o 6 para 6 meses");
+        }
+
+        if (normalizedCode.length() != 5 && normalizedCode.length() != 6) {
+            throw new IllegalArgumentException(
+                    "El codigo manual debe tener 5 caracteres para 3 meses o 6 para 6 meses");
+        }
     }
 }
