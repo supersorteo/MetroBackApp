@@ -1,7 +1,6 @@
 ﻿package com.example.bdMetro.services;
 
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,12 +15,6 @@ public class AuthenticationService {
     @Autowired
     private AccessCodeRepository accessCodeRepository;
 
-    private static final List<String> PROMOCIONALES = Arrays.asList(
-            "gPgkyN1", "96XizD2", "pu39k73", "P2QZ954", "VpMwGb5", "2eoHmo6", "oay1o67", "zKHlVm8", "Klsyw09", "VKm5Mc10", "MwUQNu11", "LBaAwg12", "1zEFRj13", "EC42hW14", "S1IATP15", "mdACsM16", "quO4mi17", "YgUCVN18", "qypqH119", "s0xEZX20", "lSlov921", "PzPfbU22", "HWDG3o23", "MmJCGo24", "vB49t925", "jGMSNZ26", "cOCOBO27", "IP8AbG28", "RcPUtD29", "e0a5uT30");
-
-    private static final List<String> CONTRASENAS = Arrays.asList(
-            "Andr0meda656", "Yo9eiP", "NsUUbN", "ONkJCl", "03qEbm", "9ErI7P", "W3nnik", "rE5LIs", "U2uNlC", "AsIjg1", "ZEOqc7", "HjUjzp", "SIpeud", "TUpc5S", "CeeM6E", "RpfCY1", "EVCaxp", "T4OXZ2", "8BAg3W", "GcNEET", "lctnJq", "YqJS15", "0Uw9PB", "XURkW0", "5xb3PL", "ORfpbg", "MQsghI", "opUXHQ", "tZTZmn", "QQxfi3", "o3dqkU");
-
     public String login(String code) {
         AccessCode accessCode = accessCodeRepository.findByCode(code);
         if (accessCode == null) {
@@ -31,7 +24,7 @@ public class AuthenticationService {
         } else {
             return accessCode.getEmail();
         }
-    }
+    } 
 
     public List<AccessCode> getAllCodes() {
         return accessCodeRepository.findAll();
