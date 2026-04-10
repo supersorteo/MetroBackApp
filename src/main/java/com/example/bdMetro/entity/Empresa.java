@@ -27,22 +27,19 @@ public class Empresa {
 
     private String cuilCuit;
 
-    public Empresa() {
-    }
+    // Colores personalizables del presupuesto
+    private String primaryColor;
+    private String secondaryColor;
+    private String secondaryColor2;
+    private String textColor;
+    private String tableColor;
+    private String tableTextColor;
+    private String tableBodyColor;
+    private String gradientAngle;
+    private String infoBoxColorHex;
+    private Double infoBoxOpacity;
 
-    public Empresa(Long id, String name, String phone, String email, String description, String logoUrl, String userCode, String website, String tiktok, String instagram, String facebook, String cuilCuit) {
-        this.id = id;
-        this.name = name;
-        this.phone = phone;
-        this.email = email;
-        this.description = description;
-        this.logoUrl = logoUrl;
-        this.userCode = userCode;
-        this.website = website;
-        this.tiktok = tiktok;
-        this.instagram = instagram;
-        this.facebook = facebook;
-        this.cuilCuit = cuilCuit;
+    public Empresa() {
     }
 
     public Long getId() {
@@ -140,4 +137,34 @@ public class Empresa {
     public void setCuilCuit(String cuilCuit) {
         this.cuilCuit = cuilCuit;
     }
+
+    public String getPrimaryColor() { return primaryColor; }
+    public void setPrimaryColor(String primaryColor) { this.primaryColor = primaryColor; }
+
+    public String getSecondaryColor() { return secondaryColor; }
+    public void setSecondaryColor(String secondaryColor) { this.secondaryColor = secondaryColor; }
+
+    public String getSecondaryColor2() { return secondaryColor2; }
+    public void setSecondaryColor2(String secondaryColor2) { this.secondaryColor2 = secondaryColor2; }
+
+    public String getTextColor() { return textColor; }
+    public void setTextColor(String textColor) { this.textColor = textColor; }
+
+    public String getTableColor() { return tableColor; }
+    public void setTableColor(String tableColor) { this.tableColor = tableColor; }
+
+    public String getTableTextColor() { return tableTextColor; }
+    public void setTableTextColor(String tableTextColor) { this.tableTextColor = tableTextColor; }
+
+    public String getTableBodyColor() { return tableBodyColor; }
+    public void setTableBodyColor(String tableBodyColor) { this.tableBodyColor = tableBodyColor; }
+
+    public String getGradientAngle() { return gradientAngle; }
+    public void setGradientAngle(String gradientAngle) { this.gradientAngle = gradientAngle; }
+
+    public String getInfoBoxColorHex() { return infoBoxColorHex; }
+    public void setInfoBoxColorHex(String infoBoxColorHex) { this.infoBoxColorHex = infoBoxColorHex; }
+
+    public Double getInfoBoxOpacity() { return infoBoxOpacity; }
+    public void setInfoBoxOpacity(Double infoBoxOpacity) { this.infoBoxOpacity = infoBoxOpacity; }
 }

@@ -95,6 +95,16 @@ public class EmpresaService {
         empresa.setInstagram(empresaDetails.getInstagram());
         empresa.setFacebook(empresaDetails.getFacebook());
         empresa.setCuilCuit(empresaDetails.getCuilCuit());
+        empresa.setPrimaryColor(empresaDetails.getPrimaryColor());
+        empresa.setSecondaryColor(empresaDetails.getSecondaryColor());
+        empresa.setSecondaryColor2(empresaDetails.getSecondaryColor2());
+        empresa.setTextColor(empresaDetails.getTextColor());
+        empresa.setTableColor(empresaDetails.getTableColor());
+        empresa.setTableTextColor(empresaDetails.getTableTextColor());
+        empresa.setTableBodyColor(empresaDetails.getTableBodyColor());
+        empresa.setGradientAngle(empresaDetails.getGradientAngle());
+        empresa.setInfoBoxColorHex(empresaDetails.getInfoBoxColorHex());
+        empresa.setInfoBoxOpacity(empresaDetails.getInfoBoxOpacity());
         return empresaRepository.save(empresa);
     }
 
