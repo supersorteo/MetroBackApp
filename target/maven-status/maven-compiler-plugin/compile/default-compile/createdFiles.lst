@@ -1,16 +1,20 @@
 com\example\bdMetro\services\AuthenticationService.class
 com\example\bdMetro\payments\dto\MembershipCatalogResponse.class
 com\example\bdMetro\controller\AdminPanelController.class
+com\example\bdMetro\dto\ResultadoMaterialDto.class
 com\example\bdMetro\services\EmpresaService.class
 com\example\bdMetro\payments\service\PayPalPaymentService.class
 com\example\bdMetro\entity\Presupuesto.class
+com\example\bdMetro\dto\TareaCalculadaResumenResponse.class
 com\example\bdMetro\entity\UserTarea.class
+com\example\bdMetro\entity\CalculoMaterial.class
 com\example\bdMetro\services\TareaService.class
 com\example\bdMetro\services\ProvinciaService.class
 com\example\bdMetro\payments\dto\CreateMembershipPaymentRequest.class
 com\example\bdMetro\payments\config\MembershipCatalogProperties.class
 com\example\bdMetro\repository\EmpresaRepository.class
 com\example\bdMetro\entity\AccessCode.class
+com\example\bdMetro\services\CalculoMaterialService.class
 com\example\bdMetro\repository\TareaRepository.class
 com\example\bdMetro\payments\dto\CreatePayPalPaymentResponse.class
 com\example\bdMetro\repository\ClienteRepository.class
@@ -22,6 +26,7 @@ com\example\bdMetro\payments\repository\MembershipPaymentOrderRepository.class
 com\example\bdMetro\payments\service\MembershipPaymentService.class
 com\example\bdMetro\payments\config\PayPalProperties.class
 com\example\bdMetro\repository\UserTareaRepository.class
+com\example\bdMetro\dto\CalculoMaterialRequest.class
 com\example\bdMetro\payments\config\FxRateProperties.class
 com\example\bdMetro\payments\service\PayPalClient.class
 com\example\bdMetro\repository\AccessCodeRepository.class
@@ -29,6 +34,8 @@ com\example\bdMetro\repository\AdminPanelRepository.class
 com\example\bdMetro\configuration\CorsConfig$1.class
 com\example\bdMetro\payments\controller\PayPalPaymentController.class
 com\example\bdMetro\services\ClienteService.class
+com\example\bdMetro\services\CalculoMaterialService$1.class
+com\example\bdMetro\controller\CalculoMaterialController.class
 com\example\bdMetro\payments\service\FxRateService$CachedRate.class
 com\example\bdMetro\configuration\CorsConfig.class
 com\example\bdMetro\payments\dto\CreateMembershipPaymentResponse.class
@@ -36,6 +43,7 @@ com\example\bdMetro\payments\service\MercadoPagoClient.class
 com\example\bdMetro\controller\TareaController.class
 com\example\bdMetro\payments\controller\MembershipPaymentController.class
 com\example\bdMetro\payments\config\PaymentsConfig.class
+com\example\bdMetro\dto\CalculoMaterialResponse.class
 com\example\bdMetro\payments\dto\MembershipCatalogResponse$CountryCatalogItem.class
 com\example\bdMetro\payments\dto\PayPalPaymentStatusResponse.class
 com\example\bdMetro\controller\UserTareaController.class
@@ -56,6 +64,7 @@ com\example\bdMetro\payments\service\FxRateService.class
 com\example\bdMetro\configuration\GlobalExceptionHandler.class
 com\example\bdMetro\entity\AdminPanel.class
 com\example\bdMetro\payments\dto\CreatePayPalPaymentRequest.class
+com\example\bdMetro\repository\CalculoMaterialRepository.class
 com\example\bdMetro\controller\EmpresaClienteController.class
 com\example\bdMetro\payments\config\MercadoPagoProperties.class
 com\example\bdMetro\services\UserTareaService.class

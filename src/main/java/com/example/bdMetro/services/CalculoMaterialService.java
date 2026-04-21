@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class CalculoMaterialService {
@@ -95,6 +96,23 @@ public class CalculoMaterialService {
         }
 
         return new ArrayList<>(orderedUniqueTasks.values());
+    }
+
+    public void eliminar(Long calculoId, String userCode) {
+        String normalizedUserCode = normalizarUserCode(userCode);
+        if (calculoId == null || calculoId <= 0) {
+            throw new IllegalArgumentException("El identificador del cálculo es obligatorio.");
+        }
+        if (normalizedUserCode.isBlank()) {
+            throw new IllegalArgumentException("El userCode es obligatorio.");
+        }
+
+        Optional<CalculoMaterial> calculo = calculoMaterialRepository.findByIdAndUserCode(calculoId, normalizedUserCode);
+        if (calculo.isEmpty()) {
+            throw new IllegalArgumentException("No se encontró el cálculo a eliminar.");
+        }
+
+        calculoMaterialRepository.delete(calculo.get());
     }
 
     private void podarHistorial(String userCode) {

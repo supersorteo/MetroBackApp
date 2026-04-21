@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.DeleteMapping;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +46,14 @@ public class CalculoMaterialController {
             @PathVariable String userCode,
             @RequestParam(defaultValue = "5") int limit) {
         return calculoMaterialService.obtenerUltimasTareas(userCode, limit);
+    }
+
+    @DeleteMapping("/{calculoId}")
+    public ResponseEntity<Void> eliminar(
+            @PathVariable Long calculoId,
+            @RequestParam String userCode) {
+        calculoMaterialService.eliminar(calculoId, userCode);
+        return ResponseEntity.noContent().build();
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
