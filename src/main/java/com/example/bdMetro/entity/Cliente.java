@@ -1,9 +1,9 @@
 package com.example.bdMetro.entity;
 
 import jakarta.persistence.*;
-
+import org.hibernate.annotations.UpdateTimestamp;
+import java.time.Instant;
 import java.time.LocalDate;
-
 
 @Entity
 @Table(name = "cliente")
@@ -20,6 +20,10 @@ public class Cliente {
     private String clave; // o CUIT
     private String direccion;
     private Long empresaId;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 
     public Cliente() {
     }
@@ -117,4 +121,7 @@ public class Cliente {
     public void setEmpresaId(Long empresaId) {
         this.empresaId = empresaId;
     }
+
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }

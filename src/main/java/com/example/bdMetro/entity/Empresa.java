@@ -1,6 +1,8 @@
 package com.example.bdMetro.entity;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.UpdateTimestamp;
+import java.time.Instant;
 
 @Entity
 @Table(name = "empresa")
@@ -38,6 +40,10 @@ public class Empresa {
     private String gradientAngle;
     private String infoBoxColorHex;
     private Double infoBoxOpacity;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Instant updatedAt;
 
     public Empresa() {
     }
@@ -167,4 +173,7 @@ public class Empresa {
 
     public Double getInfoBoxOpacity() { return infoBoxOpacity; }
     public void setInfoBoxOpacity(Double infoBoxOpacity) { this.infoBoxOpacity = infoBoxOpacity; }
+
+    public Instant getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
 }
