@@ -395,8 +395,12 @@ public class EmpresaClienteController {
 
     @DeleteMapping("/presupuestos/{id}")
     public ResponseEntity<Void> deletePresupuesto(@PathVariable Long id) {
-        presupuestoService.deletePresupuesto(id);
-        return ResponseEntity.noContent().build();
+        try {
+            presupuestoService.deletePresupuesto(id);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
 
