@@ -12,4 +12,5 @@ public interface EmpresaRepository extends JpaRepository<Empresa, Long> {
 
     List<Empresa> findByUserCode(String userCode);
     Empresa findByUserCodeAndIdNot(String userCode, Long id);
+    long countByUserCode(String userCode);
 }

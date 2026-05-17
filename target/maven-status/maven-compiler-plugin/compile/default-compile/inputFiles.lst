@@ -10,6 +10,7 @@ D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\contro
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\TareaController.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\TareaPersonalizadaController.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\controller\UserTareaController.java
+D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\dto\AdminMembershipLimitsDto.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\dto\CalculoMaterialRequest.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\dto\CalculoMaterialResponse.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\dto\ResultadoMaterialDto.java
@@ -63,6 +64,7 @@ D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\servic
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\CalculoMaterialService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\ClienteService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\EmpresaService.java
+D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\MembershipLimitService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\PresupuestoService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\ProvinciaService.java
 D:\DANILO\METROAPPFINAL\bdMetro\bdMetro\src\main\java\com\example\bdMetro\services\TareaPersonalizadaService.java

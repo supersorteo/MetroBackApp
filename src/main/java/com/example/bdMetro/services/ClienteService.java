@@ -4,7 +4,6 @@ import com.example.bdMetro.entity.Cliente;
 import com.example.bdMetro.entity.Presupuesto;
 import com.example.bdMetro.entity.UserTarea;
 import com.example.bdMetro.repository.ClienteRepository;
-import com.example.bdMetro.repository.EmpresaRepository;
 import com.example.bdMetro.repository.PresupuestoRepository;
 import com.example.bdMetro.repository.UserTareaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,13 +20,13 @@ public class ClienteService {
     private ClienteRepository clienteRepository;
 
     @Autowired
-    private EmpresaRepository empresaRepository;
-
-    @Autowired
     private PresupuestoRepository presupuestoRepository;
 
     @Autowired
     private UserTareaRepository userTareaRepository;
+
+    @Autowired
+    private MembershipLimitService membershipLimitService;
 
     public List<Cliente> getClienteByUserCode(String userCode) {
         return clienteRepository.findByUserCode(userCode);
@@ -37,11 +36,13 @@ public class ClienteService {
         if (cliente.getEmail() == null || cliente.getEmail().isEmpty()) {
             throw new IllegalArgumentException("El email es requerido para guardar el cliente");
         }
-        if (cliente.getEmpresaId() == null) {
-            throw new IllegalArgumentException("El empresaId es requerido para guardar el cliente");
+        if (cliente.getUserCode() == null || cliente.getUserCode().trim().isEmpty()) {
+            throw new IllegalArgumentException("El userCode es requerido para guardar el cliente");
         }
-        if (!empresaRepository.existsById(cliente.getEmpresaId())) {
-            throw new IllegalArgumentException("No existe una empresa con el ID: " + cliente.getEmpresaId());
+        long currentCount = clienteRepository.countByUserCode(cliente.getUserCode().trim());
+        int maxAllowed = membershipLimitService.resolveClienteLimit(cliente.getUserCode().trim());
+        if (currentCount >= maxAllowed) {
+            throw new IllegalArgumentException("Tu plan permite crear hasta " + maxAllowed + " cliente(s).");
         }
         List<Cliente> existingClientes = clienteRepository.findByEmail(cliente.getEmail());
         if (!existingClientes.isEmpty()) {
@@ -60,12 +61,6 @@ public class ClienteService {
 
     public Cliente updateCliente(Long id, Cliente clienteDetails) {
         Cliente cliente = clienteRepository.findById(id).orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));
-        if (clienteDetails.getEmpresaId() == null) {
-            throw new IllegalArgumentException("El empresaId es requerido para actualizar el cliente");
-        }
-        if (!empresaRepository.existsById(clienteDetails.getEmpresaId())) {
-            throw new IllegalArgumentException("No existe una empresa con el ID: " + clienteDetails.getEmpresaId());
-        }
         cliente.setName(clienteDetails.getName());
         cliente.setContact(clienteDetails.getContact());
         cliente.setBudgetDate(clienteDetails.getBudgetDate());

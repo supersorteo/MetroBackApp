@@ -1,5 +1,6 @@
 package com.example.bdMetro.controller;
 
+import com.example.bdMetro.dto.AdminMembershipLimitsDto;
 import com.example.bdMetro.entity.AdminPanel;
 import com.example.bdMetro.services.AdminPanelService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,13 @@ public class AdminPanelController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/limits/pais/{pais}")
+    public ResponseEntity<AdminMembershipLimitsDto> getLimitsByPais(@PathVariable String pais) {
+        return adminPanelService.getLimitsByPais(pais)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     /** POST /admin-panel/login — verificar credenciales */
     @PostMapping("/login")
     public ResponseEntity<AdminPanel> login(@RequestBody Map<String, String> body) {
@@ -59,6 +67,14 @@ public class AdminPanelController {
                 body.get("password")
         ).map(ResponseEntity::ok)
          .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/{id}/limits")
+    public ResponseEntity<AdminMembershipLimitsDto> updateLimits(@PathVariable String id,
+                                                                 @RequestBody AdminMembershipLimitsDto payload) {
+        return adminPanelService.updateLimits(id, payload)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     /** DELETE /admin-panel/{id} — solo backend, no expuesto en frontend */

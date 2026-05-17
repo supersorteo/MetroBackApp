@@ -17,6 +17,9 @@ public class EmpresaService {
     @Autowired
     private EmpresaRepository empresaRepository;
 
+    @Autowired
+    private MembershipLimitService membershipLimitService;
+
     private static final String UPLOAD_DIR_LOCAL = "src/main/resources/static/uploads/";
     private static final String UPLOAD_DIR_PROD = "/app/uploads/";
 
@@ -72,6 +75,11 @@ public class EmpresaService {
         }
         if (empresa.getUserCode() == null || empresa.getUserCode().trim().isEmpty()) {
             throw new IllegalArgumentException("El userCode es obligatorio");
+        }
+        long currentCount = empresaRepository.countByUserCode(empresa.getUserCode().trim());
+        int maxAllowed = membershipLimitService.resolveEmpresaLimit(empresa.getUserCode().trim());
+        if (currentCount >= maxAllowed) {
+            throw new IllegalArgumentException("Tu plan permite crear hasta " + maxAllowed + " empresa(s).");
         }
         if (empresa.getLogoUrl() != null && !empresa.getLogoUrl().isEmpty()) {
             Path filePath = Paths.get(getUploadDir() + empresa.getLogoUrl().substring(empresa.getLogoUrl().lastIndexOf("/") + 1));
