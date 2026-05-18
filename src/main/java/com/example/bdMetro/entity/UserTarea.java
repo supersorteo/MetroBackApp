@@ -24,6 +24,10 @@ public class UserTarea {
     private Double totalCost;
 
     private Long clienteId;
+
+    @Column(name = "empresa_id")
+    private Long empresaId;
+
     private String pais;
     private String rubro;
     private String categoria;
@@ -43,7 +47,7 @@ public class UserTarea {
         this.id = id;
     }
 
-    public UserTarea(Long id, String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, Long clienteId, String pais, String rubro, String categoria, List<Presupuesto> presupuestos, boolean deleted) {
+    public UserTarea(Long id, String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, Long clienteId, Long empresaId, String pais, String rubro, String categoria, List<Presupuesto> presupuestos, boolean deleted) {
         this.id = id;
         this.tarea = tarea;
         this.costo = costo;
@@ -52,6 +56,7 @@ public class UserTarea {
         this.descuento = descuento;
         this.totalCost = totalCost;
         this.clienteId = clienteId;
+        this.empresaId = empresaId;
         this.pais = pais;
         this.rubro = rubro;
         this.categoria = categoria;
@@ -121,6 +126,14 @@ public class UserTarea {
 
     public void setClienteId(Long clienteId) {
         this.clienteId = clienteId;
+    }
+
+    public Long getEmpresaId() {
+        return empresaId;
+    }
+
+    public void setEmpresaId(Long empresaId) {
+        this.empresaId = empresaId;
     }
 
     public String getPais() {

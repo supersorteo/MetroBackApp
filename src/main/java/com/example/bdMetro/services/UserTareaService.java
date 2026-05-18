@@ -45,6 +45,10 @@ public class UserTareaService {
         return userTareaRepository.findByClienteIdAndDeletedFalse(clienteId);
     }
 
+    public List<UserTarea> getTareasByClienteAndEmpresa(Long clienteId, Long empresaId) {
+        return userTareaRepository.findByClienteIdAndEmpresaIdOrNullAndDeletedFalse(clienteId, empresaId);
+    }
+
 
     public UserTarea updateUserTarea(Long id, UserTarea userTareaDetails) {
         UserTarea userTarea = userTareaRepository.findById(id).orElseThrow(() -> new RuntimeException("UserTarea no encontrada"));
@@ -55,6 +59,7 @@ public class UserTareaService {
         userTarea.setDescuento(userTareaDetails.getDescuento());
         userTarea.setTotalCost(userTareaDetails.getTotalCost());
         userTarea.setClienteId(userTareaDetails.getClienteId());
+        userTarea.setEmpresaId(userTareaDetails.getEmpresaId());
         userTarea.setPais(userTareaDetails.getPais());
         userTarea.setRubro(userTareaDetails.getRubro());
         userTarea.setCategoria(userTareaDetails.getCategoria());
@@ -64,6 +69,11 @@ public class UserTareaService {
     @Transactional
     public void deleteAllTareasByClienteId(Long clienteId) {
         userTareaRepository.softDeleteAllByClienteId(clienteId);
+    }
+
+    @Transactional
+    public void deleteAllTareasByClienteAndEmpresa(Long clienteId, Long empresaId) {
+        userTareaRepository.softDeleteAllByClienteIdAndEmpresaId(clienteId, empresaId);
     }
 
     @Transactional

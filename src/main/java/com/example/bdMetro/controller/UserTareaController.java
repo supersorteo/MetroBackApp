@@ -40,7 +40,12 @@ public class UserTareaController {
 
     @GetMapping("/by-cliente/{clienteId}")
     public List<UserTarea> getTareasByClienteId(@PathVariable Long clienteId) {
-        return userTareaService.getTareasByClienteId(clienteId); // Nuevo endpoint para tareas por cliente
+        return userTareaService.getTareasByClienteId(clienteId);
+    }
+
+    @GetMapping("/by-cliente/{clienteId}/empresa/{empresaId}")
+    public List<UserTarea> getTareasByClienteAndEmpresa(@PathVariable Long clienteId, @PathVariable Long empresaId) {
+        return userTareaService.getTareasByClienteAndEmpresa(clienteId, empresaId);
     }
 
     @GetMapping("/{id}")
@@ -67,6 +72,16 @@ public class UserTareaController {
     public ResponseEntity<?> deleteAllTareasByClienteId(@PathVariable Long clienteId) {
         try {
             userTareaService.deleteAllTareasByClienteId(clienteId);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/by-cliente/{clienteId}/empresa/{empresaId}")
+    public ResponseEntity<?> deleteAllTareasByClienteAndEmpresa(@PathVariable Long clienteId, @PathVariable Long empresaId) {
+        try {
+            userTareaService.deleteAllTareasByClienteAndEmpresa(clienteId, empresaId);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
