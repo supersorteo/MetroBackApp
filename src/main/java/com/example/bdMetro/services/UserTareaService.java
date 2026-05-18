@@ -62,6 +62,11 @@ public class UserTareaService {
     }
 
     @Transactional
+    public void deleteAllTareasByClienteId(Long clienteId) {
+        userTareaRepository.softDeleteAllByClienteId(clienteId);
+    }
+
+    @Transactional
     public void deleteUserTarea(Long id) {
         UserTarea tarea = userTareaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));

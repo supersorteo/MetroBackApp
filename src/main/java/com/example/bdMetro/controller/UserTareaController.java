@@ -63,6 +63,16 @@ public class UserTareaController {
 
 
 
+    @DeleteMapping("/by-cliente/{clienteId}")
+    public ResponseEntity<?> deleteAllTareasByClienteId(@PathVariable Long clienteId) {
+        try {
+            userTareaService.deleteAllTareasByClienteId(clienteId);
+            return ResponseEntity.noContent().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUserTarea(@PathVariable Long id) {
         try {
