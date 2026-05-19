@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface TareaPersonalizadaRepository extends JpaRepository<TareaPersonalizada, Long> {
     List<TareaPersonalizada> findByUserCodeAndDeletedFalse(String userCode);
+    long countByUserCode(String userCode);
+    void deleteByUserCode(String userCode);
 }

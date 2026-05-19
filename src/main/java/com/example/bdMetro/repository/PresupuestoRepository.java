@@ -23,6 +23,11 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> 
 
     List<Presupuesto> findByClienteId(Long clienteId);
 
+    void deleteAllByClienteIdIn(List<Long> clienteIds);
+
+    @Query("SELECT COUNT(p) FROM Presupuesto p WHERE p.cliente.id IN (SELECT c.id FROM Cliente c WHERE c.userCode = :userCode)")
+    long countByClienteUserCode(@Param("userCode") String userCode);
+
     @EntityGraph(attributePaths = {"tareas"})
     Optional<Presupuesto> findById(Long id);
 

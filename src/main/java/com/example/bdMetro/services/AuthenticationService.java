@@ -5,15 +5,28 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.bdMetro.dto.UserDataSummaryDto;
 import com.example.bdMetro.entity.AccessCode;
 import com.example.bdMetro.repository.AccessCodeRepository;
+import com.example.bdMetro.repository.CalculoMaterialRepository;
+import com.example.bdMetro.repository.ClienteRepository;
+import com.example.bdMetro.repository.EmpresaRepository;
+import com.example.bdMetro.repository.PresupuestoRepository;
+import com.example.bdMetro.repository.TareaPersonalizadaRepository;
+import com.example.bdMetro.repository.UserTareaRepository;
 import com.example.bdMetro.util.CountryCatalog;
 
 @Service
 public class AuthenticationService {
-    @Autowired
-    private AccessCodeRepository accessCodeRepository;
+    @Autowired private AccessCodeRepository accessCodeRepository;
+    @Autowired private EmpresaRepository empresaRepository;
+    @Autowired private ClienteRepository clienteRepository;
+    @Autowired private PresupuestoRepository presupuestoRepository;
+    @Autowired private UserTareaRepository userTareaRepository;
+    @Autowired private TareaPersonalizadaRepository tareaPersonalizadaRepository;
+    @Autowired private CalculoMaterialRepository calculoMaterialRepository;
 
     public String login(String code) {
         AccessCode accessCode = accessCodeRepository.findByCode(code);
@@ -21,6 +34,8 @@ public class AuthenticationService {
             return "Codigo no encontrado";
         } else if (accessCode.getEmail() == null) {
             return "Codigo existe pero no asignado a un usuario";
+        } else if (accessCode.isDisabled()) {
+            return "Codigo desactivado";
         } else {
             return accessCode.getEmail();
         }
@@ -125,6 +140,68 @@ public class AuthenticationService {
 
     public void deleteCode(String code) {
         accessCodeRepository.deleteById(code);
+    }
+
+    public AccessCode disableCode(String code) {
+        AccessCode ac = accessCodeRepository.findByCode(code);
+        if (ac == null) throw new IllegalArgumentException("Codigo no encontrado");
+        ac.setDisabled(true);
+        return accessCodeRepository.save(ac);
+    }
+
+    public AccessCode enableCode(String code) {
+        AccessCode ac = accessCodeRepository.findByCode(code);
+        if (ac == null) throw new IllegalArgumentException("Codigo no encontrado");
+        ac.setDisabled(false);
+        return accessCodeRepository.save(ac);
+    }
+
+    public UserDataSummaryDto getUserDataSummary(String code) {
+        AccessCode ac = accessCodeRepository.findByCode(code);
+        if (ac == null || ac.getEmail() == null) return null;
+        long empresas   = empresaRepository.countByUserCode(code);
+        long clientes   = clienteRepository.countByUserCode(code);
+        long presupuestos = presupuestoRepository.countByClienteUserCode(code);
+        long tareas     = tareaPersonalizadaRepository.countByUserCode(code);
+        return new UserDataSummaryDto(ac.getEmail(), empresas, clientes, presupuestos, tareas);
+    }
+
+    @Transactional
+    public void deleteUserData(String code) {
+        // 1. IDs de clientes del usuario
+        List<Long> clienteIds = clienteRepository.findIdsByUserCode(code);
+
+        // 2. UserTareas (soft-delete)
+        if (!clienteIds.isEmpty()) {
+            userTareaRepository.softDeleteAllByClienteIdIn(clienteIds);
+        }
+
+        // 3. Presupuestos (hard-delete — FK a Cliente no puede quedar huérfana)
+        if (!clienteIds.isEmpty()) {
+            presupuestoRepository.deleteAllByClienteIdIn(clienteIds);
+        }
+
+        // 4. Clientes (hard-delete)
+        clienteRepository.deleteByUserCode(code);
+
+        // 5. Empresas (hard-delete)
+        empresaRepository.deleteByUserCode(code);
+
+        // 6. TareasPersonalizadas y CalculoMateriales
+        tareaPersonalizadaRepository.deleteByUserCode(code);
+        calculoMaterialRepository.deleteByUserCode(code);
+
+        // 7. Resetear AccessCode al estado libre (conservar el slot)
+        AccessCode ac = accessCodeRepository.findByCode(code);
+        if (ac != null) {
+            ac.setEmail(null);
+            ac.setTelefono(null);
+            ac.setProvincia(null);
+            ac.setFechaRegistro(null);
+            ac.setFechaVencimiento(null);
+            ac.setDisabled(false);
+            accessCodeRepository.save(ac);
+        }
     }
 
     private String resolveCountryForRegistration(String existingCountry, String requestedCountry) {

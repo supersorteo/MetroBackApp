@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -38,6 +39,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleIllegalState(IllegalStateException ex) {
         log.warn("[API] Unprocessable: {}", ex.getMessage());
         return error(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    /** Rutas no encontradas (ej. favicon.ico) — 404 silencioso */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(NoHandlerFoundException ex) {
+        return error(HttpStatus.NOT_FOUND, "Recurso no encontrado: " + ex.getRequestURL());
     }
 
     /** Cualquier otro error no controlado — 500 sin exponer stack trace */

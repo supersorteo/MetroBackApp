@@ -11,6 +11,8 @@ public class AccessCode {
     private String code;
     @Column(unique = true)
     private String email;
+    @Column(columnDefinition = "boolean not null default false")
+    private boolean disabled = false;
     //private String username;
     private String telefono;
     private String provincia;
@@ -83,5 +85,13 @@ public class AccessCode {
 
     public void setFechaVencimiento(LocalDate fechaVencimiento) {
         this.fechaVencimiento = fechaVencimiento;
+    }
+
+    public boolean isDisabled() {
+        return disabled;
+    }
+
+    public void setDisabled(boolean disabled) {
+        this.disabled = disabled;
     }
 }

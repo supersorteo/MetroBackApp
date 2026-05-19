@@ -1,14 +1,12 @@
 package com.example.bdMetro.controller;
 
+import com.example.bdMetro.dto.UserDataSummaryDto;
+import com.example.bdMetro.entity.AccessCode;
 import com.example.bdMetro.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.*;
-import com.example.bdMetro.entity.AccessCode;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -33,6 +31,10 @@ public class AuthenticationController {
         } else if (accessCode.getEmail() == null) {
             AccessCode errorResponse = new AccessCode();
             errorResponse.setEmail("Código existe pero no asignado a un usuario");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+        } else if (accessCode.isDisabled()) {
+            AccessCode errorResponse = new AccessCode();
+            errorResponse.setEmail("Código desactivado. Contactá al administrador.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         } else if (accessCode.getFechaVencimiento() != null && accessCode.getFechaVencimiento().isBefore(LocalDate.now())) {
             AccessCode errorResponse = new AccessCode();
@@ -157,6 +159,44 @@ public class AuthenticationController {
     @DeleteMapping("/codes/{code}")
     public void deleteCode(@PathVariable String code) {
         authenticationService.deleteCode(code);
+    }
+
+    @GetMapping("/codes/{code}/summary")
+    public ResponseEntity<?> getUserDataSummary(@PathVariable String code) {
+        UserDataSummaryDto summary = authenticationService.getUserDataSummary(code);
+        if (summary == null) return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(summary);
+    }
+
+    @DeleteMapping("/codes/{code}/full")
+    public ResponseEntity<?> deleteUserData(@PathVariable String code) {
+        try {
+            authenticationService.deleteUserData(code);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/codes/{code}/disable")
+    public ResponseEntity<?> disableCode(@PathVariable String code) {
+        try {
+            AccessCode ac = authenticationService.disableCode(code);
+            return ResponseEntity.ok(Map.of("code", ac.getCode(), "disabled", ac.isDisabled()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/codes/{code}/enable")
+    public ResponseEntity<?> enableCode(@PathVariable String code) {
+        try {
+            AccessCode ac = authenticationService.enableCode(code);
+            return ResponseEntity.ok(Map.of("code", ac.getCode(), "disabled", ac.isDisabled()));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @GetMapping("/user-code/{code}")

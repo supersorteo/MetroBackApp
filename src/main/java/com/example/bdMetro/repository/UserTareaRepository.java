@@ -38,6 +38,10 @@ public interface UserTareaRepository extends JpaRepository<UserTarea, Long> {
     void softDeleteAllByClienteId(@Param("clienteId") Long clienteId);
 
     @Modifying
+    @Query("UPDATE UserTarea ut SET ut.deleted = true WHERE ut.clienteId IN :clienteIds AND ut.deleted = false")
+    void softDeleteAllByClienteIdIn(@Param("clienteIds") List<Long> clienteIds);
+
+    @Modifying
     @Query("UPDATE UserTarea ut SET ut.deleted = true WHERE ut.clienteId = :clienteId AND ut.empresaId = :empresaId AND ut.deleted = false")
     void softDeleteAllByClienteIdAndEmpresaId(@Param("clienteId") Long clienteId, @Param("empresaId") Long empresaId);
 }

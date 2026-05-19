@@ -11,4 +11,5 @@ import java.util.Optional;
 public interface CalculoMaterialRepository extends JpaRepository<CalculoMaterial, Long> {
     List<CalculoMaterial> findByUserCodeOrderByCreatedAtDescIdDesc(String userCode);
     Optional<CalculoMaterial> findByIdAndUserCode(Long id, String userCode);
+    void deleteByUserCode(String userCode);
 }
