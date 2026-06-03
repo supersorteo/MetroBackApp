@@ -22,7 +22,10 @@ public class TareaService {
 
     @PostConstruct
     public void initTareas() {
-        tareaRepository.deleteAll(); // Limpiar tabla para evitar duplicados
+        if (tareaRepository.count() > 0) {
+            log.info("[TareaService] Catálogo ya inicializado, omitiendo seed.");
+            return;
+        }
 
         // Tareas para Argentina
         tareaRepository.save(new Tarea("Construcción de pared", 100.0, "Construcción", "Mampostería", "Argentina", "Pared de ladrillo", 0.0, 1.0));
