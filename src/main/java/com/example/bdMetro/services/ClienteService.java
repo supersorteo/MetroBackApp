@@ -44,9 +44,8 @@ public class ClienteService {
         if (currentCount >= maxAllowed) {
             throw new IllegalArgumentException("Tu plan permite crear hasta " + maxAllowed + " cliente(s).");
         }
-        List<Cliente> existingClientes = clienteRepository.findByEmail(cliente.getEmail());
-        if (!existingClientes.isEmpty()) {
-            throw new IllegalArgumentException("Ya existe un cliente registrado con el email '" + cliente.getEmail() + "'");
+        if (clienteRepository.existsByEmailAndUserCode(cliente.getEmail(), cliente.getUserCode().trim())) {
+            throw new IllegalArgumentException("Ya tenés un cliente registrado con el email '" + cliente.getEmail() + "'");
         }
         return clienteRepository.save(cliente);
     }

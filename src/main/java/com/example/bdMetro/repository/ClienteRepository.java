@@ -15,6 +15,7 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     Cliente findByUserCodeAndName(String userCode, String name);
     List<Cliente> findByUserCode(String userCode);
     List<Cliente> findByEmail(String email);
+    boolean existsByEmailAndUserCode(String email, String userCode);
     List<Cliente> findByEmpresaId(Long empresaId);
     long countByUserCode(String userCode);
 
