@@ -28,8 +28,12 @@ public class AuthenticationService {
     @Autowired private TareaPersonalizadaRepository tareaPersonalizadaRepository;
     @Autowired private CalculoMaterialRepository calculoMaterialRepository;
 
+    private String norm(String code) {
+        return code == null ? null : code.trim().toUpperCase();
+    }
+
     public String login(String code) {
-        AccessCode accessCode = accessCodeRepository.findByCode(code);
+        AccessCode accessCode = accessCodeRepository.findByCodeIgnoreCase(norm(code));
         if (accessCode == null) {
             return "Codigo no encontrado";
         } else if (accessCode.getEmail() == null) {
@@ -50,18 +54,19 @@ public class AuthenticationService {
     }
 
     public AccessCode getCode(String code) {
-        return accessCodeRepository.findByCode(code);
+        return accessCodeRepository.findByCodeIgnoreCase(norm(code));
     }
 
     public AccessCode updateCode(String code, String email, String username, String telefono, String provincia, String pais) {
-        AccessCode accessCode = accessCodeRepository.findByCode(code);
+        String normalizedCode = norm(code);
+        AccessCode accessCode = accessCodeRepository.findByCodeIgnoreCase(normalizedCode);
         if (accessCode == null) {
             throw new IllegalArgumentException("Este codigo no existe en la base de datos");
         }
 
         String normalizedEmail = normalizeEmail(email);
         AccessCode emailAssignedCode = normalizedEmail == null ? null : accessCodeRepository.findByEmail(normalizedEmail);
-        if (emailAssignedCode != null && !emailAssignedCode.getCode().equals(code)) {
+        if (emailAssignedCode != null && !emailAssignedCode.getCode().equals(normalizedCode)) {
             throw new IllegalArgumentException("Este email ya esta en la base de datos");
         }
 
@@ -73,8 +78,9 @@ public class AuthenticationService {
     }
 
     public AccessCode agregarCode(AccessCode accessCode) {
+        accessCode.setCode(norm(accessCode.getCode()));
         validateCodeFormat(accessCode.getCode());
-        AccessCode existingCode = accessCodeRepository.findByCode(accessCode.getCode());
+        AccessCode existingCode = accessCodeRepository.findByCodeIgnoreCase(accessCode.getCode());
         String normalizedEmail = normalizeEmail(accessCode.getEmail());
         AccessCode existingEmail = normalizedEmail == null ? null : accessCodeRepository.findByEmail(normalizedEmail);
         if (existingCode != null) {
@@ -92,8 +98,9 @@ public class AuthenticationService {
 
     public List<AccessCode> agregarCodes(List<AccessCode> accessCodes) {
         for (AccessCode accessCode : accessCodes) {
+            accessCode.setCode(norm(accessCode.getCode()));
             validateCodeFormat(accessCode.getCode());
-            AccessCode existingCode = accessCodeRepository.findByCode(accessCode.getCode());
+            AccessCode existingCode = accessCodeRepository.findByCodeIgnoreCase(accessCode.getCode());
             if (existingCode != null) {
                 throw new IllegalArgumentException("El codigo " + accessCode.getCode() + " ya esta creado");
             }
@@ -106,7 +113,8 @@ public class AuthenticationService {
     }
 
     public AccessCode addCode(AccessCode accessCode) {
-        AccessCode existingCode = accessCodeRepository.findByCode(accessCode.getCode());
+        accessCode.setCode(norm(accessCode.getCode()));
+        AccessCode existingCode = accessCodeRepository.findByCodeIgnoreCase(accessCode.getCode());
         if (existingCode == null) {
             throw new IllegalArgumentException("Codigo no encontrado");
         } else if (existingCode.getEmail() != null) {
@@ -139,25 +147,25 @@ public class AuthenticationService {
     }
 
     public void deleteCode(String code) {
-        accessCodeRepository.deleteById(code);
+        accessCodeRepository.deleteById(norm(code));
     }
 
     public AccessCode disableCode(String code) {
-        AccessCode ac = accessCodeRepository.findByCode(code);
+        AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
         if (ac == null) throw new IllegalArgumentException("Codigo no encontrado");
         ac.setDisabled(true);
         return accessCodeRepository.save(ac);
     }
 
     public AccessCode enableCode(String code) {
-        AccessCode ac = accessCodeRepository.findByCode(code);
+        AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
         if (ac == null) throw new IllegalArgumentException("Codigo no encontrado");
         ac.setDisabled(false);
         return accessCodeRepository.save(ac);
     }
 
     public UserDataSummaryDto getUserDataSummary(String code) {
-        AccessCode ac = accessCodeRepository.findByCode(code);
+        AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
         if (ac == null || ac.getEmail() == null) return null;
         long empresas   = empresaRepository.countByUserCode(code);
         long clientes   = clienteRepository.countByUserCode(code);
@@ -192,7 +200,7 @@ public class AuthenticationService {
         calculoMaterialRepository.deleteByUserCode(code);
 
         // 7. Resetear AccessCode al estado libre (conservar el slot)
-        AccessCode ac = accessCodeRepository.findByCode(code);
+        AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
         if (ac != null) {
             ac.setEmail(null);
             ac.setTelefono(null);
