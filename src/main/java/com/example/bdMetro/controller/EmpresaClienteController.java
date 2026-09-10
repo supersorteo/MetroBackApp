@@ -280,7 +280,7 @@ public class EmpresaClienteController {
     @GetMapping("/clientes/{userCode}")
     public ResponseEntity<List<Cliente>> getClienteByUserCode(@PathVariable String userCode) {
         List<Cliente> clientes = clienteService.getClienteByUserCode(userCode);
-        return clientes.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok(clientes); // Changed to return List
+        return ResponseEntity.ok(clientes);
     }
 
     @GetMapping("/clientes/id/{id}")
