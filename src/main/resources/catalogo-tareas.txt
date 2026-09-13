@@ -1,0 +1,445 @@
+CATÁLOGO DE TAREAS DE CONSTRUCCIÓN — MetroApp
+
+CIMIENTOS - Hormigón de ripio
+Mezcla: 1:12 | Unidad: m³
+Materiales por m³:
+  - Cemento (KG): 133
+  - Ripio Bruto, piedra partida (M3): 1.20
+
+CIMIENTOS - Hormigón ciclopeo
+Mezcla: 1:5:8 | Unidad: m³
+Materiales por m³:
+  - Cemento (KG): 126
+  - Piedra bola, canto rodado (M3): 0.50
+  - Ripio bruto, piedra partida (M3): 0.75
+  - Hrs Oficial: 0.80
+  - Hrs Ayudante: 3.50
+
+CAPA AISLADORA - Horizontal espesor 2cm
+Mezcla: 1:2 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 16
+  - Arena media (M3): 0.03
+  - Hidrófugo (KG): 0.50
+  - Pintura asfaltica (L): 1
+  - Hrs Oficial: 0.30
+  - Hrs Ayudante: 0.15
+
+CAPA AISLADORA - Vertical espesor 2cm
+Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 16
+  - Arena mediana (M3): 0.03
+  - Pintura asfaltica (L): 1
+  - Membrana (M2): 1.10
+  - Hrs Oficial: 1.20
+  - Hrs Ayudante: 0.90
+
+MAMPOSTERÍA 0,30 - Ladrillos comunes submuración
+Mezcla: 1:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 42
+  - Arena gruesa (M3): 0.13
+  - Cal (KG): 14
+  - Ladrillos comunes: 105
+  - Hrs Oficial: 1.95
+  - Hrs Ayudante: 2.20
+
+MAMPOSTERÍA 0,30 - Ladrillos comunes elevación
+Mezcla: 1/8:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 6
+  - Arena gruesa (M3): 0.14
+  - Cal (KG): 16
+  - Ladrillos comunes: 105
+  - Hrs Oficial: 1.95
+  - Hrs Ayudante: 2.20
+
+MAMPOSTERÍA 0,30 - Ladrillos comunes seleccionados vista
+Mezcla: 1/8:1:4 / 1:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 14
+  - Cal (KG): 15
+  - Arena gruesa (M3): 0.13
+  - Ladrillos comunes: 105
+  - Hrs Oficial: 1.65
+  - Hrs Ayudante: 1.80
+
+MAMPOSTERÍA 0,15 - Ladrillos comunes elevación
+Mezcla: 1/8:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 3
+  - Cal (KG): 8
+  - Arena Gruesa (M3): 0.07
+  - Ladrillos comunes: 55
+  - Hrs Oficial: 0.93
+  - Hrs Ayudante: 0.93
+
+MAMPOSTERÍA 0,15 - Ladrillos comunes seleccionados vista
+Mezcla: 1/8:1:4 / 1:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 1.5
+  - Cal (KG): 4
+  - Arena gruesa (M3): 0.03
+  - Ladrillos comunes: 55
+  - Hrs Oficial: 1.30
+  - Hrs Ayudante: 0.93
+
+MAMPOSTERÍA 0,10 - Ladrillos huecos 8x18x25 elevación
+Mezcla: 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 1.83
+  - Cal (KG): 2
+  - Arena gruesa (M3): 0.01
+  - Ladrillos huecos 8x18x25: 21
+  - Hrs Oficial: 0.80
+  - Hrs Ayudante: 0.60
+
+MAMPOSTERÍA 0,10 - Ladrillos huecos 8x18x33 elevación
+Mezcla: 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 1.83
+  - Cal (KG): 2
+  - Arena gruesa (M3): 0.01
+  - Ladrillos huecos 8x12x33: 16
+  - Hrs Oficial: 0.77
+  - Hrs Ayudante: 0.58
+
+MAMPOSTERÍA 0,15 - Ladrillos huecos 12x18x25 elevación
+Mezcla: 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 2.66
+  - Arena gruesa (M3): 0.02
+  - Cal (KG): 3
+  - Ladrillos huecos 12x18x25: 21
+  - Hrs Oficial: 1.02
+  - Hrs Ayudante: 0.76
+
+MAMPOSTERÍA 0,15 - Ladrillos huecos 12x18x33 elevación
+Mezcla: 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 2.66
+  - Cal (KG): 3
+  - Arena gruesa (M3): 0.02
+  - Ladrillos huecos 12x18x33: 16
+  - Hrs Oficial: 0.92
+  - Hrs Ayudante: 0.69
+
+MAMPOSTERÍA 0,20 - Ladrillos huecos 18x18x33 elevación
+Mezcla: 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 4
+  - Cal (KG): 4.5
+  - Arena gruesa (M3): 0.03
+  - Ladrillos huecos 18x18x33: 16
+  - Hrs Oficial: 1.07
+  - Hrs Ayudante: 0.80
+
+MAMPOSTERÍA 0,20 - Ladrillos huecos Portante 18x19x33 elevación
+Mezcla: 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 2.50
+  - Cal (KG): 2.80
+  - Arena gruesa (M3): 0.02
+  - Ladrillos huecos (Portante) 18x19x33: 15
+  - Hrs Oficial: 1.15
+  - Hrs Ayudante: 0.86
+
+MAMPOSTERÍA 0,20 - Bloques Hormigón 20x20x40 elevación
+Mezcla: 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 6
+  - Cal (KG): 3.5
+  - Arena gruesa (M3): 0.02
+  - Bloques de Hormigón 20x20x40: 13
+  - Hrs Oficial: 1
+  - Hrs Ayudante: 1
+
+MAMPOSTERÍA 0,10 - Bloques Hormigón 10x20x40 elevación
+Mezcla: 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 3
+  - Cal (KG): 1.75
+  - Arena gruesa (M3): 0.02
+  - Bloques de Hormigón 10x20x40: 13
+  - Hrs Oficial: 0.65
+  - Hrs Ayudante: 0.50
+
+ESTRUCTURAS H.A. - Zapatas
+Mezcla: 3/4:2:3 | Unidad: m³
+Materiales por m³:
+  - Cemento (KG): 250
+  - Arena gruesa (M3): 0.50
+  - Ripio (1:3): 0.75
+  - Hierro torsionado (KG): 30
+  - Alambre N°16 (KG): 0.25
+  - Hrs Oficial: 3.50
+  - Hrs Ayudante: 7.20
+
+ESTRUCTURAS H.A. - Columnas
+Mezcla: 1:2:3 | Unidad: m³
+Materiales por m³:
+  - Cemento (KG): 326
+  - Arena gruesa (M3): 0.50
+  - Ripio (1:3): 0.75
+  - Hierro torsionado (KG): 100
+  - Alambre N°16 (KG): 1
+  - Clavos (KG): 2
+  - Hrs Oficial: 24.30
+  - Hrs Ayudante: 23.30
+
+ESTRUCTURAS H.A. - Vigas
+Mezcla: 1:2:3 | Unidad: m³
+Materiales por m³:
+  - Cemento (KG): 326
+  - Arena gruesa (M3): 0.50
+  - Ripio (1:3): 0.75
+  - Hierro torsionado (KG): 90
+  - Alambre N°16 (KG): 1
+  - Clavos (KG): 3
+  - Hrs Oficial: 23.70
+  - Hrs Ayudante: 20.30
+
+ESTRUCTURAS H.A. - Encadenados
+Mezcla: 1:2:3 | Unidad: m³
+Materiales por m³:
+  - Cemento (KG): 326
+  - Arena gruesa (M3): 0.50
+  - Ripio (1:3): 0.75
+  - Hierro torsionado (KG): 80
+  - Alambre N°16 (KG): 0.80
+  - Clavos (KG): 1
+  - Hrs Oficial: 17
+  - Hrs Ayudante: 14
+
+ESTRUCTURAS H.A. - Encadenados sección 20x20cm
+Mezcla: 1:2:3 | Unidad: ml
+Materiales por ml:
+  - Cemento (KG): 13
+  - Arena gruesa (M3): 0.02
+  - Ripio (1:3): 0.03
+  - Hierro torsionado (KG): 3.20
+  - Alambre N°16 (KG): 0.03
+  - Clavos (KG): 0.04
+  - Hrs Oficial: 0.68
+  - Hrs Ayudante: 0.56
+
+ESTRUCTURAS H.A. - Losas llenas
+Mezcla: 1:2:3 | Unidad: m³
+Materiales por m³:
+  - Cemento (KG): 326
+  - Arena gruesa (M3): 0.50
+  - Ripio (1:3): 0.75
+  - Hierro torsionado (KG): 40
+  - Alambre N°16 (KG): 0.60
+  - Clavos (KG): 2
+  - Hrs Oficial: 17.30
+  - Hrs Ayudante: 15.10
+
+LOSAS VIGUETAS - Bovedilla h:9,5cm
+Mezcla: comp. 1:2:3 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 19
+  - Arena gruesa (M3): 0.03
+  - Ripio (1:3) m3: 0.04
+  - Viguetas mt: 2
+  - Bovedillas 9,5cm U: 8
+  - Malla 4,2 x 15 x 15 m2: 1.10
+  - Hrs Oficial: 0.48
+  - Hrs Ayudante: 1.59
+
+LOSAS VIGUETAS - Bovedilla h:12,5cm
+Mezcla: comp. 1:2:3 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 22
+  - Arena gruesa (M3): 0.03
+  - Ripio (1:3) m3: 0.05
+  - Viguetas m: 2
+  - Bovedillas 12,5cm U: 8
+  - Malla 4,2 x 15 x 15 m2: 1.10
+  - Hrs Oficial: 0.59
+  - Hrs Ayudante: 1.95
+
+LOSAS VIGUETAS - Bovedilla h:17,5cm
+Mezcla: comp. 1:2:3 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 27
+  - Arena gruesa (M3): 0.04
+  - Ripio (1:3) m3: 0.06
+  - Viguetas m: 2
+  - Bovedillas 17,5cm U: 8
+  - Malla 4,2 x 15 x 15 m2: 1.10
+  - Hrs Oficial: 1.15
+  - Hrs Ayudante: 2.30
+
+REVOQUES - Grueso interior 2cm
+Mezcla: 1/4:2:5 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 1.50
+  - Cal (KG): 3.85
+  - Arena Mediana (M3): 0.03
+  - Hrs Oficial: 0.50
+  - Hrs Ayudante: 0.25
+
+REVOQUES - Grueso exterior 2cm
+Mezcla: 1/2:2:5 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 2.80
+  - Cal (KG): 3.85
+  - Arena Mediana (M3): 0.03
+  - Hrs Oficial: 0.50
+  - Hrs Ayudante: 0.25
+
+REVOQUES - Fino interior 0,5cm
+Mezcla: 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 1.05
+  - Cal (KG): 0.67
+  - Arena fina (M3): 0.01
+  - Hrs Oficial: 0.40
+  - Hrs Ayudante: 0.20
+
+REVOQUES - Fino exterior 0,5cm
+Mezcla: 1/2:1:3 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 1.26
+  - Cal (KG): 0.03
+  - Arena fina (M3): 0.01
+  - Hrs Oficial: 0.40
+  - Hrs Ayudante: 0.20
+
+REVOQUES - Exterior rústico bolsa 3cm
+Mezcla: 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 4.10
+  - Cal (KG): 5.40
+  - Arena mediana (M3): 0.03
+  - Hrs Oficial: 0.60
+  - Hrs Ayudante: 0.40
+
+REVOQUES - Fino predosificado 0,3cm
+Mezcla: predosificada | Unidad: m²
+Materiales por m²:
+  - Mezcla predosificada (KG): 3
+  - Hrs Oficial: 0.60
+  - Hrs Ayudante: 0.30
+
+REVOQUES - Alisado cemento vertical
+Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 14
+  - Arena fina (M3): 0.03
+  - Hrs Oficial: 1.47
+  - Hrs Ayudante: 0.60
+
+REVOQUES - Azotado cementicio 2cm
+Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 10.40
+  - Arena mediana (M3): 0.03
+  - Hrs Oficial: 0.40
+  - Hrs Ayudante: 0.25
+
+CONTRAPISOS - Hormigón de ripio 10cm
+Mezcla: 1:7 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 22
+  - Ripio bruto (M3): 0.12
+  - Hrs Oficial: 0.25
+  - Hrs Ayudante: 0.75
+
+CARPETA CEMENTICIA - 2cm
+Mezcla: 1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 8.20
+  - Arena mediana (M3): 0.03
+  - Hrs Oficial: 0.50
+  - Hrs Ayudante: 0.30
+
+PISOS - Cemento alisado coloreado 2cm
+Mezcla: 1:3 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 12
+  - Arena fina (M3): 0.03
+  - Ferrite (KG): 0.05
+  - Hrs Oficial: 0.60
+  - Hrs Ayudante: 0.30
+
+PISOS - Mosaico calcáreo / granítico
+Mezcla: 1/4:1:4 | Unidad: m²
+Materiales por m²:
+  - Mosaico (M2): 1.05
+  - Cemento (KG): 2.00
+  - Cal (KG): 2.90
+  - Arena gruesa (M3): 0.03
+  - Hrs Oficial: 1.00
+  - Hrs Ayudante: 0.50
+
+PISOS - Cerámico con pegamento
+Unidad: m²
+Materiales por m²:
+  - Cerámico (M2): 1.05
+  - Pegamento (KG): 4.00
+  - Pastina (KG): 0.40
+  - Hrs Oficial: 0.80
+  - Hrs Ayudante: 0.40
+
+CIELORRASOS - A la cal bajo losa 2,5cm
+Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 2.5
+  - Cal (KG): 4.50
+  - Arena Mediana (M3): 0.03
+  - Arena Fina (M3): 0.01
+  - Hrs Oficial: 1.30
+  - Hrs Ayudante: 0.25
+
+CIELORRASOS - Yeso bajo losa
+Mezcla: castigado 1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 3
+  - Yeso Blanco (KG): 3
+  - Yeso Negro (KG): 4.51
+  - Arena Mediana (M3): 0.00
+  - Hrs Oficial: 1.80
+  - Hrs Ayudante: 0.90
+
+CIELORRASOS - A la cal suspendido metal desplegado
+Mezcla: 1:4 / 1/4:2:5 / 1/2:1:4 | Unidad: m²
+Materiales por m²:
+  - Cemento (KG): 5
+  - Cal (KG): 4.50
+  - Arena Mediana (M3): 0.03
+  - Arena Fina (M3): 0.01
+  - Metal desplegado m2: 1.25
+  - Alfajías (1" x 4") pie 2: 1.73
+  - Listones (1" x 1 1/2") pie 2: 2.75
+  - Alambre Negro (KG): 0.10
+  - Hrs Oficial: 2.40
+  - Hrs Ayudante: 1.50
+
+PINTURA - Rendimiento por litro x 2 manos
+Unidad: m²
+Materiales por m²:
+  - Latex (L): 0.14
+  - Sellador 1 mano (L): 0.10
+  - Agua tipo "Cremar" (L): 0.25
+  - Sintético sobre madera (L): 0.14
+  - Sintético sobre metal (L): 0.14
+  - Sellador diluido (L): 0.15
+  - Antióxido (L): 0.10
+  - Barniz (L): 0.17
+  - Aguarrás (L): 0.08
+
+CUBIERTAS - Tejas coloniales sobre losa
+Mezcla: 1/4:3:5 | Unidad: m²
+Materiales por m²:
+  - Tejas colonial 435x195x145 (N°): 27
+  - Tejas francesa 425x225 (N°): 14
+  - Tejas romana 435x280 (N°): 11.4
+  - Arena mediana (M3): 0.03
+  - Pintura asfaltica (L): 2
+  - Cemento (KG): 1.90
+  - Cal (KG): 13
+  - Hrs Oficial: 0.80
+  - Hrs Ayudante: 1.00
