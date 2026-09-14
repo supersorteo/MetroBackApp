@@ -1,0 +1,87 @@
+METROAPP — DOCUMENTACIÓN DE AYUDA
+
+=== QUÉ ES METROAPP ===
+MetroApp es una herramienta digital para profesionales de la construcción. Permite calcular materiales por tarea de obra, armar presupuestos, y gestionar clientes y empresas. Está disponible para Argentina, Uruguay y Colombia.
+
+=== MODOS DE USO ===
+
+MODO DEMO (prueba):
+- Acceso gratuito y limitado. No requiere registro ni código.
+- Solo muestra 10 tareas de catálogo en el dashboard (para armar presupuestos).
+- Podés agregar hasta 7 tareas por presupuesto (user-tareas).
+- Podés crear hasta 5 tareas personalizadas propias.
+- Podés registrar hasta 3 empresas y hasta 6 clientes.
+- El historial y los datos se guardan solo en el dispositivo (localStorage). Si limpiás el navegador, se pierden.
+- No incluye historial en la nube ni sincronización entre dispositivos.
+- La calculadora de materiales está disponible también en modo demo con todas sus funciones.
+- Ideal para conocer la app antes de activar un plan VIP.
+
+MODO VIP — PLAN VIP3:
+- Hasta 30 clientes y 1 empresa.
+- Acceso completo al catálogo de tareas del dashboard.
+- Hasta 500 tareas personalizadas.
+- Historial y datos guardados en la nube.
+- Se activa con un código de acceso.
+
+MODO VIP — PLAN VIP6:
+- Hasta 60 clientes y 3 empresas.
+- Acceso completo al catálogo de tareas del dashboard.
+- Hasta 500 tareas personalizadas.
+- Historial y datos guardados en la nube.
+- Se activa con un código de acceso.
+
+=== CÓDIGO DE ACCESO ===
+El código de acceso es el que activa el Modo VIP. Lo provee el administrador de MetroApp. Se ingresa en la pantalla de inicio de la app. Una vez ingresado, la app queda activada con todas las funciones VIP asociadas a ese código. Cada código corresponde a un usuario o empresa específica.
+
+=== CALCULADORA DE MATERIALES ===
+La calculadora contiene 44 tareas de construcción organizadas por categorías (mampostería, revoques, contrapisos, carpetas, pisos, pintura, estructura, y más). Para usar la calculadora:
+1. Buscá la tarea por nombre, categoría o mezcla usando la barra de búsqueda.
+2. Abrí la tarea haciendo click en ella.
+3. Ingresá el área o volumen (m², m³, ml según la tarea).
+4. Presioná "Calcular".
+5. La app muestra los materiales necesarios con sus cantidades exactas.
+Los cálculos pueden guardarse en el historial para consultarlos más tarde. En modo VIP el historial se guarda en la nube; en modo demo solo en el dispositivo.
+
+=== HISTORIAL DE CÁLCULOS ===
+El historial guarda los cálculos que realizaste. Podés acceder desde el menú lateral de la calculadora (ícono de lista). Desde el historial podés restaurar un cálculo anterior directamente en la calculadora. En modo VIP podés fijar (pin) cálculos importantes para no perderlos. El historial en modo demo se borra si limpiás los datos del navegador.
+
+=== PRESUPUESTOS Y USER-TAREAS ===
+Disponible en Modo Demo y Modo VIP. Permite crear presupuestos combinando múltiples tareas de construcción (user-tareas), asignarlos a un cliente y tener un registro organizado.
+- En Modo Demo: podés agregar hasta 7 tareas por presupuesto. Los presupuestos se guardan solo localmente.
+- En Modo VIP: sin límite práctico de tareas por presupuesto. Los presupuestos se guardan en la nube.
+Ideal para presentar costos a clientes de forma profesional.
+
+=== TAREAS PERSONALIZADAS ===
+Las tareas personalizadas son tareas que vos creás manualmente, con nombre, descripción y costo propio. No forman parte del catálogo estándar.
+- En Modo Demo: podés crear hasta 5 tareas personalizadas. Se guardan en el dispositivo.
+- En Modo VIP: podés crear hasta 500 tareas personalizadas. Se guardan en la nube.
+Para acceder a ellas, andá al Dashboard → pestaña "Personalizadas" dentro del panel de tareas.
+
+=== EMPRESAS Y CLIENTES ===
+Disponible solo en Modo VIP. Podés registrar tus empresas y clientes dentro de la app. Cada presupuesto o cálculo puede asociarse a un cliente específico para tener todo organizado por proyecto.
+
+=== PREGUNTAS FRECUENTES ===
+
+¿Cómo activo el Modo VIP?
+Necesitás un código de acceso que te provee el administrador de MetroApp. Ingresalo en la pantalla de inicio.
+
+¿Puedo usar MetroApp sin registrarme?
+Sí, el Modo Demo no requiere registro. Solo ingresás a la app y podés usar las funciones básicas.
+
+¿Qué pasa si pierdo mi código de acceso?
+Contactá al administrador de MetroApp para que te lo reenvíe.
+
+¿El historial se pierde si cierro el navegador?
+En Modo VIP no, está guardado en la nube. En Modo Demo puede perderse si limpiás los datos del navegador.
+
+¿Puedo usar MetroApp en el celular?
+Sí, MetroApp es responsive y funciona en celulares, tablets y computadoras.
+
+¿Las tareas de la calculadora están disponibles para todos los países?
+Las tareas están disponibles para Argentina, Uruguay y Colombia. Los materiales y cantidades corresponden a estándares de construcción locales.
+
+¿Puedo exportar un presupuesto?
+Sí, desde la sección de presupuestos en Modo VIP podés exportar el presupuesto.
+
+¿Cómo busco una tarea en la calculadora?
+Usá la barra de búsqueda flotante en la parte inferior de la pantalla. Podés buscar por nombre de tarea, categoría o tipo de mezcla.
