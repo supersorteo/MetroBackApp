@@ -17,6 +17,9 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> 
             "(SELECT e.id FROM Empresa e WHERE e.userCode = :userCode)")
     List<Presupuesto> findByUserCode(@Param("userCode") String userCode);
 
+    @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.cliente WHERE p.cliente.userCode = :userCode ORDER BY p.createdAt DESC")
+    List<Presupuesto> findByClienteUserCode(@Param("userCode") String userCode);
+
     @EntityGraph(attributePaths = {"tareas"})
     @Query("SELECT p FROM Presupuesto p WHERE p.cliente.id = :clienteId")
     List<Presupuesto> findByClienteIdWithTareas(@Param("clienteId") Long clienteId);

@@ -25,7 +25,7 @@ public class RagUnificadoController {
     @PostMapping("/consulta")
     public ResponseEntity<Map<String, Object>> consultar(@RequestBody RagUnificadoRequest request) {
         try {
-            String respuesta = ragUnificadoService.consultar(request.getPregunta());
+            String respuesta = ragUnificadoService.consultar(request.getPregunta(), request.getUserCode());
             return ResponseEntity.ok(Map.of("respuesta", respuesta, "error", false));
         } catch (Exception e) {
             log.error("Error en RAG unificado: {}", e.getMessage(), e);
