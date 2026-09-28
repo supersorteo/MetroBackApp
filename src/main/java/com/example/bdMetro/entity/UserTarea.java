@@ -23,10 +23,8 @@ public class UserTarea {
     private Double descuento;
     private Double totalCost;
 
-    private Long clienteId;
-
-    @Column(name = "empresa_id")
-    private Long empresaId;
+    @Column(name = "user_code")
+    private String userCode;
 
     private String pais;
     private String rubro;
@@ -42,12 +40,11 @@ public class UserTarea {
 
     public UserTarea() {}
 
-    // Constructor con solo ID (CLAVE para que Jackson mapee { "id": 4 })
     public UserTarea(Long id) {
         this.id = id;
     }
 
-    public UserTarea(Long id, String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, Long clienteId, Long empresaId, String pais, String rubro, String categoria, List<Presupuesto> presupuestos, boolean deleted) {
+    public UserTarea(Long id, String tarea, Double costo, Double area, String descripcion, Double descuento, Double totalCost, String userCode, String pais, String rubro, String categoria, List<Presupuesto> presupuestos, boolean deleted) {
         this.id = id;
         this.tarea = tarea;
         this.costo = costo;
@@ -55,8 +52,7 @@ public class UserTarea {
         this.descripcion = descripcion;
         this.descuento = descuento;
         this.totalCost = totalCost;
-        this.clienteId = clienteId;
-        this.empresaId = empresaId;
+        this.userCode = userCode;
         this.pais = pais;
         this.rubro = rubro;
         this.categoria = categoria;
@@ -64,115 +60,42 @@ public class UserTarea {
         this.deleted = deleted;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getTarea() { return tarea; }
+    public void setTarea(String tarea) { this.tarea = tarea; }
 
-    public String getTarea() {
-        return tarea;
-    }
+    public Double getCosto() { return costo; }
+    public void setCosto(Double costo) { this.costo = costo; }
 
-    public void setTarea(String tarea) {
-        this.tarea = tarea;
-    }
+    public Double getArea() { return area; }
+    public void setArea(Double area) { this.area = area; }
 
-    public Double getCosto() {
-        return costo;
-    }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public void setCosto(Double costo) {
-        this.costo = costo;
-    }
+    public Double getDescuento() { return descuento; }
+    public void setDescuento(Double descuento) { this.descuento = descuento; }
 
-    public Double getArea() {
-        return area;
-    }
+    public Double getTotalCost() { return totalCost; }
+    public void setTotalCost(Double totalCost) { this.totalCost = totalCost; }
 
-    public void setArea(Double area) {
-        this.area = area;
-    }
+    public String getUserCode() { return userCode; }
+    public void setUserCode(String userCode) { this.userCode = userCode; }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
+    public String getPais() { return pais; }
+    public void setPais(String pais) { this.pais = pais; }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
+    public String getRubro() { return rubro; }
+    public void setRubro(String rubro) { this.rubro = rubro; }
 
-    public Double getDescuento() {
-        return descuento;
-    }
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
 
-    public void setDescuento(Double descuento) {
-        this.descuento = descuento;
-    }
+    public List<Presupuesto> getPresupuestos() { return presupuestos; }
+    public void setPresupuestos(List<Presupuesto> presupuestos) { this.presupuestos = presupuestos; }
 
-    public Double getTotalCost() {
-        return totalCost;
-    }
-
-    public void setTotalCost(Double totalCost) {
-        this.totalCost = totalCost;
-    }
-
-    public Long getClienteId() {
-        return clienteId;
-    }
-
-    public void setClienteId(Long clienteId) {
-        this.clienteId = clienteId;
-    }
-
-    public Long getEmpresaId() {
-        return empresaId;
-    }
-
-    public void setEmpresaId(Long empresaId) {
-        this.empresaId = empresaId;
-    }
-
-    public String getPais() {
-        return pais;
-    }
-
-    public void setPais(String pais) {
-        this.pais = pais;
-    }
-
-    public String getRubro() {
-        return rubro;
-    }
-
-    public void setRubro(String rubro) {
-        this.rubro = rubro;
-    }
-
-    public String getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(String categoria) {
-        this.categoria = categoria;
-    }
-
-    public List<Presupuesto> getPresupuestos() {
-        return presupuestos;
-    }
-
-    public void setPresupuestos(List<Presupuesto> presupuestos) {
-        this.presupuestos = presupuestos;
-    }
-
-    public boolean isDeleted() {
-        return deleted;
-    }
-
-    public void setDeleted(boolean deleted) {
-        this.deleted = deleted;
-    }
+    public boolean isDeleted() { return deleted; }
+    public void setDeleted(boolean deleted) { this.deleted = deleted; }
 }

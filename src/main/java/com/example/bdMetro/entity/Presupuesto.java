@@ -2,6 +2,7 @@ package com.example.bdMetro.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import com.example.bdMetro.entity.Empresa;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -19,12 +20,20 @@ public class Presupuesto {
     @Column(nullable = false)
     private String name;
 
+    @Column(name = "user_code")
+    private String userCode;
+
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cliente_id", nullable = false)
+    @JoinColumn(name = "cliente_id")
     private Cliente cliente;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "empresa_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+    private Empresa empresa;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -38,13 +47,17 @@ public class Presupuesto {
     // Constructor vacío
     public Presupuesto() {}
 
-    public Presupuesto(Long id, String name, LocalDateTime createdAt, Cliente cliente, List<UserTarea> tareas) {
+    public Presupuesto(Long id, String name, LocalDateTime createdAt, Cliente cliente, Empresa empresa, List<UserTarea> tareas) {
         this.id = id;
         this.name = name;
         this.createdAt = createdAt;
         this.cliente = cliente;
+        this.empresa = empresa;
         this.tareas = tareas;
     }
+
+    public String getUserCode() { return userCode; }
+    public void setUserCode(String userCode) { this.userCode = userCode; }
 
     public Long getId() {
         return id;
@@ -77,6 +90,9 @@ public class Presupuesto {
     public void setCliente(Cliente cliente) {
         this.cliente = cliente;
     }
+
+    public Empresa getEmpresa() { return empresa; }
+    public void setEmpresa(Empresa empresa) { this.empresa = empresa; }
 
     public List<UserTarea> getTareas() {
         return tareas;

@@ -7,45 +7,30 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/user-tareas")
-//@CrossOrigin(value = "http://localhost:4200")
 public class UserTareaController {
 
     @Autowired
     private UserTareaService userTareaService;
 
-
     @GetMapping
     public ResponseEntity<?> getAllTareas() {
         List<UserTarea> tareas = userTareaService.getAllTareas();
         if (tareas.isEmpty()) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "No se encontraron tareas");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", "No se encontraron tareas"));
         }
         return ResponseEntity.ok(tareas);
     }
 
-
     @GetMapping("/by-user/{userCode}")
     public List<UserTarea> getTareasByUserCode(@PathVariable String userCode) {
         return userTareaService.getTareasByUserCode(userCode);
-    }
-
-    @GetMapping("/by-cliente/{clienteId}")
-    public List<UserTarea> getTareasByClienteId(@PathVariable Long clienteId) {
-        return userTareaService.getTareasByClienteId(clienteId);
-    }
-
-    @GetMapping("/by-cliente/{clienteId}/empresa/{empresaId}")
-    public List<UserTarea> getTareasByClienteAndEmpresa(@PathVariable Long clienteId, @PathVariable Long empresaId) {
-        return userTareaService.getTareasByClienteAndEmpresa(clienteId, empresaId);
     }
 
     @GetMapping("/{id}")
@@ -65,39 +50,13 @@ public class UserTareaController {
         return ResponseEntity.ok(updatedUserTarea);
     }
 
-
-
-
-    @DeleteMapping("/by-cliente/{clienteId}")
-    public ResponseEntity<?> deleteAllTareasByClienteId(@PathVariable Long clienteId) {
-        try {
-            userTareaService.deleteAllTareasByClienteId(clienteId);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    @DeleteMapping("/by-cliente/{clienteId}/empresa/{empresaId}")
-    public ResponseEntity<?> deleteAllTareasByClienteAndEmpresa(@PathVariable Long clienteId, @PathVariable Long empresaId) {
-        try {
-            userTareaService.deleteAllTareasByClienteAndEmpresa(clienteId, empresaId);
-            return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
-
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteUserTarea(@PathVariable Long id) {
         try {
             userTareaService.deleteUserTarea(id);
             return ResponseEntity.noContent().build();
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
         }
     }
-
 }

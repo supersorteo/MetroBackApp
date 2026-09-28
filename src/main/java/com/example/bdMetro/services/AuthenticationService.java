@@ -179,10 +179,8 @@ public class AuthenticationService {
         // 1. IDs de clientes del usuario
         List<Long> clienteIds = clienteRepository.findIdsByUserCode(code);
 
-        // 2. UserTareas (soft-delete)
-        if (!clienteIds.isEmpty()) {
-            userTareaRepository.softDeleteAllByClienteIdIn(clienteIds);
-        }
+        // 2. UserTareas (soft-delete por userCode)
+        userTareaRepository.softDeleteAllByUserCode(code);
 
         // 3. Presupuestos (hard-delete — FK a Cliente no puede quedar huérfana)
         if (!clienteIds.isEmpty()) {

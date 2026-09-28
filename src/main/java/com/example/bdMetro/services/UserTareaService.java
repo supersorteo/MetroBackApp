@@ -20,46 +20,30 @@ public class UserTareaService {
     }
 
     public List<UserTarea> getTareasByUserCode(String userCode) {
-        return userTareaRepository.findByUserCode(userCode);
+        return userTareaRepository.findByUserCodeAndDeletedFalse(userCode);
     }
-
-
-
 
     public Optional<UserTarea> getUserTareaById(Long id) {
         return userTareaRepository.findById(id);
     }
 
-
-
     public UserTarea addUserTarea(UserTarea userTarea) {
-        if (userTarea.getClienteId() == null) {
-            throw new IllegalArgumentException("clienteId es requerido");
+        if (userTarea.getUserCode() == null || userTarea.getUserCode().isBlank()) {
+            throw new IllegalArgumentException("userCode es requerido");
         }
         userTarea.setDeleted(false);
         return userTareaRepository.save(userTarea);
     }
 
-
-    public List<UserTarea> getTareasByClienteId(Long clienteId) {
-        return userTareaRepository.findByClienteIdAndDeletedFalse(clienteId);
-    }
-
-    public List<UserTarea> getTareasByClienteAndEmpresa(Long clienteId, Long empresaId) {
-        return userTareaRepository.findByClienteIdAndEmpresaIdOrNullAndDeletedFalse(clienteId, empresaId);
-    }
-
-
     public UserTarea updateUserTarea(Long id, UserTarea userTareaDetails) {
-        UserTarea userTarea = userTareaRepository.findById(id).orElseThrow(() -> new RuntimeException("UserTarea no encontrada"));
+        UserTarea userTarea = userTareaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("UserTarea no encontrada"));
         userTarea.setTarea(userTareaDetails.getTarea());
         userTarea.setCosto(userTareaDetails.getCosto());
         userTarea.setArea(userTareaDetails.getArea());
         userTarea.setDescripcion(userTareaDetails.getDescripcion());
         userTarea.setDescuento(userTareaDetails.getDescuento());
         userTarea.setTotalCost(userTareaDetails.getTotalCost());
-        userTarea.setClienteId(userTareaDetails.getClienteId());
-        userTarea.setEmpresaId(userTareaDetails.getEmpresaId());
         userTarea.setPais(userTareaDetails.getPais());
         userTarea.setRubro(userTareaDetails.getRubro());
         userTarea.setCategoria(userTareaDetails.getCategoria());
@@ -67,22 +51,10 @@ public class UserTareaService {
     }
 
     @Transactional
-    public void deleteAllTareasByClienteId(Long clienteId) {
-        userTareaRepository.softDeleteAllByClienteId(clienteId);
-    }
-
-    @Transactional
-    public void deleteAllTareasByClienteAndEmpresa(Long clienteId, Long empresaId) {
-        userTareaRepository.softDeleteAllByClienteIdAndEmpresaId(clienteId, empresaId);
-    }
-
-    @Transactional
     public void deleteUserTarea(Long id) {
         UserTarea tarea = userTareaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
-
         tarea.setDeleted(true);
         userTareaRepository.save(tarea);
     }
-
 }

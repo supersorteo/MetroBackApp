@@ -2,10 +2,8 @@ package com.example.bdMetro.services;
 
 import com.example.bdMetro.entity.Cliente;
 import com.example.bdMetro.entity.Presupuesto;
-import com.example.bdMetro.entity.UserTarea;
 import com.example.bdMetro.repository.ClienteRepository;
 import com.example.bdMetro.repository.PresupuestoRepository;
-import com.example.bdMetro.repository.UserTareaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,9 +19,6 @@ public class ClienteService {
 
     @Autowired
     private PresupuestoRepository presupuestoRepository;
-
-    @Autowired
-    private UserTareaRepository userTareaRepository;
 
     @Autowired
     private MembershipLimitService membershipLimitService;
@@ -73,19 +68,11 @@ public class ClienteService {
 
     @Transactional
     public void deleteCliente(Long id) {
-        // 1. Eliminar todos los presupuestos del cliente
-        //    Hibernate elimina automáticamente las filas de la tabla intermedia presupuesto_tareas
+        // Eliminar todos los presupuestos del cliente
+        // Hibernate elimina automáticamente las filas de la tabla intermedia presupuesto_tareas
         List<Presupuesto> presupuestos = presupuestoRepository.findByClienteId(id);
         presupuestoRepository.deleteAll(presupuestos);
 
-        // 2. Soft-delete de todas las user-tareas del cliente
-        List<UserTarea> tareas = userTareaRepository.findByClienteId(id);
-        tareas.forEach(t -> t.setDeleted(true));
-        if (!tareas.isEmpty()) {
-            userTareaRepository.saveAll(tareas);
-        }
-
-        // 3. Eliminar el cliente
         clienteRepository.deleteById(id);
     }
 

@@ -26,50 +26,38 @@ public class PresupuestoService {
     private ClienteRepository clienteRepository;
 
     @Autowired
+    private EmpresaRepository empresaRepository;
+
+    @Autowired
     private UserTareaRepository userTareaRepository;
 
     @Transactional
     public Presupuesto savePresupuesto(Presupuesto presupuesto) {
-        // Validación 1: Cliente requerido
-        if (presupuesto.getCliente() == null || presupuesto.getCliente().getId() == null) {
-            throw new IllegalArgumentException("El presupuesto debe tener un cliente asociado");
-        }
-
-        // Validación 2: Nombre requerido
         if (presupuesto.getName() == null || presupuesto.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre del presupuesto es requerido");
         }
 
-        // Validación 3: Procesar tareas
+        List<UserTarea> tareasVerificadas = new ArrayList<>();
         if (presupuesto.getTareas() != null && !presupuesto.getTareas().isEmpty()) {
-            List<UserTarea> tareasVerificadas = new ArrayList<>();
-
             for (UserTarea tarea : presupuesto.getTareas()) {
                 if (tarea.getId() != null) {
-                    Optional<UserTarea> tareaExistente = userTareaRepository.findById(tarea.getId());
-
-                    if (tareaExistente.isPresent()) {
-                        UserTarea tareaEnBD = tareaExistente.get();
-
-                        // Verificar que la tarea pertenece al cliente
-                        if (!tareaEnBD.getClienteId().equals(presupuesto.getCliente().getId())) {
-                            throw new IllegalArgumentException(
-                                    "La tarea " + tarea.getId() + " no pertenece a este cliente"
-                            );
-                        }
-
-                        tareasVerificadas.add(tareaEnBD);
-                    } else {
-                        throw new IllegalArgumentException(
-                                "La tarea con ID " + tarea.getId() + " no existe"
-                        );
-                    }
+                    UserTarea tareaExistente = userTareaRepository.findById(tarea.getId())
+                            .orElseThrow(() -> new IllegalArgumentException(
+                                    "La tarea con ID " + tarea.getId() + " no existe"));
+                    tareasVerificadas.add(tareaExistente);
                 }
             }
+        }
+        presupuesto.setTareas(tareasVerificadas);
 
-            presupuesto.setTareas(tareasVerificadas);
-        } else {
-            presupuesto.setTareas(new ArrayList<>());
+        // Derivar userCode de las tareas si no viene en el payload
+        if ((presupuesto.getUserCode() == null || presupuesto.getUserCode().isBlank())
+                && !tareasVerificadas.isEmpty()) {
+            tareasVerificadas.stream()
+                    .map(UserTarea::getUserCode)
+                    .filter(uc -> uc != null && !uc.isBlank())
+                    .findFirst()
+                    .ifPresent(presupuesto::setUserCode);
         }
 
         return presupuestoRepository.save(presupuesto);
@@ -117,10 +105,6 @@ public class PresupuestoService {
         UserTarea tarea = userTareaRepository.findById(tareaId)
                 .orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
 
-        if (!tarea.getClienteId().equals(presupuesto.getCliente().getId())) {
-            throw new IllegalArgumentException("La tarea no pertenece a este cliente");
-        }
-
         if (!presupuesto.getTareas().contains(tarea)) {
             presupuesto.addTarea(tarea);
             presupuestoRepository.save(presupuesto);
@@ -157,15 +141,14 @@ public class PresupuestoService {
             throw new IllegalArgumentException("El nombre del presupuesto es requerido");
         }
 
-        // Validación 3: Cliente requerido
-        if (presupuestoActualizado.getCliente() == null ||
-                presupuestoActualizado.getCliente().getId() == null) {
-            throw new IllegalArgumentException("El cliente es requerido");
-        }
-
         // PASO 1: Actualizar campos básicos
         presupuesto.setName(presupuestoActualizado.getName());
-        presupuesto.setCliente(presupuestoActualizado.getCliente());
+        if (presupuestoActualizado.getCliente() != null) {
+            presupuesto.setCliente(presupuestoActualizado.getCliente());
+        }
+        if (presupuestoActualizado.getEmpresa() != null) {
+            presupuesto.setEmpresa(presupuestoActualizado.getEmpresa());
+        }
 
         // PASO 2: Procesar las tareas (REEMPLAZAR COMPLETAMENTE)
         if (presupuestoActualizado.getTareas() != null && !presupuestoActualizado.getTareas().isEmpty()) {
@@ -176,16 +159,7 @@ public class PresupuestoService {
                     Optional<UserTarea> tareaExistente = userTareaRepository.findById(tarea.getId());
 
                     if (tareaExistente.isPresent()) {
-                        UserTarea tareaEnBD = tareaExistente.get();
-
-                        // Verificar que la tarea pertenece al cliente
-                        if (!tareaEnBD.getClienteId().equals(presupuestoActualizado.getCliente().getId())) {
-                            throw new IllegalArgumentException(
-                                    "La tarea " + tarea.getId() + " no pertenece a este cliente"
-                            );
-                        }
-
-                        tareasVerificadas.add(tareaEnBD);
+                        tareasVerificadas.add(tareaExistente.get());
                     } else {
                         throw new IllegalArgumentException(
                                 "La tarea con ID " + tarea.getId() + " no existe"

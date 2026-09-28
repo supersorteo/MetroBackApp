@@ -13,8 +13,7 @@ import java.util.Optional;
 @Repository
 public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> {
 
-    @Query("SELECT p FROM Presupuesto p WHERE p.cliente.empresaId IN " +
-            "(SELECT e.id FROM Empresa e WHERE e.userCode = :userCode)")
+    @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.tareas WHERE p.userCode = :userCode ORDER BY p.createdAt DESC")
     List<Presupuesto> findByUserCode(@Param("userCode") String userCode);
 
     @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.cliente WHERE p.cliente.userCode = :userCode ORDER BY p.createdAt DESC")
@@ -28,10 +27,12 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> 
 
     void deleteAllByClienteIdIn(List<Long> clienteIds);
 
-    @Query("SELECT COUNT(p) FROM Presupuesto p WHERE p.cliente.id IN (SELECT c.id FROM Cliente c WHERE c.userCode = :userCode)")
+    @Query("SELECT COUNT(p) FROM Presupuesto p WHERE p.empresa.userCode = :userCode")
     long countByClienteUserCode(@Param("userCode") String userCode);
+
+    @Query("SELECT p FROM Presupuesto p WHERE p.empresa.id = :empresaId")
+    List<Presupuesto> findByEmpresaId(@Param("empresaId") Long empresaId);
 
     @EntityGraph(attributePaths = {"tareas"})
     Optional<Presupuesto> findById(Long id);
-
 }
