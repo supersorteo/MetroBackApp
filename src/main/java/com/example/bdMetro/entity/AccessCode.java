@@ -21,6 +21,12 @@ public class AccessCode {
     private LocalDate fechaRegistro;
     private LocalDate fechaVencimiento;
 
+    @Column(name = "selected_empresa_id")
+    private Long selectedEmpresaId;
+
+    @Column(name = "selected_cliente_id")
+    private Long selectedClienteId;
+
     public String getCode() {
         return code;
     }
@@ -93,5 +99,21 @@ public class AccessCode {
 
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
+    }
+
+    public Long getSelectedEmpresaId() {
+        return selectedEmpresaId;
+    }
+
+    public void setSelectedEmpresaId(Long selectedEmpresaId) {
+        this.selectedEmpresaId = selectedEmpresaId;
+    }
+
+    public Long getSelectedClienteId() {
+        return selectedClienteId;
+    }
+
+    public void setSelectedClienteId(Long selectedClienteId) {
+        this.selectedClienteId = selectedClienteId;
     }
 }

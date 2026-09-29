@@ -146,6 +146,14 @@ public class AuthenticationService {
         return code.length() == 5 ? fechaRegistro.plusMonths(3) : fechaRegistro.plusMonths(6);
     }
 
+    public AccessCode updatePreferences(String code, Long selectedEmpresaId, Long selectedClienteId) {
+        AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
+        if (ac == null) throw new IllegalArgumentException("Codigo no encontrado");
+        ac.setSelectedEmpresaId(selectedEmpresaId);
+        ac.setSelectedClienteId(selectedClienteId);
+        return accessCodeRepository.save(ac);
+    }
+
     public void deleteCode(String code) {
         accessCodeRepository.deleteById(norm(code));
     }

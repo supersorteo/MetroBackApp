@@ -156,6 +156,23 @@ public class AuthenticationController {
     }
 
 
+    @PatchMapping("/codes/{code}/preferences")
+    public ResponseEntity<?> updatePreferences(@PathVariable String code, @RequestBody Map<String, Object> body) {
+        try {
+            Long selectedEmpresaId = body.get("selectedEmpresaId") != null
+                    ? ((Number) body.get("selectedEmpresaId")).longValue() : null;
+            Long selectedClienteId = body.get("selectedClienteId") != null
+                    ? ((Number) body.get("selectedClienteId")).longValue() : null;
+            AccessCode ac = authenticationService.updatePreferences(code, selectedEmpresaId, selectedClienteId);
+            Map<String, Object> response = new HashMap<>();
+            response.put("selectedEmpresaId", ac.getSelectedEmpresaId());
+            response.put("selectedClienteId", ac.getSelectedClienteId());
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/codes/{code}")
     public void deleteCode(@PathVariable String code) {
         authenticationService.deleteCode(code);
