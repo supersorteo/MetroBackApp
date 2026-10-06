@@ -113,8 +113,15 @@ public class MembershipLimitService {
     }
 
     private PlanTier resolvePlanTier(AccessCode accessCode) {
-        LocalDate fechaRegistro    = accessCode.getFechaRegistro();
+        LocalDate today            = LocalDate.now();
         LocalDate fechaVencimiento = accessCode.getFechaVencimiento();
+
+        // Membresía vencida → siempre tier mínimo, sin importar duración original
+        if (fechaVencimiento != null && fechaVencimiento.isBefore(today)) {
+            return PlanTier.VIP_3;
+        }
+
+        LocalDate fechaRegistro = accessCode.getFechaRegistro();
         if (fechaRegistro != null && fechaVencimiento != null && !fechaVencimiento.isBefore(fechaRegistro)) {
             long days = ChronoUnit.DAYS.between(fechaRegistro, fechaVencimiento);
             if (days >= VIP12_THRESHOLD_DAYS) return PlanTier.VIP_12;

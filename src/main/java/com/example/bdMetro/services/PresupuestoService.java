@@ -54,19 +54,20 @@ public class PresupuestoService {
         }
         presupuesto.setTareas(tareasVerificadas);
 
-        // Derivar userCode de las tareas si no viene en el payload
-        if ((presupuesto.getUserCode() == null || presupuesto.getUserCode().isBlank())
-                && !tareasVerificadas.isEmpty()) {
-            tareasVerificadas.stream()
-                    .map(UserTarea::getUserCode)
-                    .filter(uc -> uc != null && !uc.isBlank())
-                    .findFirst()
-                    .ifPresent(presupuesto::setUserCode);
+        // userCode siempre proviene de las tareas verificadas en DB (fuente confiable),
+        // nunca del payload — evita que un cliente envíe el código de otro usuario.
+        String authorizedUserCode = tareasVerificadas.stream()
+                .map(UserTarea::getUserCode)
+                .filter(uc -> uc != null && !uc.isBlank())
+                .findFirst()
+                .orElse(null);
+        if (authorizedUserCode != null) {
+            presupuesto.setUserCode(authorizedUserCode);
         }
 
-        // Validar límite de presupuestos del plan (solo al crear, no al actualizar)
-        if (presupuesto.getId() == null && presupuesto.getUserCode() != null && !presupuesto.getUserCode().isBlank()) {
-            membershipLimitService.assertPresupuestoLimitNotReached(presupuesto.getUserCode());
+        // Validar límite de presupuestos del plan usando el userCode autorizado (solo al crear)
+        if (presupuesto.getId() == null && authorizedUserCode != null) {
+            membershipLimitService.assertPresupuestoLimitNotReached(authorizedUserCode);
         }
 
         return presupuestoRepository.save(presupuesto);
