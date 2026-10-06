@@ -1,7 +1,6 @@
 package com.example.bdMetro.payments.service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -38,22 +37,19 @@ public class PayPalPaymentService {
     private final MembershipCatalogProperties catalogProperties;
     private final PayPalProperties payPalProperties;
     private final PayPalClient payPalClient;
-    private final FxRateService fxRateService;
 
     public PayPalPaymentService(
             PayPalPaymentOrderRepository orderRepository,
             AccessCodeRepository accessCodeRepository,
             MembershipCatalogProperties catalogProperties,
             PayPalProperties payPalProperties,
-            PayPalClient payPalClient,
-            FxRateService fxRateService
+            PayPalClient payPalClient
     ) {
         this.orderRepository    = orderRepository;
         this.accessCodeRepository = accessCodeRepository;
         this.catalogProperties  = catalogProperties;
         this.payPalProperties   = payPalProperties;
         this.payPalClient       = payPalClient;
-        this.fxRateService      = fxRateService;
     }
 
     @Transactional
@@ -65,8 +61,6 @@ public class PayPalPaymentService {
         MembershipCatalogProperties.CountryCatalog countryCatalog = getCountryCatalog(countryCode);
 
         BigDecimal baseUsdAmount = getBaseUsdAmount(request.planMonths());
-        BigDecimal exchangeRate  = fxRateService.getRate(countryCatalog.getCurrency());
-        BigDecimal localAmount   = baseUsdAmount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
 
         String externalId   = "PP-" + UUID.randomUUID();
         String callbackUrl  = resolveCallbackUrl(request.callbackUrl());
@@ -76,11 +70,13 @@ public class PayPalPaymentService {
         order.setStatus(STATUS_PENDING);
         order.setStatusDetail("Orden creada localmente");
         order.setCountryCode(countryCode);
-        order.setCurrencyCode(countryCatalog.getCurrency());
+        // PayPal solo acepta monedas de su lista oficial; ARS/UYU/COP no están soportados.
+        // Se cobra siempre en USD; PayPal hace la conversión en su plataforma.
+        order.setCurrencyCode("USD");
         order.setPlanMonths(request.planMonths());
         order.setBaseUsdAmount(baseUsdAmount);
-        order.setExchangeRateApplied(exchangeRate);
-        order.setAmount(localAmount);
+        order.setExchangeRateApplied(BigDecimal.ONE);
+        order.setAmount(baseUsdAmount);
         order.setPayerName(request.payerName().trim());
         order.setPayerEmail(request.payerEmail().trim().toLowerCase(Locale.ROOT));
         order.setPayerPhone(request.payerPhone() != null ? request.payerPhone().trim() : "");
