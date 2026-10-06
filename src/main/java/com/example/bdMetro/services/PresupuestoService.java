@@ -61,13 +61,19 @@ public class PresupuestoService {
                 .filter(uc -> uc != null && !uc.isBlank())
                 .findFirst()
                 .orElse(null);
-        if (authorizedUserCode != null) {
-            presupuesto.setUserCode(authorizedUserCode);
+
+        // Nuevo presupuesto sin tareas verificadas = no hay identidad confiable → rechazar.
+        // Evita bypass de límite enviando un presupuesto con lista de tareas vacía.
+        if (presupuesto.getId() == null && authorizedUserCode == null) {
+            throw new IllegalArgumentException(
+                "El presupuesto debe contener al menos una tarea válida.");
         }
 
-        // Validar límite de presupuestos del plan usando el userCode autorizado (solo al crear)
-        if (presupuesto.getId() == null && authorizedUserCode != null) {
-            membershipLimitService.assertPresupuestoLimitNotReached(authorizedUserCode);
+        if (authorizedUserCode != null) {
+            presupuesto.setUserCode(authorizedUserCode);
+            if (presupuesto.getId() == null) {
+                membershipLimitService.assertPresupuestoLimitNotReached(authorizedUserCode);
+            }
         }
 
         return presupuestoRepository.save(presupuesto);
