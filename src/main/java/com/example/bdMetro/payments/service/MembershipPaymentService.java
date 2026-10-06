@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.bdMetro.entity.AccessCode;
+import com.example.bdMetro.entity.AdminPanel;
 import com.example.bdMetro.payments.config.MembershipCatalogProperties;
 import com.example.bdMetro.payments.config.MercadoPagoProperties;
 import com.example.bdMetro.payments.dto.CreateMembershipPaymentRequest;
@@ -27,6 +28,7 @@ import com.example.bdMetro.payments.dto.MembershipPaymentStatusResponse;
 import com.example.bdMetro.payments.entity.MembershipPaymentOrder;
 import com.example.bdMetro.payments.repository.MembershipPaymentOrderRepository;
 import com.example.bdMetro.repository.AccessCodeRepository;
+import com.example.bdMetro.repository.AdminPanelRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 
 @Service
@@ -44,6 +46,7 @@ public class MembershipPaymentService {
     private final MercadoPagoClient mercadoPagoClient;
     private final MercadoPagoWebhookSignatureService webhookSignatureService;
     private final FxRateService fxRateService;
+    private final AdminPanelRepository adminPanelRepository;
     private final String appBaseUrl;
 
     public MembershipPaymentService(
@@ -54,6 +57,7 @@ public class MembershipPaymentService {
             MercadoPagoClient mercadoPagoClient,
             MercadoPagoWebhookSignatureService webhookSignatureService,
             FxRateService fxRateService,
+            AdminPanelRepository adminPanelRepository,
             @Value("${app.base-url:http://localhost:8080}") String appBaseUrl
     ) {
         this.orderRepository = orderRepository;
@@ -63,6 +67,7 @@ public class MembershipPaymentService {
         this.mercadoPagoClient = mercadoPagoClient;
         this.webhookSignatureService = webhookSignatureService;
         this.fxRateService = fxRateService;
+        this.adminPanelRepository = adminPanelRepository;
         this.appBaseUrl = appBaseUrl;
     }
 
@@ -77,7 +82,7 @@ public class MembershipPaymentService {
                     country.getDisplayName(),
                     country.getCurrency(),
                     country.getDocumentLabel(),
-                    buildLocalizedPlans(country),
+                    buildLocalizedPlans(entry.getKey(), country),
                     new LinkedHashMap<>(catalogProperties.getBasePlansUsd())
             ));
         }
@@ -313,17 +318,40 @@ public class MembershipPaymentService {
         if (baseUsdAmount == null) {
             throw new IllegalArgumentException("No existe precio base en USD para " + planMonths + " meses");
         }
+        BigDecimal adminPrice = getAdminPrice(countryCode, planMonths);
+        if (adminPrice != null) {
+            BigDecimal exchangeRate = fxRateService.getRate(catalog.getCurrency());
+            return new PlanQuote(baseUsdAmount, exchangeRate, adminPrice);
+        }
         BigDecimal exchangeRate = fxRateService.getRate(catalog.getCurrency());
         BigDecimal localizedAmount = baseUsdAmount.multiply(exchangeRate).setScale(2, RoundingMode.HALF_UP);
         return new PlanQuote(baseUsdAmount, exchangeRate, localizedAmount);
     }
 
-    private Map<String, BigDecimal> buildLocalizedPlans(MembershipCatalogProperties.CountryCatalog country) {
+    private Map<String, BigDecimal> buildLocalizedPlans(String countryCode, MembershipCatalogProperties.CountryCatalog country) {
         Map<String, BigDecimal> localizedPlans = new LinkedHashMap<>();
         for (Map.Entry<String, BigDecimal> entry : catalogProperties.getBasePlansUsd().entrySet()) {
-            localizedPlans.put(entry.getKey(), fxRateService.convertFromUsd(entry.getValue(), country.getCurrency()));
+            int months = parseMonthKey(entry.getKey());
+            BigDecimal adminPrice = months > 0 ? getAdminPrice(countryCode, months) : null;
+            BigDecimal price = adminPrice != null ? adminPrice : fxRateService.convertFromUsd(entry.getValue(), country.getCurrency());
+            localizedPlans.put(entry.getKey(), price);
         }
         return localizedPlans;
+    }
+
+    private BigDecimal getAdminPrice(String countryCode, int planMonths) {
+        return adminPanelRepository.findByPaisIgnoreCase(countryCode)
+                .map(admin -> {
+                    if (planMonths >= 12) return admin.getPrecio12Meses();
+                    if (planMonths >= 6)  return admin.getPrecio6Meses();
+                    return admin.getPrecio3Meses();
+                })
+                .filter(p -> p != null && p.compareTo(BigDecimal.ZERO) > 0)
+                .orElse(null);
+    }
+
+    private int parseMonthKey(String key) {
+        try { return Integer.parseInt(key); } catch (NumberFormatException e) { return 0; }
     }
 
     private void validateExistingEmailCountry(String payerEmail, String requestedCountryCode) {

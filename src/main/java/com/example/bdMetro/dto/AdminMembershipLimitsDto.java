@@ -1,5 +1,7 @@
 package com.example.bdMetro.dto;
 
+import java.math.BigDecimal;
+
 public class AdminMembershipLimitsDto {
     private String id;
     private String pais;
@@ -57,4 +59,21 @@ public class AdminMembershipLimitsDto {
 
     public Integer getVip12MaxPresupuestos() { return vip12MaxPresupuestos; }
     public void setVip12MaxPresupuestos(Integer v) { this.vip12MaxPresupuestos = v; }
+
+    private BigDecimal precio3Meses;
+    private BigDecimal precio6Meses;
+    private BigDecimal precio12Meses;
+    private String moneda;
+
+    public BigDecimal getPrecio3Meses() { return precio3Meses; }
+    public void setPrecio3Meses(BigDecimal v) { this.precio3Meses = v; }
+
+    public BigDecimal getPrecio6Meses() { return precio6Meses; }
+    public void setPrecio6Meses(BigDecimal v) { this.precio6Meses = v; }
+
+    public BigDecimal getPrecio12Meses() { return precio12Meses; }
+    public void setPrecio12Meses(BigDecimal v) { this.precio12Meses = v; }
+
+    public String getMoneda() { return moneda; }
+    public void setMoneda(String v) { this.moneda = v; }
 }

@@ -1,6 +1,7 @@
 package com.example.bdMetro.entity;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "admin_panel")
@@ -39,11 +40,11 @@ public class AdminPanel {
     @Column(nullable = false, columnDefinition = "integer default 6")
     private Integer demoMaxClientes = 6;
 
-    @Column(nullable = false, columnDefinition = "integer default 30")
-    private Integer vip3MaxClientes = 30;
+    @Column(nullable = false, columnDefinition = "integer default 200")
+    private Integer vip3MaxClientes = 200;
 
-    @Column(nullable = false, columnDefinition = "integer default 60")
-    private Integer vip6MaxClientes = 60;
+    @Column(nullable = false, columnDefinition = "integer default 500")
+    private Integer vip6MaxClientes = 500;
 
     @Column(columnDefinition = "integer default 1000")
     private Integer vip12MaxClientes = 1000;
@@ -59,6 +60,18 @@ public class AdminPanel {
 
     @Column(columnDefinition = "integer default 250")
     private Integer vip12MaxPresupuestos = 250;
+
+    @Column(columnDefinition = "numeric(15,2)")
+    private BigDecimal precio3Meses;
+
+    @Column(columnDefinition = "numeric(15,2)")
+    private BigDecimal precio6Meses;
+
+    @Column(columnDefinition = "numeric(15,2)")
+    private BigDecimal precio12Meses;
+
+    @Column(length = 10)
+    private String moneda;
 
     public String getId()           { return id; }
     public void   setId(String id)  { this.id = id; }
@@ -113,4 +126,16 @@ public class AdminPanel {
 
     public Integer getVip12MaxPresupuestos() { return vip12MaxPresupuestos; }
     public void setVip12MaxPresupuestos(Integer v) { this.vip12MaxPresupuestos = v; }
+
+    public BigDecimal getPrecio3Meses() { return precio3Meses; }
+    public void setPrecio3Meses(BigDecimal v) { this.precio3Meses = v; }
+
+    public BigDecimal getPrecio6Meses() { return precio6Meses; }
+    public void setPrecio6Meses(BigDecimal v) { this.precio6Meses = v; }
+
+    public BigDecimal getPrecio12Meses() { return precio12Meses; }
+    public void setPrecio12Meses(BigDecimal v) { this.precio12Meses = v; }
+
+    public String getMoneda() { return moneda; }
+    public void setMoneda(String v) { this.moneda = v; }
 }
