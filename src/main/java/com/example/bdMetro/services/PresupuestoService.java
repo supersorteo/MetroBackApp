@@ -12,6 +12,7 @@ import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.example.bdMetro.services.MembershipLimitService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +31,9 @@ public class PresupuestoService {
 
     @Autowired
     private UserTareaRepository userTareaRepository;
+
+    @Autowired
+    private MembershipLimitService membershipLimitService;
 
     @Transactional
     public Presupuesto savePresupuesto(Presupuesto presupuesto) {
@@ -58,6 +62,11 @@ public class PresupuestoService {
                     .filter(uc -> uc != null && !uc.isBlank())
                     .findFirst()
                     .ifPresent(presupuesto::setUserCode);
+        }
+
+        // Validar límite de presupuestos del plan (solo al crear, no al actualizar)
+        if (presupuesto.getId() == null && presupuesto.getUserCode() != null && !presupuesto.getUserCode().isBlank()) {
+            membershipLimitService.assertPresupuestoLimitNotReached(presupuesto.getUserCode());
         }
 
         return presupuestoRepository.save(presupuesto);

@@ -143,7 +143,11 @@ public class AuthenticationService {
     private LocalDate calcularFechaVencimiento(String code) {
         validateCodeFormat(code);
         LocalDate fechaRegistro = LocalDate.now();
-        return code.length() == 5 ? fechaRegistro.plusMonths(3) : fechaRegistro.plusMonths(6);
+        return switch (code.length()) {
+            case 5  -> fechaRegistro.plusMonths(3);
+            case 6  -> fechaRegistro.plusMonths(6);
+            default -> fechaRegistro.plusMonths(12);
+        };
     }
 
     public AccessCode updatePreferences(String code, Long selectedEmpresaId, Long selectedClienteId) {
@@ -251,14 +255,15 @@ public class AuthenticationService {
         }
 
         String normalizedCode = code.trim().toUpperCase();
-        if (!normalizedCode.matches("^[A-Z0-9]{5,6}$")) {
+        if (!normalizedCode.matches("^[A-Z0-9]{5,7}$")) {
             throw new IllegalArgumentException(
-                    "El codigo manual debe tener solo letras y numeros, con 5 caracteres para 3 meses o 6 para 6 meses");
+                    "El codigo debe tener solo letras y numeros: 5 caracteres (3 meses), 6 caracteres (6 meses) o 7 caracteres (12 meses)");
         }
 
-        if (normalizedCode.length() != 5 && normalizedCode.length() != 6) {
+        int len = normalizedCode.length();
+        if (len != 5 && len != 6 && len != 7) {
             throw new IllegalArgumentException(
-                    "El codigo manual debe tener 5 caracteres para 3 meses o 6 para 6 meses");
+                    "El codigo debe tener 5 caracteres (3 meses), 6 caracteres (6 meses) o 7 caracteres (12 meses)");
         }
     }
 }

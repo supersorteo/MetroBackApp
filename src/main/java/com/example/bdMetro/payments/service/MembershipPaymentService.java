@@ -285,7 +285,7 @@ public class MembershipPaymentService {
     }
 
     private String generateUniqueCode(int planMonths) {
-        int codeLength = planMonths <= 3 ? 5 : 6;
+        int codeLength = planMonths <= 3 ? 5 : planMonths <= 6 ? 6 : 7;
         String alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
 
         while (true) {

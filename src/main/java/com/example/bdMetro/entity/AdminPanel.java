@@ -33,6 +33,9 @@ public class AdminPanel {
     @Column(nullable = false, columnDefinition = "integer default 3")
     private Integer vip6MaxEmpresas = 3;
 
+    @Column(columnDefinition = "integer default 5")
+    private Integer vip12MaxEmpresas = 5;
+
     @Column(nullable = false, columnDefinition = "integer default 6")
     private Integer demoMaxClientes = 6;
 
@@ -41,6 +44,21 @@ public class AdminPanel {
 
     @Column(nullable = false, columnDefinition = "integer default 60")
     private Integer vip6MaxClientes = 60;
+
+    @Column(columnDefinition = "integer default 1000")
+    private Integer vip12MaxClientes = 1000;
+
+    @Column(columnDefinition = "integer default 5")
+    private Integer demoMaxPresupuestos = 5;
+
+    @Column(columnDefinition = "integer default 30")
+    private Integer vip3MaxPresupuestos = 30;
+
+    @Column(columnDefinition = "integer default 120")
+    private Integer vip6MaxPresupuestos = 120;
+
+    @Column(columnDefinition = "integer default 250")
+    private Integer vip12MaxPresupuestos = 250;
 
     public String getId()           { return id; }
     public void   setId(String id)  { this.id = id; }
@@ -61,20 +79,38 @@ public class AdminPanel {
     public void   setFlag(String flag)  { this.flag = flag; }
 
     public Integer getDemoMaxEmpresas() { return demoMaxEmpresas; }
-    public void setDemoMaxEmpresas(Integer demoMaxEmpresas) { this.demoMaxEmpresas = demoMaxEmpresas; }
+    public void setDemoMaxEmpresas(Integer v) { this.demoMaxEmpresas = v; }
 
     public Integer getVip3MaxEmpresas() { return vip3MaxEmpresas; }
-    public void setVip3MaxEmpresas(Integer vip3MaxEmpresas) { this.vip3MaxEmpresas = vip3MaxEmpresas; }
+    public void setVip3MaxEmpresas(Integer v) { this.vip3MaxEmpresas = v; }
 
     public Integer getVip6MaxEmpresas() { return vip6MaxEmpresas; }
-    public void setVip6MaxEmpresas(Integer vip6MaxEmpresas) { this.vip6MaxEmpresas = vip6MaxEmpresas; }
+    public void setVip6MaxEmpresas(Integer v) { this.vip6MaxEmpresas = v; }
+
+    public Integer getVip12MaxEmpresas() { return vip12MaxEmpresas; }
+    public void setVip12MaxEmpresas(Integer v) { this.vip12MaxEmpresas = v; }
 
     public Integer getDemoMaxClientes() { return demoMaxClientes; }
-    public void setDemoMaxClientes(Integer demoMaxClientes) { this.demoMaxClientes = demoMaxClientes; }
+    public void setDemoMaxClientes(Integer v) { this.demoMaxClientes = v; }
 
     public Integer getVip3MaxClientes() { return vip3MaxClientes; }
-    public void setVip3MaxClientes(Integer vip3MaxClientes) { this.vip3MaxClientes = vip3MaxClientes; }
+    public void setVip3MaxClientes(Integer v) { this.vip3MaxClientes = v; }
 
     public Integer getVip6MaxClientes() { return vip6MaxClientes; }
-    public void setVip6MaxClientes(Integer vip6MaxClientes) { this.vip6MaxClientes = vip6MaxClientes; }
+    public void setVip6MaxClientes(Integer v) { this.vip6MaxClientes = v; }
+
+    public Integer getVip12MaxClientes() { return vip12MaxClientes; }
+    public void setVip12MaxClientes(Integer v) { this.vip12MaxClientes = v; }
+
+    public Integer getDemoMaxPresupuestos() { return demoMaxPresupuestos; }
+    public void setDemoMaxPresupuestos(Integer v) { this.demoMaxPresupuestos = v; }
+
+    public Integer getVip3MaxPresupuestos() { return vip3MaxPresupuestos; }
+    public void setVip3MaxPresupuestos(Integer v) { this.vip3MaxPresupuestos = v; }
+
+    public Integer getVip6MaxPresupuestos() { return vip6MaxPresupuestos; }
+    public void setVip6MaxPresupuestos(Integer v) { this.vip6MaxPresupuestos = v; }
+
+    public Integer getVip12MaxPresupuestos() { return vip12MaxPresupuestos; }
+    public void setVip12MaxPresupuestos(Integer v) { this.vip12MaxPresupuestos = v; }
 }

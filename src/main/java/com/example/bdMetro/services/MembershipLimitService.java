@@ -5,6 +5,7 @@ import com.example.bdMetro.entity.AccessCode;
 import com.example.bdMetro.entity.AdminPanel;
 import com.example.bdMetro.repository.AccessCodeRepository;
 import com.example.bdMetro.repository.AdminPanelRepository;
+import com.example.bdMetro.repository.PresupuestoRepository;
 import com.example.bdMetro.util.CountryCatalog;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,26 +16,35 @@ import java.time.temporal.ChronoUnit;
 @Service
 public class MembershipLimitService {
 
-    private static final int DEMO_DEFAULT_MAX_EMPRESAS = 3;
-    private static final int DEMO_DEFAULT_MAX_CLIENTES = 6;
-    private static final int VIP3_DEFAULT_MAX_EMPRESAS = 1;
-    private static final int VIP3_DEFAULT_MAX_CLIENTES = 30;
-    private static final int VIP6_DEFAULT_MAX_EMPRESAS = 3;
-    private static final int VIP6_DEFAULT_MAX_CLIENTES = 60;
-    private static final long VIP6_THRESHOLD_DAYS = 150;
+    private static final int DEMO_DEFAULT_MAX_EMPRESAS      = 3;
+    private static final int VIP3_DEFAULT_MAX_EMPRESAS      = 1;
+    private static final int VIP6_DEFAULT_MAX_EMPRESAS      = 3;
+    private static final int VIP12_DEFAULT_MAX_EMPRESAS     = 5;
 
-    @Autowired
-    private AccessCodeRepository accessCodeRepository;
+    private static final int DEMO_DEFAULT_MAX_CLIENTES      = 6;
+    private static final int VIP3_DEFAULT_MAX_CLIENTES      = 200;
+    private static final int VIP6_DEFAULT_MAX_CLIENTES      = 500;
+    private static final int VIP12_DEFAULT_MAX_CLIENTES     = 1000;
 
-    @Autowired
-    private AdminPanelRepository adminPanelRepository;
+    private static final int DEMO_DEFAULT_MAX_PRESUPUESTOS  = 5;
+    private static final int VIP3_DEFAULT_MAX_PRESUPUESTOS  = 30;
+    private static final int VIP6_DEFAULT_MAX_PRESUPUESTOS  = 120;
+    private static final int VIP12_DEFAULT_MAX_PRESUPUESTOS = 250;
+
+    private static final long VIP6_THRESHOLD_DAYS  = 150;
+    private static final long VIP12_THRESHOLD_DAYS = 330;
+
+    @Autowired private AccessCodeRepository    accessCodeRepository;
+    @Autowired private AdminPanelRepository    adminPanelRepository;
+    @Autowired private PresupuestoRepository   presupuestoRepository;
 
     public int resolveEmpresaLimit(String userCode) {
         AccessCode accessCode = requireAccessCode(userCode);
         AdminMembershipLimitsDto limits = resolveLimitsByPais(accessCode.getPais());
         return switch (resolvePlanTier(accessCode)) {
-            case VIP_6 -> safeLimit(limits.getVip6MaxEmpresas(), VIP6_DEFAULT_MAX_EMPRESAS);
-            case VIP_3 -> safeLimit(limits.getVip3MaxEmpresas(), VIP3_DEFAULT_MAX_EMPRESAS);
+            case VIP_12 -> safeLimit(limits.getVip12MaxEmpresas(), VIP12_DEFAULT_MAX_EMPRESAS);
+            case VIP_6  -> safeLimit(limits.getVip6MaxEmpresas(),  VIP6_DEFAULT_MAX_EMPRESAS);
+            case VIP_3  -> safeLimit(limits.getVip3MaxEmpresas(),  VIP3_DEFAULT_MAX_EMPRESAS);
         };
     }
 
@@ -42,9 +52,29 @@ public class MembershipLimitService {
         AccessCode accessCode = requireAccessCode(userCode);
         AdminMembershipLimitsDto limits = resolveLimitsByPais(accessCode.getPais());
         return switch (resolvePlanTier(accessCode)) {
-            case VIP_6 -> safeLimit(limits.getVip6MaxClientes(), VIP6_DEFAULT_MAX_CLIENTES);
-            case VIP_3 -> safeLimit(limits.getVip3MaxClientes(), VIP3_DEFAULT_MAX_CLIENTES);
+            case VIP_12 -> safeLimit(limits.getVip12MaxClientes(), VIP12_DEFAULT_MAX_CLIENTES);
+            case VIP_6  -> safeLimit(limits.getVip6MaxClientes(),  VIP6_DEFAULT_MAX_CLIENTES);
+            case VIP_3  -> safeLimit(limits.getVip3MaxClientes(),  VIP3_DEFAULT_MAX_CLIENTES);
         };
+    }
+
+    public int resolvePresupuestoLimit(String userCode) {
+        AccessCode accessCode = requireAccessCode(userCode);
+        AdminMembershipLimitsDto limits = resolveLimitsByPais(accessCode.getPais());
+        return switch (resolvePlanTier(accessCode)) {
+            case VIP_12 -> safeLimit(limits.getVip12MaxPresupuestos(), VIP12_DEFAULT_MAX_PRESUPUESTOS);
+            case VIP_6  -> safeLimit(limits.getVip6MaxPresupuestos(),  VIP6_DEFAULT_MAX_PRESUPUESTOS);
+            case VIP_3  -> safeLimit(limits.getVip3MaxPresupuestos(),  VIP3_DEFAULT_MAX_PRESUPUESTOS);
+        };
+    }
+
+    public void assertPresupuestoLimitNotReached(String userCode) {
+        long current = presupuestoRepository.countByUserCode(userCode);
+        int limit    = resolvePresupuestoLimit(userCode);
+        if (current >= limit) {
+            throw new IllegalStateException(
+                "Has alcanzado el límite de " + limit + " presupuestos de tu plan. Elimina uno existente para guardar otro.");
+        }
     }
 
     public AdminMembershipLimitsDto resolveLimitsByPais(String pais) {
@@ -55,12 +85,22 @@ public class MembershipLimitService {
         AdminMembershipLimitsDto dto = new AdminMembershipLimitsDto();
         dto.setId(admin != null ? admin.getId() : null);
         dto.setPais(admin != null ? admin.getPais() : CountryCatalog.normalizeCode(pais));
-        dto.setDemoMaxEmpresas(admin != null ? safeLimit(admin.getDemoMaxEmpresas(), DEMO_DEFAULT_MAX_EMPRESAS) : DEMO_DEFAULT_MAX_EMPRESAS);
-        dto.setVip3MaxEmpresas(admin != null ? safeLimit(admin.getVip3MaxEmpresas(), VIP3_DEFAULT_MAX_EMPRESAS) : VIP3_DEFAULT_MAX_EMPRESAS);
-        dto.setVip6MaxEmpresas(admin != null ? safeLimit(admin.getVip6MaxEmpresas(), VIP6_DEFAULT_MAX_EMPRESAS) : VIP6_DEFAULT_MAX_EMPRESAS);
-        dto.setDemoMaxClientes(admin != null ? safeLimit(admin.getDemoMaxClientes(), DEMO_DEFAULT_MAX_CLIENTES) : DEMO_DEFAULT_MAX_CLIENTES);
-        dto.setVip3MaxClientes(admin != null ? safeLimit(admin.getVip3MaxClientes(), VIP3_DEFAULT_MAX_CLIENTES) : VIP3_DEFAULT_MAX_CLIENTES);
-        dto.setVip6MaxClientes(admin != null ? safeLimit(admin.getVip6MaxClientes(), VIP6_DEFAULT_MAX_CLIENTES) : VIP6_DEFAULT_MAX_CLIENTES);
+
+        dto.setDemoMaxEmpresas(admin != null  ? safeLimit(admin.getDemoMaxEmpresas(),  DEMO_DEFAULT_MAX_EMPRESAS)  : DEMO_DEFAULT_MAX_EMPRESAS);
+        dto.setVip3MaxEmpresas(admin != null  ? safeLimit(admin.getVip3MaxEmpresas(),  VIP3_DEFAULT_MAX_EMPRESAS)  : VIP3_DEFAULT_MAX_EMPRESAS);
+        dto.setVip6MaxEmpresas(admin != null  ? safeLimit(admin.getVip6MaxEmpresas(),  VIP6_DEFAULT_MAX_EMPRESAS)  : VIP6_DEFAULT_MAX_EMPRESAS);
+        dto.setVip12MaxEmpresas(admin != null ? safeLimit(admin.getVip12MaxEmpresas(), VIP12_DEFAULT_MAX_EMPRESAS) : VIP12_DEFAULT_MAX_EMPRESAS);
+
+        dto.setDemoMaxClientes(admin != null  ? safeLimit(admin.getDemoMaxClientes(),  DEMO_DEFAULT_MAX_CLIENTES)  : DEMO_DEFAULT_MAX_CLIENTES);
+        dto.setVip3MaxClientes(admin != null  ? safeLimit(admin.getVip3MaxClientes(),  VIP3_DEFAULT_MAX_CLIENTES)  : VIP3_DEFAULT_MAX_CLIENTES);
+        dto.setVip6MaxClientes(admin != null  ? safeLimit(admin.getVip6MaxClientes(),  VIP6_DEFAULT_MAX_CLIENTES)  : VIP6_DEFAULT_MAX_CLIENTES);
+        dto.setVip12MaxClientes(admin != null ? safeLimit(admin.getVip12MaxClientes(), VIP12_DEFAULT_MAX_CLIENTES) : VIP12_DEFAULT_MAX_CLIENTES);
+
+        dto.setDemoMaxPresupuestos(admin != null  ? safeLimit(admin.getDemoMaxPresupuestos(),  DEMO_DEFAULT_MAX_PRESUPUESTOS)  : DEMO_DEFAULT_MAX_PRESUPUESTOS);
+        dto.setVip3MaxPresupuestos(admin != null  ? safeLimit(admin.getVip3MaxPresupuestos(),  VIP3_DEFAULT_MAX_PRESUPUESTOS)  : VIP3_DEFAULT_MAX_PRESUPUESTOS);
+        dto.setVip6MaxPresupuestos(admin != null  ? safeLimit(admin.getVip6MaxPresupuestos(),  VIP6_DEFAULT_MAX_PRESUPUESTOS)  : VIP6_DEFAULT_MAX_PRESUPUESTOS);
+        dto.setVip12MaxPresupuestos(admin != null ? safeLimit(admin.getVip12MaxPresupuestos(), VIP12_DEFAULT_MAX_PRESUPUESTOS) : VIP12_DEFAULT_MAX_PRESUPUESTOS);
+
         return dto;
     }
 
@@ -73,18 +113,19 @@ public class MembershipLimitService {
     }
 
     private PlanTier resolvePlanTier(AccessCode accessCode) {
-        LocalDate fechaRegistro = accessCode.getFechaRegistro();
+        LocalDate fechaRegistro    = accessCode.getFechaRegistro();
         LocalDate fechaVencimiento = accessCode.getFechaVencimiento();
         if (fechaRegistro != null && fechaVencimiento != null && !fechaVencimiento.isBefore(fechaRegistro)) {
             long days = ChronoUnit.DAYS.between(fechaRegistro, fechaVencimiento);
-            if (days >= VIP6_THRESHOLD_DAYS) {
-                return PlanTier.VIP_6;
-            }
+            if (days >= VIP12_THRESHOLD_DAYS) return PlanTier.VIP_12;
+            if (days >= VIP6_THRESHOLD_DAYS)  return PlanTier.VIP_6;
         }
 
         String code = accessCode.getCode();
-        if (code != null && code.trim().length() >= 6) {
-            return PlanTier.VIP_6;
+        if (code != null) {
+            int len = code.trim().length();
+            if (len >= 7) return PlanTier.VIP_12;
+            if (len >= 6) return PlanTier.VIP_6;
         }
 
         return PlanTier.VIP_3;
@@ -94,8 +135,5 @@ public class MembershipLimitService {
         return value != null && value > 0 ? value : fallback;
     }
 
-    private enum PlanTier {
-        VIP_3,
-        VIP_6
-    }
+    private enum PlanTier { VIP_3, VIP_6, VIP_12 }
 }

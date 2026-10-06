@@ -313,7 +313,7 @@ public class PayPalPaymentService {
     }
 
     private String generateUniqueCode(int planMonths) {
-        int len = planMonths <= 3 ? 5 : 6;
+        int len = planMonths <= 3 ? 5 : planMonths <= 6 ? 6 : 7;
         String alpha = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
         while (true) {
             StringBuilder sb = new StringBuilder(len);

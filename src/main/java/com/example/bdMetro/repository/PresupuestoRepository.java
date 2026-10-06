@@ -30,6 +30,9 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> 
     @Query("SELECT COUNT(p) FROM Presupuesto p WHERE p.empresa.userCode = :userCode")
     long countByClienteUserCode(@Param("userCode") String userCode);
 
+    @Query("SELECT COUNT(p) FROM Presupuesto p WHERE p.userCode = :userCode")
+    long countByUserCode(@Param("userCode") String userCode);
+
     @Query("SELECT p FROM Presupuesto p WHERE p.empresa.id = :empresaId")
     List<Presupuesto> findByEmpresaId(@Param("empresaId") Long empresaId);
 
