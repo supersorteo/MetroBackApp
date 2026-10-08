@@ -171,6 +171,66 @@ public class AuthenticationService {
         accessCodeRepository.deleteById(norm(code));
     }
 
+    @Transactional
+    public AccessCode reactivateCode(String expiredCode, String newCode) {
+        String normExpired = norm(expiredCode);
+        String normNew = norm(newCode);
+
+        AccessCode expired = accessCodeRepository.findByCodeIgnoreCase(normExpired);
+        if (expired == null)
+            throw new IllegalArgumentException("El código anterior no existe.");
+        if (expired.getEmail() == null)
+            throw new IllegalArgumentException("El código anterior no tiene usuario asociado.");
+        if (expired.getFechaVencimiento() == null || !expired.getFechaVencimiento().isBefore(LocalDate.now()))
+            throw new IllegalArgumentException("El código anterior aún está vigente. No es necesario reactivar.");
+
+        AccessCode newAc = accessCodeRepository.findByCodeIgnoreCase(normNew);
+        if (newAc == null)
+            throw new IllegalArgumentException("El nuevo código no existe.");
+        if (newAc.getEmail() != null)
+            throw new IllegalArgumentException("El nuevo código ya está asignado a otro usuario.");
+
+        // Transferir todos los datos al nuevo código
+        empresaRepository.updateUserCode(normExpired, normNew);
+        clienteRepository.updateUserCode(normExpired, normNew);
+        presupuestoRepository.updateUserCode(normExpired, normNew);
+        tareaPersonalizadaRepository.updateUserCode(normExpired, normNew);
+        userTareaRepository.updateUserCode(normExpired, normNew);
+        calculoMaterialRepository.updateUserCode(normExpired, normNew);
+
+        // Copiar perfil al nuevo código
+        newAc.setEmail(expired.getEmail());
+        newAc.setTelefono(expired.getTelefono());
+        newAc.setProvincia(expired.getProvincia());
+        if (newAc.getPais() == null || newAc.getPais().isBlank()) {
+            newAc.setPais(expired.getPais());
+        }
+        newAc.setFechaRegistro(LocalDate.now());
+        newAc.setFechaVencimiento(calcularFechaVencimiento(normNew));
+        accessCodeRepository.save(newAc);
+
+        // Limpiar el código vencido (slot queda libre)
+        expired.setEmail(null);
+        expired.setTelefono(null);
+        expired.setProvincia(null);
+        expired.setFechaRegistro(null);
+        expired.setFechaVencimiento(null);
+        expired.setDisabled(false);
+        accessCodeRepository.save(expired);
+
+        return newAc;
+    }
+
+    @Transactional
+    public int cleanExpiredDataOlderThan(int days) {
+        LocalDate cutoff = LocalDate.now().minusDays(days);
+        List<AccessCode> toClean = accessCodeRepository.findExpiredWithEmail(cutoff);
+        for (AccessCode ac : toClean) {
+            deleteUserData(ac.getCode());
+        }
+        return toClean.size();
+    }
+
     public AccessCode disableCode(String code) {
         AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
         if (ac == null) throw new IllegalArgumentException("Codigo no encontrado");

@@ -173,6 +173,21 @@ public class AuthenticationController {
         }
     }
 
+    @PostMapping("/reactivate")
+    public ResponseEntity<?> reactivateCode(@RequestBody Map<String, String> request) {
+        String expiredCode = request.get("expiredCode");
+        String newCode = request.get("newCode");
+        try {
+            AccessCode updated = authenticationService.reactivateCode(expiredCode, newCode);
+            return ResponseEntity.ok(updated);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("email", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("email", "Error al reactivar: " + e.getMessage()));
+        }
+    }
+
     @DeleteMapping("/codes/{code}")
     public void deleteCode(@PathVariable String code) {
         authenticationService.deleteCode(code);

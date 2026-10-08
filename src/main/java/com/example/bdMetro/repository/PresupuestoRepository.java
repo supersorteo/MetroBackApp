@@ -38,4 +38,8 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> 
 
     @EntityGraph(attributePaths = {"tareas"})
     Optional<Presupuesto> findById(Long id);
+
+    @Modifying
+    @Query("UPDATE Presupuesto p SET p.userCode = :newCode WHERE p.userCode = :oldCode")
+    void updateUserCode(@Param("oldCode") String oldCode, @Param("newCode") String newCode);
 }
