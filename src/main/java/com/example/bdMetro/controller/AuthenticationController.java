@@ -2,7 +2,6 @@ package com.example.bdMetro.controller;
 
 import com.example.bdMetro.dto.UserDataSummaryDto;
 import com.example.bdMetro.entity.AccessCode;
-import com.example.bdMetro.services.AdminPanelService;
 import com.example.bdMetro.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -19,9 +18,6 @@ import java.util.Map;
 public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
-
-    @Autowired
-    private AdminPanelService adminPanelService;
 
 
     @PostMapping("/login")
@@ -219,21 +215,21 @@ public class AuthenticationController {
     // TEST ONLY — comentar tras pruebas
     @PatchMapping("/codes/{code}/expiry")
     public ResponseEntity<?> setExpiry(@PathVariable String code, @RequestBody Map<String, String> body) {
-        String adminUsername = body.get("adminUsername");
-        String adminPassword = body.get("adminPassword");
-        if (adminUsername == null || adminPassword == null
-                || adminPanelService.login(adminUsername, adminPassword).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Credenciales de admin requeridas."));
-        }
-        String dateStr = body.get("fechaVencimiento");
-        if (dateStr == null || dateStr.isBlank())
-            return ResponseEntity.badRequest().body(Map.of("error", "Fecha requerida."));
+        String vencStr = body.get("fechaVencimiento");
+        String regStr  = body.get("fechaRegistro");
+        if (vencStr == null || vencStr.isBlank())
+            return ResponseEntity.badRequest().body(Map.of("error", "fechaVencimiento requerida."));
         try {
             AccessCode ac = authenticationService.getCode(code);
             if (ac == null) return ResponseEntity.notFound().build();
-            ac.setFechaVencimiento(java.time.LocalDate.parse(dateStr));
+            ac.setFechaVencimiento(LocalDate.parse(vencStr));
+            if (regStr != null && !regStr.isBlank()) ac.setFechaRegistro(LocalDate.parse(regStr));
             authenticationService.save(ac);
-            return ResponseEntity.ok(Map.of("code", ac.getCode(), "fechaVencimiento", dateStr));
+            return ResponseEntity.ok(Map.of(
+                "code", ac.getCode(),
+                "fechaVencimiento", vencStr,
+                "fechaRegistro", regStr != null ? regStr : (ac.getFechaRegistro() != null ? ac.getFechaRegistro().toString() : "")
+            ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
