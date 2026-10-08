@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -42,6 +43,32 @@ public class LegacyCodeService {
         int skipped = 0;
         int total = registros.size();
 
+        for (JsonNode node : registros) {
+            String code = node.get("code").asText().trim().toUpperCase();
+            if (code.length() > 20 || legacyCodeRepository.existsByCode(code)) {
+                skipped++;
+                continue;
+            }
+            LegacyCode lc = new LegacyCode();
+            lc.setCode(code);
+            lc.setMeses(node.get("meses").asInt());
+            lc.setFechaAdquisicion(parseLocalDate(node.get("fechaAdquisicion")));
+            lc.setFechaVencimiento(parseLocalDate(node.get("fechaVencimiento")));
+            lc.setFechaCreacion(parseLocalDateTime(node.get("fechaCreacion")));
+            legacyCodeRepository.save(lc);
+            imported++;
+        }
+        return new ImportResultDTO(imported, skipped, total);
+    }
+
+    public ImportResultDTO importFromStream(InputStream inputStream) throws IOException {
+        JsonNode root = objectMapper.readTree(inputStream);
+        JsonNode registros = root.get("registros");
+        if (registros == null || !registros.isArray())
+            throw new IllegalArgumentException("El JSON no contiene un array 'registros'.");
+        int imported = 0;
+        int skipped = 0;
+        int total = registros.size();
         for (JsonNode node : registros) {
             String code = node.get("code").asText().trim().toUpperCase();
             if (code.length() > 20 || legacyCodeRepository.existsByCode(code)) {

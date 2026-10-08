@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -29,6 +30,18 @@ public class LegacyCodeController {
     public ResponseEntity<?> importCodes() {
         try {
             ImportResultDTO result = legacyCodeService.importFromJson();
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("error", e.getClass().getSimpleName() + ": " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/api/admin/legacy-codes/import-file")
+    public ResponseEntity<?> importCodesFromFile(@RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) return ResponseEntity.badRequest().body(Map.of("error", "El archivo está vacío."));
+        try {
+            ImportResultDTO result = legacyCodeService.importFromStream(file.getInputStream());
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
