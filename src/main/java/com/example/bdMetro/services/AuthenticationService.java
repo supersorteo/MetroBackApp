@@ -171,6 +171,10 @@ public class AuthenticationService {
         accessCodeRepository.deleteById(norm(code));
     }
 
+    public AccessCode save(AccessCode ac) {
+        return accessCodeRepository.save(ac);
+    }
+
     @Transactional
     public AccessCode reactivateCode(String expiredCode, String newCode, String email) {
         String normExpired = norm(expiredCode);

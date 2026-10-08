@@ -212,6 +212,23 @@ public class AuthenticationController {
         }
     }
 
+    // TEST ONLY — comentar tras pruebas
+    @PatchMapping("/codes/{code}/expiry")
+    public ResponseEntity<?> setExpiry(@PathVariable String code, @RequestBody Map<String, String> body) {
+        String dateStr = body.get("fechaVencimiento");
+        if (dateStr == null || dateStr.isBlank())
+            return ResponseEntity.badRequest().body(Map.of("error", "Fecha requerida."));
+        try {
+            AccessCode ac = authenticationService.getCode(code);
+            if (ac == null) return ResponseEntity.notFound().build();
+            ac.setFechaVencimiento(java.time.LocalDate.parse(dateStr));
+            authenticationService.save(ac);
+            return ResponseEntity.ok(Map.of("code", ac.getCode(), "fechaVencimiento", dateStr));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PatchMapping("/codes/{code}/disable")
     public ResponseEntity<?> disableCode(@PathVariable String code) {
         try {
