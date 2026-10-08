@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -188,7 +189,7 @@ public class LegacyCodeService {
     }
 
     public List<LegacyCode> getAll() {
-        return legacyCodeRepository.findAll();
+        return legacyCodeRepository.findAll(Sort.by(Sort.Direction.DESC, "id"));
     }
 
     private LocalDate parseLocalDate(JsonNode node) {
