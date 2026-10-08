@@ -220,9 +220,13 @@ public class AuthenticationController {
         if (vencStr == null || vencStr.isBlank())
             return ResponseEntity.badRequest().body(Map.of("error", "fechaVencimiento requerida."));
         try {
+            LocalDate venc = LocalDate.parse(vencStr);
+            // Solo se permiten fechas pasadas — evita que se use para extender suscripciones
+            if (!venc.isBefore(LocalDate.now()))
+                return ResponseEntity.badRequest().body(Map.of("error", "Solo se permiten fechas anteriores a hoy."));
             AccessCode ac = authenticationService.getCode(code);
             if (ac == null) return ResponseEntity.notFound().build();
-            ac.setFechaVencimiento(LocalDate.parse(vencStr));
+            ac.setFechaVencimiento(venc);
             if (regStr != null && !regStr.isBlank()) ac.setFechaRegistro(LocalDate.parse(regStr));
             authenticationService.save(ac);
             return ResponseEntity.ok(Map.of(
