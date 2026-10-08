@@ -2,6 +2,7 @@ package com.example.bdMetro.controller;
 
 import com.example.bdMetro.dto.UserDataSummaryDto;
 import com.example.bdMetro.entity.AccessCode;
+import com.example.bdMetro.services.AdminPanelService;
 import com.example.bdMetro.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,9 @@ import java.util.Map;
 public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
+
+    @Autowired
+    private AdminPanelService adminPanelService;
 
 
     @PostMapping("/login")
@@ -215,6 +219,12 @@ public class AuthenticationController {
     // TEST ONLY — comentar tras pruebas
     @PatchMapping("/codes/{code}/expiry")
     public ResponseEntity<?> setExpiry(@PathVariable String code, @RequestBody Map<String, String> body) {
+        String adminUsername = body.get("adminUsername");
+        String adminPassword = body.get("adminPassword");
+        if (adminUsername == null || adminPassword == null
+                || adminPanelService.login(adminUsername, adminPassword).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("error", "Credenciales de admin requeridas."));
+        }
         String dateStr = body.get("fechaVencimiento");
         if (dateStr == null || dateStr.isBlank())
             return ResponseEntity.badRequest().body(Map.of("error", "Fecha requerida."));
