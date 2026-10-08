@@ -50,7 +50,7 @@ public class AuthenticationService {
     }
 
     public List<AccessCode> getCodesByPais(String pais) {
-        return accessCodeRepository.findByPaisIgnoreCase(CountryCatalog.displayName(pais));
+        return accessCodeRepository.findByPaisIgnoreCaseAndLegacyFalse(CountryCatalog.displayName(pais));
     }
 
     public AccessCode getCode(String code) {
@@ -70,10 +70,15 @@ public class AuthenticationService {
             throw new IllegalArgumentException("Este email ya esta en la base de datos");
         }
 
+        boolean firstAssignment = accessCode.getEmail() == null && normalizedEmail != null;
         accessCode.setEmail(normalizedEmail);
         accessCode.setTelefono(telefono);
         accessCode.setProvincia(provincia);
         accessCode.setPais(resolveCountryForRegistration(accessCode.getPais(), pais));
+        if (firstAssignment) {
+            accessCode.setFechaRegistro(LocalDate.now());
+            accessCode.setFechaVencimiento(calcularFechaVencimiento(normalizedCode));
+        }
         return accessCodeRepository.save(accessCode);
     }
 
@@ -91,8 +96,10 @@ public class AuthenticationService {
         }
         accessCode.setEmail(normalizedEmail);
         accessCode.setPais(CountryCatalog.displayName(accessCode.getPais()));
-        accessCode.setFechaRegistro(LocalDate.now());
-        accessCode.setFechaVencimiento(calcularFechaVencimiento(accessCode.getCode()));
+        if (normalizedEmail != null) {
+            accessCode.setFechaRegistro(LocalDate.now());
+            accessCode.setFechaVencimiento(calcularFechaVencimiento(accessCode.getCode()));
+        }
         return accessCodeRepository.save(accessCode);
     }
 
@@ -106,8 +113,10 @@ public class AuthenticationService {
             }
             accessCode.setEmail(normalizeEmail(accessCode.getEmail()));
             accessCode.setPais(CountryCatalog.displayName(accessCode.getPais()));
-            accessCode.setFechaRegistro(LocalDate.now());
-            accessCode.setFechaVencimiento(calcularFechaVencimiento(accessCode.getCode()));
+            if (accessCode.getEmail() != null) {
+                accessCode.setFechaRegistro(LocalDate.now());
+                accessCode.setFechaVencimiento(calcularFechaVencimiento(accessCode.getCode()));
+            }
         }
         return accessCodeRepository.saveAll(accessCodes);
     }

@@ -13,6 +13,9 @@ public class AccessCode {
     private String email;
     @Column(columnDefinition = "boolean not null default false")
     private boolean disabled = false;
+
+    @Column(name = "is_legacy", columnDefinition = "boolean not null default false")
+    private boolean legacy = false;
     //private String username;
     private String telefono;
     private String provincia;
@@ -99,6 +102,14 @@ public class AccessCode {
 
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
+    }
+
+    public boolean isLegacy() {
+        return legacy;
+    }
+
+    public void setLegacy(boolean legacy) {
+        this.legacy = legacy;
     }
 
     public Long getSelectedEmpresaId() {

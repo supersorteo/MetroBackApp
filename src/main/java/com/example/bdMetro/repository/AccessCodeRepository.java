@@ -12,4 +12,5 @@ public interface AccessCodeRepository extends JpaRepository<AccessCode, String> 
     AccessCode findByCodeIgnoreCase(String code);
     AccessCode findByEmail(String email);
     List<AccessCode> findByPaisIgnoreCase(String pais);
+    List<AccessCode> findByPaisIgnoreCaseAndLegacyFalse(String pais);
 }
