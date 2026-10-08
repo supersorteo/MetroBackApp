@@ -172,15 +172,18 @@ public class AuthenticationService {
     }
 
     @Transactional
-    public AccessCode reactivateCode(String expiredCode, String newCode) {
+    public AccessCode reactivateCode(String expiredCode, String newCode, String email) {
         String normExpired = norm(expiredCode);
         String normNew = norm(newCode);
+        String normEmail = normalizeEmail(email);
 
         AccessCode expired = accessCodeRepository.findByCodeIgnoreCase(normExpired);
         if (expired == null)
             throw new IllegalArgumentException("El código anterior no existe.");
         if (expired.getEmail() == null)
             throw new IllegalArgumentException("El código anterior no tiene usuario asociado.");
+        if (!expired.getEmail().equals(normEmail))
+            throw new IllegalArgumentException("El email no coincide con el registrado para ese código.");
         if (expired.getFechaVencimiento() == null || !expired.getFechaVencimiento().isBefore(LocalDate.now()))
             throw new IllegalArgumentException("El código anterior aún está vigente. No es necesario reactivar.");
 

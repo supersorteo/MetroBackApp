@@ -177,8 +177,9 @@ public class AuthenticationController {
     public ResponseEntity<?> reactivateCode(@RequestBody Map<String, String> request) {
         String expiredCode = request.get("expiredCode");
         String newCode = request.get("newCode");
+        String email = request.get("email");
         try {
-            AccessCode updated = authenticationService.reactivateCode(expiredCode, newCode);
+            AccessCode updated = authenticationService.reactivateCode(expiredCode, newCode, email);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("email", e.getMessage()));
