@@ -36,10 +36,6 @@ public class AuthenticationController {
             AccessCode errorResponse = new AccessCode();
             errorResponse.setEmail("Código desactivado. Contactá al administrador.");
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
-        } else if (accessCode.getFechaVencimiento() != null && accessCode.getFechaVencimiento().isBefore(LocalDate.now())) {
-            AccessCode errorResponse = new AccessCode();
-            errorResponse.setEmail("Código vencido. Renovar membresía para continuar.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
         }
         return ResponseEntity.ok(accessCode);
     }
@@ -212,7 +208,7 @@ public class AuthenticationController {
         }
     }
 
-    // TEST ONLY — comentar tras pruebas
+    // Edición de fechas desde el panel de administración.
     @PatchMapping("/codes/{code}/expiry")
     public ResponseEntity<?> setExpiry(@PathVariable String code, @RequestBody Map<String, String> body) {
         String vencStr = body.get("fechaVencimiento");
@@ -221,9 +217,6 @@ public class AuthenticationController {
             return ResponseEntity.badRequest().body(Map.of("error", "fechaVencimiento requerida."));
         try {
             LocalDate venc = LocalDate.parse(vencStr);
-            // Solo se permiten fechas pasadas — evita que se use para extender suscripciones
-            if (!venc.isBefore(LocalDate.now()))
-                return ResponseEntity.badRequest().body(Map.of("error", "Solo se permiten fechas anteriores a hoy."));
             AccessCode ac = authenticationService.getCode(code);
             if (ac == null) return ResponseEntity.notFound().build();
             ac.setFechaVencimiento(venc);

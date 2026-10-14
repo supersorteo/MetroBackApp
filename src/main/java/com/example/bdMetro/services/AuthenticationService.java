@@ -216,14 +216,8 @@ public class AuthenticationService {
         newAc.setFechaVencimiento(calcularFechaVencimiento(normNew));
         accessCodeRepository.save(newAc);
 
-        // Limpiar el código vencido (slot queda libre)
-        expired.setEmail(null);
-        expired.setTelefono(null);
-        expired.setProvincia(null);
-        expired.setFechaRegistro(null);
-        expired.setFechaVencimiento(null);
-        expired.setDisabled(false);
-        accessCodeRepository.save(expired);
+        // Eliminar el código vencido — el slot ya cumplió su ciclo de vida
+        accessCodeRepository.delete(expired);
 
         return newAc;
     }

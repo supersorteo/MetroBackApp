@@ -11,12 +11,12 @@ public class CleanupScheduler {
     @Autowired
     private AuthenticationService authenticationService;
 
-    // Todos los días a las 2am: limpia datos de usuarios vencidos hace más de 30 días
+    // Todos los días a las 2am: limpia datos de usuarios vencidos hace más de 90 días
     @Scheduled(cron = "0 0 2 * * *")
     public void cleanExpiredUserData() {
-        int cleaned = authenticationService.cleanExpiredDataOlderThan(30);
+        int cleaned = authenticationService.cleanExpiredDataOlderThan(90);
         if (cleaned > 0) {
-            System.out.println("[CleanupScheduler] Datos eliminados de " + cleaned + " usuario(s) con código vencido hace más de 30 días.");
+            System.out.println("[CleanupScheduler] Datos eliminados de " + cleaned + " usuario(s) con código vencido hace más de 90 días.");
         }
     }
 }
