@@ -197,6 +197,12 @@ public class AuthenticationService {
         if (newAc.getEmail() != null)
             throw new IllegalArgumentException("El nuevo código ya está asignado a otro usuario.");
 
+        // Capturar datos antes de modificar el código vencido
+        String emailToTransfer     = expired.getEmail();
+        String telefonoToTransfer  = expired.getTelefono();
+        String provinciaToTransfer = expired.getProvincia();
+        String paisToTransfer      = expired.getPais();
+
         // Transferir todos los datos al nuevo código
         empresaRepository.updateUserCode(normExpired, normNew);
         clienteRepository.updateUserCode(normExpired, normNew);
@@ -205,12 +211,18 @@ public class AuthenticationService {
         userTareaRepository.updateUserCode(normExpired, normNew);
         calculoMaterialRepository.updateUserCode(normExpired, normNew);
 
+        // Liberar el email del código vencido ANTES de asignarlo al nuevo para evitar
+        // violación del constraint UNIQUE en email (Hibernate puede ordenar el INSERT
+        // del nuevo antes del DELETE del viejo dentro del mismo flush)
+        expired.setEmail(null);
+        accessCodeRepository.saveAndFlush(expired);
+
         // Copiar perfil al nuevo código
-        newAc.setEmail(expired.getEmail());
-        newAc.setTelefono(expired.getTelefono());
-        newAc.setProvincia(expired.getProvincia());
+        newAc.setEmail(emailToTransfer);
+        newAc.setTelefono(telefonoToTransfer);
+        newAc.setProvincia(provinciaToTransfer);
         if (newAc.getPais() == null || newAc.getPais().isBlank()) {
-            newAc.setPais(expired.getPais());
+            newAc.setPais(paisToTransfer);
         }
         newAc.setFechaRegistro(LocalDate.now());
         newAc.setFechaVencimiento(calcularFechaVencimiento(normNew));
