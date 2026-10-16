@@ -45,6 +45,9 @@ public class AuthenticationController {
             } catch (IllegalStateException e) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(Map.of("error", e.getMessage()));
+            } catch (RuntimeException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "Error al registrar sesión. Intente nuevamente."));
             }
         }
 
@@ -151,6 +154,21 @@ public class AuthenticationController {
     @DeleteMapping("/session/{sessionToken}")
     public ResponseEntity<Void> terminateSession(@PathVariable String sessionToken) {
         authenticationService.terminateSession(sessionToken);
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/codes/{code}/sessions")
+    public ResponseEntity<?> getActiveSessions(@PathVariable String code) {
+        AccessCode ac = authenticationService.getCode(code);
+        if (ac == null) return ResponseEntity.notFound().build();
+        int active = authenticationService.getActiveSessionCount(code);
+        int limit = (ac.getMaxDevices() != null) ? ac.getMaxDevices() : 2;
+        return ResponseEntity.ok(Map.of("active", active, "limit", limit));
+    }
+
+    @DeleteMapping("/codes/{code}/sessions")
+    public ResponseEntity<Void> terminateAllSessions(@PathVariable String code) {
+        authenticationService.terminateAllSessions(code);
         return ResponseEntity.noContent().build();
     }
 

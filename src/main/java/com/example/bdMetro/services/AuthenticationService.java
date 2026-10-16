@@ -405,6 +405,19 @@ public class AuthenticationService {
         userSessionRepository.deleteById(sessionToken);
     }
 
+    /** Cantidad de sesiones activas para un código (ventana de SESSION_TIMEOUT_MINUTES). */
+    public int getActiveSessionCount(String code) {
+        String normCode = norm(code);
+        Instant cutoff = Instant.now().minusSeconds(SESSION_TIMEOUT_MINUTES * 60L);
+        return userSessionRepository.countByAccessCodeCodeAndLastHeartbeatAfter(normCode, cutoff);
+    }
+
+    /** Elimina todas las sesiones activas de un código (kick de todos los dispositivos). */
+    @Transactional
+    public void terminateAllSessions(String code) {
+        userSessionRepository.deleteByAccessCodeCode(norm(code));
+    }
+
     private void validateCodeFormat(String code) {
         if (code == null) {
             throw new IllegalArgumentException("El codigo es obligatorio");

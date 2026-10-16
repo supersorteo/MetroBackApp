@@ -18,4 +18,8 @@ public interface UserSessionRepository extends JpaRepository<UserSession, String
     @Modifying
     @Query("DELETE FROM UserSession s WHERE s.lastHeartbeat < :cutoff")
     void deleteStaleSessionsBefore(@Param("cutoff") Instant cutoff);
+
+    @Modifying
+    @Query("DELETE FROM UserSession s WHERE s.accessCode.code = :code")
+    void deleteByAccessCodeCode(@Param("code") String code);
 }
