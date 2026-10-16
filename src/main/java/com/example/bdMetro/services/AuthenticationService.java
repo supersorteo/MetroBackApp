@@ -353,17 +353,15 @@ public class AuthenticationService {
                 : deviceId;
 
         AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(normCode);
-        if (ac == null || ac.getEmail() == null || ac.isDisabled()) {
-            // Las validaciones de negocio las hace el controller antes de llamar aquí.
-            // Si llegamos acá, el código es válido — solo retornamos token.
-        }
+        // Usar el código exacto almacenado en DB para queries de sesión (evita mismatch de mayúsculas)
+        String codeKey = (ac != null) ? ac.getCode() : normCode;
 
         Instant now = Instant.now();
         Instant cutoff = now.minusSeconds(SESSION_TIMEOUT_MINUTES * 60L);
 
         // Reusar sesión del mismo dispositivo si ya existe (activa o no)
         Optional<UserSession> existing = userSessionRepository
-                .findByAccessCodeCodeAndDeviceId(normCode, effectiveDeviceId);
+                .findByAccessCodeCodeAndDeviceId(codeKey, effectiveDeviceId);
         if (existing.isPresent()) {
             UserSession session = existing.get();
             session.setLastHeartbeat(now);
@@ -373,7 +371,7 @@ public class AuthenticationService {
 
         // Contar sesiones activas de otros dispositivos
         int limit = (ac != null && ac.getMaxDevices() != null) ? ac.getMaxDevices() : MAX_DEVICES;
-        int active = userSessionRepository.countByAccessCodeCodeAndLastHeartbeatAfter(normCode, cutoff);
+        int active = userSessionRepository.countByAccessCodeCodeAndLastHeartbeatAfter(codeKey, cutoff);
         if (active >= limit) {
             throw new IllegalStateException(
                     "Límite de " + limit + " dispositivos activos alcanzado. " +
@@ -407,15 +405,18 @@ public class AuthenticationService {
 
     /** Cantidad de sesiones activas para un código (ventana de SESSION_TIMEOUT_MINUTES). */
     public int getActiveSessionCount(String code) {
-        String normCode = norm(code);
+        AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
+        if (ac == null) return 0;
         Instant cutoff = Instant.now().minusSeconds(SESSION_TIMEOUT_MINUTES * 60L);
-        return userSessionRepository.countByAccessCodeCodeAndLastHeartbeatAfter(normCode, cutoff);
+        return userSessionRepository.countByAccessCodeCodeAndLastHeartbeatAfter(ac.getCode(), cutoff);
     }
 
     /** Elimina todas las sesiones activas de un código (kick de todos los dispositivos). */
     @Transactional
     public void terminateAllSessions(String code) {
-        userSessionRepository.deleteByAccessCodeCode(norm(code));
+        AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
+        if (ac == null) return;
+        userSessionRepository.deleteByAccessCodeCode(ac.getCode());
     }
 
     private void validateCodeFormat(String code) {
