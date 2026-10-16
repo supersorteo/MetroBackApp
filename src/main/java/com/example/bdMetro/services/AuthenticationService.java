@@ -372,10 +372,11 @@ public class AuthenticationService {
         }
 
         // Contar sesiones activas de otros dispositivos
+        int limit = (ac != null && ac.getMaxDevices() != null) ? ac.getMaxDevices() : MAX_DEVICES;
         int active = userSessionRepository.countByAccessCodeCodeAndLastHeartbeatAfter(normCode, cutoff);
-        if (active >= MAX_DEVICES) {
+        if (active >= limit) {
             throw new IllegalStateException(
-                    "Límite de " + MAX_DEVICES + " dispositivos activos alcanzado. " +
+                    "Límite de " + limit + " dispositivos activos alcanzado. " +
                     "Cerrá sesión en otro dispositivo para continuar.");
         }
 

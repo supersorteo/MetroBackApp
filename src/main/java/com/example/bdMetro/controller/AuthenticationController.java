@@ -265,6 +265,21 @@ public class AuthenticationController {
         }
     }
 
+    @PatchMapping("/codes/{code}/max-devices")
+    public ResponseEntity<?> updateMaxDevices(@PathVariable String code, @RequestBody Map<String, Object> body) {
+        try {
+            AccessCode ac = authenticationService.getCode(code);
+            if (ac == null) return ResponseEntity.notFound().build();
+            Integer maxDevices = body.get("maxDevices") != null
+                    ? ((Number) body.get("maxDevices")).intValue() : null;
+            ac.setMaxDevices(maxDevices);
+            authenticationService.save(ac);
+            return ResponseEntity.ok(Map.of("code", ac.getCode(), "maxDevices", maxDevices != null ? maxDevices : 2));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PatchMapping("/codes/{code}/disable")
     public ResponseEntity<?> disableCode(@PathVariable String code) {
         try {

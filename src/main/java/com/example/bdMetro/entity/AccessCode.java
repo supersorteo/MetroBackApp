@@ -30,6 +30,9 @@ public class AccessCode {
     @Column(name = "selected_cliente_id")
     private Long selectedClienteId;
 
+    @Column(name = "max_devices")
+    private Integer maxDevices;
+
     public String getCode() {
         return code;
     }
@@ -126,5 +129,13 @@ public class AccessCode {
 
     public void setSelectedClienteId(Long selectedClienteId) {
         this.selectedClienteId = selectedClienteId;
+    }
+
+    public Integer getMaxDevices() {
+        return maxDevices;
+    }
+
+    public void setMaxDevices(Integer maxDevices) {
+        this.maxDevices = maxDevices;
     }
 }
