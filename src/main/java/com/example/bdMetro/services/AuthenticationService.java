@@ -1,7 +1,10 @@
 package com.example.bdMetro.services;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,12 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.bdMetro.dto.UserDataSummaryDto;
 import com.example.bdMetro.entity.AccessCode;
+import com.example.bdMetro.entity.UserSession;
 import com.example.bdMetro.repository.AccessCodeRepository;
 import com.example.bdMetro.repository.CalculoMaterialRepository;
 import com.example.bdMetro.repository.ClienteRepository;
 import com.example.bdMetro.repository.EmpresaRepository;
 import com.example.bdMetro.repository.PresupuestoRepository;
 import com.example.bdMetro.repository.TareaPersonalizadaRepository;
+import com.example.bdMetro.repository.UserSessionRepository;
 import com.example.bdMetro.repository.UserTareaRepository;
 import com.example.bdMetro.util.CountryCatalog;
 
@@ -27,6 +32,10 @@ public class AuthenticationService {
     @Autowired private UserTareaRepository userTareaRepository;
     @Autowired private TareaPersonalizadaRepository tareaPersonalizadaRepository;
     @Autowired private CalculoMaterialRepository calculoMaterialRepository;
+    @Autowired private UserSessionRepository userSessionRepository;
+
+    private static final int MAX_DEVICES = 2;
+    private static final int SESSION_TIMEOUT_MINUTES = 30;
 
     private String norm(String code) {
         return code == null ? null : code.trim().toUpperCase();
@@ -329,6 +338,70 @@ public class AuthenticationService {
 
         String normalized = email.trim().toLowerCase();
         return normalized.isBlank() ? null : normalized;
+    }
+
+    // ── Session management ──────────────────────────────────────────────────
+
+    /** Valida el código y crea o refresca una sesión para el dispositivo dado.
+     *  Lanza IllegalStateException (→ 409) si ya hay MAX_DEVICES sesiones activas
+     *  de otros dispositivos. */
+    @Transactional
+    public String loginWithDevice(String code, String deviceId) {
+        String normCode = norm(code);
+        String effectiveDeviceId = (deviceId == null || deviceId.isBlank())
+                ? "unknown-" + UUID.randomUUID()
+                : deviceId;
+
+        AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(normCode);
+        if (ac == null || ac.getEmail() == null || ac.isDisabled()) {
+            // Las validaciones de negocio las hace el controller antes de llamar aquí.
+            // Si llegamos acá, el código es válido — solo retornamos token.
+        }
+
+        Instant now = Instant.now();
+        Instant cutoff = now.minusSeconds(SESSION_TIMEOUT_MINUTES * 60L);
+
+        // Reusar sesión del mismo dispositivo si ya existe (activa o no)
+        Optional<UserSession> existing = userSessionRepository
+                .findByAccessCodeCodeAndDeviceId(normCode, effectiveDeviceId);
+        if (existing.isPresent()) {
+            UserSession session = existing.get();
+            session.setLastHeartbeat(now);
+            userSessionRepository.save(session);
+            return session.getId();
+        }
+
+        // Contar sesiones activas de otros dispositivos
+        int active = userSessionRepository.countByAccessCodeCodeAndLastHeartbeatAfter(normCode, cutoff);
+        if (active >= MAX_DEVICES) {
+            throw new IllegalStateException(
+                    "Límite de " + MAX_DEVICES + " dispositivos activos alcanzado. " +
+                    "Cerrá sesión en otro dispositivo para continuar.");
+        }
+
+        UserSession session = new UserSession();
+        session.setId(UUID.randomUUID().toString());
+        session.setAccessCode(ac);
+        session.setDeviceId(effectiveDeviceId);
+        session.setLastHeartbeat(now);
+        session.setCreatedAt(now);
+        userSessionRepository.save(session);
+        return session.getId();
+    }
+
+    /** Actualiza el lastHeartbeat de una sesión activa. Sin efecto si no existe. */
+    @Transactional
+    public void updateHeartbeat(String sessionToken) {
+        userSessionRepository.findById(sessionToken).ifPresent(s -> {
+            s.setLastHeartbeat(Instant.now());
+            userSessionRepository.save(s);
+        });
+    }
+
+    /** Elimina la sesión (logout explícito). */
+    @Transactional
+    public void terminateSession(String sessionToken) {
+        userSessionRepository.deleteById(sessionToken);
     }
 
     private void validateCodeFormat(String code) {

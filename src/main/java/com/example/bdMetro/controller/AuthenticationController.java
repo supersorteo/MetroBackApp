@@ -21,23 +21,46 @@ public class AuthenticationController {
 
 
     @PostMapping("/login")
-    public ResponseEntity<AccessCode> login(@RequestBody Map<String, String> request) {
+    public ResponseEntity<?> login(@RequestBody Map<String, String> request) {
         String code = request.get("code");
+        String deviceId = request.get("deviceId");
+
         AccessCode accessCode = authenticationService.getCode(code);
         if (accessCode == null) {
-            AccessCode errorResponse = new AccessCode();
-            errorResponse.setEmail("Código no encontrado");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("email", "Código no encontrado"));
         } else if (accessCode.getEmail() == null) {
-            AccessCode errorResponse = new AccessCode();
-            errorResponse.setEmail("Código existe pero no asignado a un usuario");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("email", "Código existe pero no asignado a un usuario"));
         } else if (accessCode.isDisabled()) {
-            AccessCode errorResponse = new AccessCode();
-            errorResponse.setEmail("Código desactivado. Contactá al administrador.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("email", "Código desactivado. Contactá al administrador."));
         }
-        return ResponseEntity.ok(accessCode);
+
+        // Crear o refrescar sesión (omitir en modo demo — deviceId nulo o "demo")
+        String sessionToken = null;
+        if (deviceId != null && !deviceId.equals("demo")) {
+            try {
+                sessionToken = authenticationService.loginWithDevice(code, deviceId);
+            } catch (IllegalStateException e) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of("error", e.getMessage()));
+            }
+        }
+
+        Map<String, Object> response = new java.util.LinkedHashMap<>();
+        response.put("code",             accessCode.getCode());
+        response.put("email",            accessCode.getEmail());
+        response.put("telefono",         accessCode.getTelefono());
+        response.put("pais",             accessCode.getPais());
+        response.put("provincia",        accessCode.getProvincia());
+        response.put("fechaRegistro",    accessCode.getFechaRegistro() != null ? accessCode.getFechaRegistro().toString() : null);
+        response.put("fechaVencimiento", accessCode.getFechaVencimiento() != null ? accessCode.getFechaVencimiento().toString() : null);
+        response.put("disabled",         accessCode.isDisabled());
+        response.put("selectedEmpresaId", accessCode.getSelectedEmpresaId());
+        response.put("selectedClienteId", accessCode.getSelectedClienteId());
+        if (sessionToken != null) response.put("sessionToken", sessionToken);
+        return ResponseEntity.ok(response);
     }
 
 
@@ -112,13 +135,23 @@ public class AuthenticationController {
 
     //http://localhost:8080/auth/codes/{code}
     @GetMapping("/codes/{code}")
-    public ResponseEntity<AccessCode> getCode(@PathVariable String code) {
+    public ResponseEntity<AccessCode> getCode(@PathVariable String code,
+                                               @RequestHeader(value = "X-Session-Token", required = false) String sessionToken) {
+        if (sessionToken != null && !sessionToken.isBlank()) {
+            authenticationService.updateHeartbeat(sessionToken);
+        }
         AccessCode accessCode = authenticationService.getCode(code);
         if (accessCode != null) {
             return ResponseEntity.ok(accessCode);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
+    }
+
+    @DeleteMapping("/session/{sessionToken}")
+    public ResponseEntity<Void> terminateSession(@PathVariable String sessionToken) {
+        authenticationService.terminateSession(sessionToken);
+        return ResponseEntity.noContent().build();
     }
 
 
