@@ -288,8 +288,10 @@ public class AuthenticationController {
         try {
             AccessCode ac = authenticationService.getCode(code);
             if (ac == null) return ResponseEntity.notFound().build();
-            Integer maxDevices = body.get("maxDevices") != null
-                    ? ((Number) body.get("maxDevices")).intValue() : null;
+            Integer maxDevices = null;
+            if (body.get("maxDevices") != null) {
+                maxDevices = Integer.parseInt(body.get("maxDevices").toString());
+            }
             ac.setMaxDevices(maxDevices);
             authenticationService.save(ac);
             return ResponseEntity.ok(Map.of("code", ac.getCode(), "maxDevices", maxDevices != null ? maxDevices : 2));
