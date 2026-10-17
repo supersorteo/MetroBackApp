@@ -10,6 +10,8 @@ import com.example.bdMetro.repository.PresupuestoRepository;
 import com.example.bdMetro.repository.UserTareaRepository;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.bdMetro.services.MembershipLimitService;
@@ -19,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 public class PresupuestoService {
     @Autowired
     private PresupuestoRepository presupuestoRepository;
@@ -88,6 +91,10 @@ public class PresupuestoService {
 
     public List<Presupuesto> getAllPresupuestosByUserCode(String userCode) {
         return presupuestoRepository.findByUserCode(userCode);
+    }
+
+    public Page<Presupuesto> getAllPresupuestosByUserCodePaged(String userCode, int page, int size) {
+        return presupuestoRepository.findByUserCodeOrderByCreatedAtDesc(userCode, PageRequest.of(page, size));
     }
 
 

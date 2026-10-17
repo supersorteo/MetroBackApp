@@ -38,6 +38,10 @@ public class AccessCode {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean sessionKicked;
 
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String sessionToken;
+
     public String getCode() {
         return code;
     }
@@ -150,5 +154,13 @@ public class AccessCode {
 
     public void setSessionKicked(Boolean sessionKicked) {
         this.sessionKicked = sessionKicked;
+    }
+
+    public String getSessionToken() {
+        return sessionToken;
+    }
+
+    public void setSessionToken(String sessionToken) {
+        this.sessionToken = sessionToken;
     }
 }

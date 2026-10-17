@@ -1,6 +1,8 @@
 package com.example.bdMetro.repository;
 
 import com.example.bdMetro.entity.Presupuesto;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -16,6 +18,9 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> 
 
     @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.tareas WHERE p.userCode = :userCode ORDER BY p.createdAt DESC")
     List<Presupuesto> findByUserCode(@Param("userCode") String userCode);
+
+    @EntityGraph(attributePaths = {"tareas"})
+    Page<Presupuesto> findByUserCodeOrderByCreatedAtDesc(String userCode, Pageable pageable);
 
     @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.cliente WHERE p.cliente.userCode = :userCode ORDER BY p.createdAt DESC")
     List<Presupuesto> findByClienteUserCode(@Param("userCode") String userCode);

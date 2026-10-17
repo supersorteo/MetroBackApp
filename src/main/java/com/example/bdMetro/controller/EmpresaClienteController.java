@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -409,8 +410,11 @@ public class EmpresaClienteController {
     }
 
     @GetMapping("/presupuestos/user/{userCode}")
-    public ResponseEntity<List<Presupuesto>> getAllPresupuestosByUserCode(@PathVariable String userCode) {
-        return ResponseEntity.ok(presupuestoService.getAllPresupuestosByUserCode(userCode));
+    public ResponseEntity<Page<Presupuesto>> getAllPresupuestosByUserCode(
+            @PathVariable String userCode,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(presupuestoService.getAllPresupuestosByUserCodePaged(userCode, page, size));
     }
 
     @GetMapping("/presupuestos/{id}")

@@ -24,6 +24,7 @@ import com.example.bdMetro.repository.UserTareaRepository;
 import com.example.bdMetro.util.CountryCatalog;
 
 @Service
+@Transactional(readOnly = true)
 public class AuthenticationService {
     @Autowired private AccessCodeRepository accessCodeRepository;
     @Autowired private EmpresaRepository empresaRepository;
@@ -66,6 +67,7 @@ public class AuthenticationService {
         return accessCodeRepository.findByCodeIgnoreCase(norm(code));
     }
 
+    @Transactional
     public AccessCode updateCode(String code, String email, String username, String telefono, String provincia, String pais) {
         String normalizedCode = norm(code);
         AccessCode accessCode = accessCodeRepository.findByCodeIgnoreCase(normalizedCode);
@@ -91,6 +93,7 @@ public class AuthenticationService {
         return accessCodeRepository.save(accessCode);
     }
 
+    @Transactional
     public AccessCode agregarCode(AccessCode accessCode) {
         accessCode.setCode(norm(accessCode.getCode()));
         validateCodeFormat(accessCode.getCode());
@@ -112,6 +115,7 @@ public class AuthenticationService {
         return accessCodeRepository.save(accessCode);
     }
 
+    @Transactional
     public List<AccessCode> agregarCodes(List<AccessCode> accessCodes) {
         for (AccessCode accessCode : accessCodes) {
             accessCode.setCode(norm(accessCode.getCode()));
@@ -130,6 +134,7 @@ public class AuthenticationService {
         return accessCodeRepository.saveAll(accessCodes);
     }
 
+    @Transactional
     public AccessCode addCode(AccessCode accessCode) {
         accessCode.setCode(norm(accessCode.getCode()));
         AccessCode existingCode = accessCodeRepository.findByCodeIgnoreCase(accessCode.getCode());
@@ -168,6 +173,7 @@ public class AuthenticationService {
         };
     }
 
+    @Transactional
     public AccessCode updatePreferences(String code, Long selectedEmpresaId, Long selectedClienteId) {
         AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
         if (ac == null) throw new IllegalArgumentException("Codigo no encontrado");
@@ -176,16 +182,18 @@ public class AuthenticationService {
         return accessCodeRepository.save(ac);
     }
 
+    @Transactional
     public void deleteCode(String code) {
         accessCodeRepository.deleteById(norm(code));
     }
 
+    @Transactional
     public AccessCode save(AccessCode ac) {
         return accessCodeRepository.save(ac);
     }
 
     @Transactional
-    public AccessCode reactivateCode(String expiredCode, String newCode, String email) {
+    public AccessCode reactivateCode(String expiredCode, String newCode, String email, String deviceId) {
         String normExpired = norm(expiredCode);
         String normNew = norm(newCode);
         String normEmail = normalizeEmail(email);
@@ -197,8 +205,6 @@ public class AuthenticationService {
             throw new IllegalArgumentException("El código anterior no tiene usuario asociado.");
         if (!expired.getEmail().equals(normEmail))
             throw new IllegalArgumentException("El email no coincide con el registrado para ese código.");
-        if (expired.getFechaVencimiento() == null || !expired.getFechaVencimiento().isBefore(LocalDate.now()))
-            throw new IllegalArgumentException("El código anterior aún está vigente. No es necesario reactivar.");
 
         AccessCode newAc = accessCodeRepository.findByCodeIgnoreCase(normNew);
         if (newAc == null)
@@ -237,8 +243,17 @@ public class AuthenticationService {
         newAc.setFechaVencimiento(calcularFechaVencimiento(normNew));
         accessCodeRepository.save(newAc);
 
+        // Limpiar sesiones del código vencido antes de eliminarlo (FK constraint)
+        userSessionRepository.deleteByAccessCodeCode(normExpired);
+
         // Eliminar el código vencido — el slot ya cumplió su ciclo de vida
         accessCodeRepository.delete(expired);
+
+        // Crear sesión para el dispositivo que hizo la reactivación para que no quede deslogueado
+        if (deviceId != null && !deviceId.isBlank()) {
+            String token = loginWithDevice(normNew, deviceId);
+            newAc.setSessionToken(token);
+        }
 
         return newAc;
     }
@@ -253,6 +268,7 @@ public class AuthenticationService {
         return toClean.size();
     }
 
+    @Transactional
     public AccessCode disableCode(String code) {
         AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
         if (ac == null) throw new IllegalArgumentException("Codigo no encontrado");
@@ -260,6 +276,7 @@ public class AuthenticationService {
         return accessCodeRepository.save(ac);
     }
 
+    @Transactional
     public AccessCode enableCode(String code) {
         AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
         if (ac == null) throw new IllegalArgumentException("Codigo no encontrado");
