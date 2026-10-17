@@ -112,29 +112,30 @@ public class EmpresaClienteController {
         }
     }
 
-    @GetMapping("/uploads/all")
-    public ResponseEntity<List<String>> getAllImages() {
-        try {
-            File folder = new File(getUploadDir());
-            File[] files = folder.listFiles();
-            if (files != null) {
-                List<String> fileUrls = new ArrayList<>();
-                for (File file : files) {
-                    if (file.isFile()) {
-                        String fileUrl = baseUrl + "/api/uploads/" + file.getName();
-                        fileUrls.add(fileUrl);
-                    }
-                }
-                return ResponseEntity.ok(fileUrls);
-            } else {
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Collections.singletonList("No se pudieron obtener las imágenes"));
-            }
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.singletonList("Error al obtener las imágenes"));
-        }
-    }
+    // DISABLED: lista todos los archivos de todos los usuarios sin filtro
+    // @GetMapping("/uploads/all")
+    // public ResponseEntity<List<String>> getAllImages() {
+    //     try {
+    //         File folder = new File(getUploadDir());
+    //         File[] files = folder.listFiles();
+    //         if (files != null) {
+    //             List<String> fileUrls = new ArrayList<>();
+    //             for (File file : files) {
+    //                 if (file.isFile()) {
+    //                     String fileUrl = baseUrl + "/api/uploads/" + file.getName();
+    //                     fileUrls.add(fileUrl);
+    //                 }
+    //             }
+    //             return ResponseEntity.ok(fileUrls);
+    //         } else {
+    //             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                     .body(Collections.singletonList("No se pudieron obtener las imágenes"));
+    //         }
+    //     } catch (Exception e) {
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+    //                 .body(Collections.singletonList("Error al obtener las imágenes"));
+    //     }
+    // }
 
     @DeleteMapping("/uploads/{filename:.+}")
     public ResponseEntity<Map<String, Object>> deleteImage(@PathVariable String filename) {
@@ -186,16 +187,17 @@ public class EmpresaClienteController {
         return ResponseEntity.ok(empresa.get());
     }
 
-    @GetMapping("/empresas")
-    public ResponseEntity<?> getAllEmpresas() {
-        List<Empresa> empresas = empresaService.getAllEmpresas();
-        if (empresas.isEmpty()) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "No se encontraron empresas");
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorResponse);
-        }
-        return ResponseEntity.ok(empresas);
-    }
+    // DISABLED: expone datos de todos los usuarios sin filtro — usar /empresas/{userCode}
+    // @GetMapping("/empresas")
+    // public ResponseEntity<?> getAllEmpresas() {
+    //     List<Empresa> empresas = empresaService.getAllEmpresas();
+    //     if (empresas.isEmpty()) {
+    //         Map<String, String> errorResponse = new HashMap<>();
+    //         errorResponse.put("error", "No se encontraron empresas");
+    //         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorResponse);
+    //     }
+    //     return ResponseEntity.ok(empresas);
+    // }
 
 
     @PostMapping("/empresas")
@@ -350,10 +352,11 @@ public class EmpresaClienteController {
         }
     }
 
-    @GetMapping("/clientes")
-    public List<Cliente> getAllClientes() {
-        return clienteService.getAllClientes();
-    }
+    // DISABLED: expone datos de todos los usuarios sin filtro — usar /clientes/{userCode}
+    // @GetMapping("/clientes")
+    // public List<Cliente> getAllClientes() {
+    //     return clienteService.getAllClientes();
+    // }
 
     @GetMapping("/clientes/by-empresa/{empresaId}")
     public ResponseEntity<?> getClientesByEmpresaId(@PathVariable Long empresaId) {
@@ -429,22 +432,23 @@ public class EmpresaClienteController {
         }
     }
 
-    @GetMapping("/presupuestos")
-    public ResponseEntity<?> getAllPresupuestos() {
-        try {
-            List<Presupuesto> presupuestos = presupuestoService.getAllPresupuestos();
-            if (presupuestos.isEmpty()) {
-                Map<String, String> errorResponse = new HashMap<>();
-                errorResponse.put("error", "No se encontraron presupuestos");
-                return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorResponse);
-            }
-            return ResponseEntity.ok(presupuestos);
-        } catch (Exception e) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Error interno al obtener todos los presupuestos: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
+    // DISABLED: expone presupuestos de todos los usuarios sin filtro — usar /presupuestos/user/{userCode}
+    // @GetMapping("/presupuestos")
+    // public ResponseEntity<?> getAllPresupuestos() {
+    //     try {
+    //         List<Presupuesto> presupuestos = presupuestoService.getAllPresupuestos();
+    //         if (presupuestos.isEmpty()) {
+    //             Map<String, String> errorResponse = new HashMap<>();
+    //             errorResponse.put("error", "No se encontraron presupuestos");
+    //             return ResponseEntity.status(HttpStatus.NO_CONTENT).body(errorResponse);
+    //         }
+    //         return ResponseEntity.ok(presupuestos);
+    //     } catch (Exception e) {
+    //         Map<String, String> errorResponse = new HashMap<>();
+    //         errorResponse.put("error", "Error interno al obtener todos los presupuestos: " + e.getMessage());
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    //     }
+    // }
 
 
     @PutMapping("/presupuestos/{id}")
