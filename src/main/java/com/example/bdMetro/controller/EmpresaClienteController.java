@@ -169,11 +169,6 @@ public class EmpresaClienteController {
     @GetMapping("/empresas/{userCode}")
     public ResponseEntity<?> getEmpresasByUserCode(@PathVariable String userCode) {
         List<Empresa> empresas = empresaService.getEmpresasByUserCode(userCode);
-        if (empresas.isEmpty()) {
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "No se encontraron empresas para el userCode proporcionado: " + userCode);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-        }
         return ResponseEntity.ok(empresas);
     }
 
