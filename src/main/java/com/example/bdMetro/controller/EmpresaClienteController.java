@@ -1,6 +1,5 @@
 package com.example.bdMetro.controller;
 
-import com.example.bdMetro.dto.PresupuestoSummaryDTO;
 import com.example.bdMetro.entity.Cliente;
 import com.example.bdMetro.entity.Empresa;
 import com.example.bdMetro.entity.Presupuesto;
@@ -411,7 +410,7 @@ public class EmpresaClienteController {
     }
 
     @GetMapping("/presupuestos/user/{userCode}")
-    public ResponseEntity<Page<PresupuestoSummaryDTO>> getAllPresupuestosByUserCode(
+    public ResponseEntity<Page<Presupuesto>> getAllPresupuestosByUserCode(
             @PathVariable String userCode,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
