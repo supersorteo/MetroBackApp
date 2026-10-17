@@ -1,5 +1,6 @@
 package com.example.bdMetro.entity;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
@@ -32,6 +33,10 @@ public class AccessCode {
 
     @Column(name = "max_devices")
     private Integer maxDevices;
+
+    @Transient
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private Boolean sessionKicked;
 
     public String getCode() {
         return code;
@@ -137,5 +142,13 @@ public class AccessCode {
 
     public void setMaxDevices(Integer maxDevices) {
         this.maxDevices = maxDevices;
+    }
+
+    public Boolean getSessionKicked() {
+        return sessionKicked;
+    }
+
+    public void setSessionKicked(Boolean sessionKicked) {
+        this.sessionKicked = sessionKicked;
     }
 }

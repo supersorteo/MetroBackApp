@@ -388,13 +388,14 @@ public class AuthenticationService {
         return session.getId();
     }
 
-    /** Actualiza el lastHeartbeat de una sesión activa. Sin efecto si no existe. */
+    /** Actualiza el lastHeartbeat. Devuelve true si la sesión existe, false si fue terminada externamente. */
     @Transactional
-    public void updateHeartbeat(String sessionToken) {
-        userSessionRepository.findById(sessionToken).ifPresent(s -> {
+    public boolean updateHeartbeat(String sessionToken) {
+        return userSessionRepository.findById(sessionToken).map(s -> {
             s.setLastHeartbeat(Instant.now());
             userSessionRepository.save(s);
-        });
+            return true;
+        }).orElse(false);
     }
 
     /** Elimina la sesión (logout explícito). */

@@ -140,11 +140,13 @@ public class AuthenticationController {
     @GetMapping("/codes/{code}")
     public ResponseEntity<AccessCode> getCode(@PathVariable String code,
                                                @RequestHeader(value = "X-Session-Token", required = false) String sessionToken) {
+        boolean sessionActive = true;
         if (sessionToken != null && !sessionToken.isBlank()) {
-            authenticationService.updateHeartbeat(sessionToken);
+            sessionActive = authenticationService.updateHeartbeat(sessionToken);
         }
         AccessCode accessCode = authenticationService.getCode(code);
         if (accessCode != null) {
+            if (!sessionActive) accessCode.setSessionKicked(true);
             return ResponseEntity.ok(accessCode);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
