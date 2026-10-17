@@ -1,5 +1,6 @@
 package com.example.bdMetro.repository;
 
+import com.example.bdMetro.dto.PresupuestoSummaryDTO;
 import com.example.bdMetro.entity.Presupuesto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,8 +20,17 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> 
     @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.tareas WHERE p.userCode = :userCode ORDER BY p.createdAt DESC")
     List<Presupuesto> findByUserCode(@Param("userCode") String userCode);
 
-    @EntityGraph(attributePaths = {"tareas"})
-    Page<Presupuesto> findByUserCodeOrderByCreatedAtDesc(String userCode, Pageable pageable);
+    @Query(value = "SELECT new com.example.bdMetro.dto.PresupuestoSummaryDTO(" +
+                   "p.id, p.name, p.createdAt, " +
+                   "p.cliente.id, p.cliente.name, " +
+                   "emp.id, emp.name, " +
+                   "SIZE(p.tareas)) " +
+                   "FROM Presupuesto p " +
+                   "LEFT JOIN p.empresa emp " +
+                   "WHERE p.userCode = :userCode " +
+                   "ORDER BY p.createdAt DESC",
+           countQuery = "SELECT COUNT(p) FROM Presupuesto p WHERE p.userCode = :userCode")
+    Page<PresupuestoSummaryDTO> findSummaryByUserCode(@Param("userCode") String userCode, Pageable pageable);
 
     @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.cliente WHERE p.cliente.userCode = :userCode ORDER BY p.createdAt DESC")
     List<Presupuesto> findByClienteUserCode(@Param("userCode") String userCode);

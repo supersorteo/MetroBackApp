@@ -1,5 +1,6 @@
 package com.example.bdMetro.services;
 
+import com.example.bdMetro.dto.PresupuestoSummaryDTO;
 import com.example.bdMetro.entity.Cliente;
 import com.example.bdMetro.entity.Empresa;
 import com.example.bdMetro.entity.Presupuesto;
@@ -93,8 +94,8 @@ public class PresupuestoService {
         return presupuestoRepository.findByUserCode(userCode);
     }
 
-    public Page<Presupuesto> getAllPresupuestosByUserCodePaged(String userCode, int page, int size) {
-        return presupuestoRepository.findByUserCodeOrderByCreatedAtDesc(userCode, PageRequest.of(page, size));
+    public Page<PresupuestoSummaryDTO> getAllPresupuestosByUserCodePaged(String userCode, int page, int size) {
+        return presupuestoRepository.findSummaryByUserCode(userCode, PageRequest.of(page, size));
     }
 
 
