@@ -25,6 +25,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Long> {
     void deleteByUserCode(String userCode);
 
     @org.springframework.data.jpa.repository.Modifying
-    @org.springframework.data.jpa.repository.Query("UPDATE Cliente c SET c.userCode = :newCode WHERE c.userCode = :oldCode")
+    @org.springframework.data.jpa.repository.Query("UPDATE Cliente c SET c.userCode = :newCode WHERE LOWER(c.userCode) = LOWER(:oldCode)")
     void updateUserCode(@org.springframework.data.repository.query.Param("oldCode") String oldCode, @org.springframework.data.repository.query.Param("newCode") String newCode);
 }
