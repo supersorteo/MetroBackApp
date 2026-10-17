@@ -6,7 +6,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "cliente")
+@Table(name = "cliente", indexes = @Index(name = "idx_cliente_user_code", columnList = "user_code"))
 public class Cliente {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

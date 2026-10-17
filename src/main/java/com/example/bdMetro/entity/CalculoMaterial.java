@@ -12,7 +12,7 @@ import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "calculo_material")
+@Table(name = "calculo_material", indexes = @Index(name = "idx_calculo_material_user_code", columnList = "user_code"))
 public class CalculoMaterial {
 
     @Id
