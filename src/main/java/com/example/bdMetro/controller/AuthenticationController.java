@@ -67,10 +67,11 @@ public class AuthenticationController {
     }
 
 
-    @GetMapping("/codes")
-    public List<AccessCode> getAllCodes() {
-        return authenticationService.getAllCodes();
-    }
+    // DISABLED: devuelve todos los códigos con emails y datos de todos los usuarios — usar /codes/pais/{pais}
+    // @GetMapping("/codes")
+    // public List<AccessCode> getAllCodes() {
+    //     return authenticationService.getAllCodes();
+    // }
 
     /** GET /auth/codes/pais/{pais} — códigos filtrados por país */
     @GetMapping("/codes/pais/{pais}")

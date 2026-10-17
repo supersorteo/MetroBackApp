@@ -228,6 +228,13 @@ public class EmpresaClienteController {
     @PutMapping("/empresas/id/{id}")
     public ResponseEntity<?> updateEmpresa(@PathVariable Long id, @RequestBody Empresa empresaDetails) {
         try {
+            Optional<Empresa> existing = empresaService.getEmpresaById(id);
+            if (existing.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Empresa no encontrada"));
+            }
+            if (!existing.get().getUserCode().equals(empresaDetails.getUserCode())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permiso para modificar esta empresa"));
+            }
             Empresa updatedEmpresa = empresaService.updateEmpresa(id, empresaDetails);
             return ResponseEntity.ok(updatedEmpresa);
         } catch (RuntimeException e) {
@@ -239,13 +246,16 @@ public class EmpresaClienteController {
             errorResponse.put("error", "Error interno del servidor al actualizar la empresa: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
-    } 
+    }
 
     @DeleteMapping("/empresas/id/{id}")
-    public ResponseEntity<?> deleteEmpresa(@PathVariable Long id) {
+    public ResponseEntity<?> deleteEmpresa(@PathVariable Long id, @RequestParam String userCode) {
         try {
             Empresa empresa = empresaService.getEmpresaById(id)
                     .orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
+            if (!empresa.getUserCode().equals(userCode)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permiso para eliminar esta empresa"));
+            }
 
             // Eliminar imagen si existe
             if (empresa.getLogoUrl() != null) {
@@ -327,6 +337,13 @@ public class EmpresaClienteController {
     @PutMapping("/clientes/id/{id}")
     public ResponseEntity<?> updateCliente(@PathVariable Long id, @RequestBody Cliente clienteDetails) {
         try {
+            Optional<Cliente> existing = clienteService.getClienteById(id);
+            if (existing.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", "Cliente no encontrado"));
+            }
+            if (!existing.get().getUserCode().equals(clienteDetails.getUserCode())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permiso para modificar este cliente"));
+            }
             Cliente updatedCliente = clienteService.updateCliente(id, clienteDetails);
             return ResponseEntity.ok(updatedCliente);
         } catch (RuntimeException e) {
@@ -343,8 +360,13 @@ public class EmpresaClienteController {
 
 
     @DeleteMapping("/clientes/id/{id}")
-    public ResponseEntity<Void> deleteCliente(@PathVariable Long id) {
+    public ResponseEntity<?> deleteCliente(@PathVariable Long id, @RequestParam String userCode) {
         try {
+            Optional<Cliente> existing = clienteService.getClienteById(id);
+            if (existing.isEmpty()) return ResponseEntity.notFound().build();
+            if (!existing.get().getUserCode().equals(userCode)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permiso para eliminar este cliente"));
+            }
             clienteService.deleteCliente(id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
@@ -397,8 +419,12 @@ public class EmpresaClienteController {
     }
 
     @DeleteMapping("/presupuestos/{id}")
-    public ResponseEntity<Void> deletePresupuesto(@PathVariable Long id) {
+    public ResponseEntity<?> deletePresupuesto(@PathVariable Long id, @RequestParam String userCode) {
         try {
+            Presupuesto existing = presupuestoService.getPresupuestoById(id);
+            if (!existing.getUserCode().equals(userCode)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permiso para eliminar este presupuesto"));
+            }
             presupuestoService.deletePresupuesto(id);
             return ResponseEntity.noContent().build();
         } catch (RuntimeException e) {
@@ -455,12 +481,19 @@ public class EmpresaClienteController {
     public ResponseEntity<?> updatePresupuesto(
             @PathVariable Long id,
             @RequestBody Presupuesto presupuestoActualizado) {
-
-        log.debug("[Presupuesto] PUT id={} nombre={} clienteId={} tareas={}",
-                id, presupuestoActualizado.getName(),
-                presupuestoActualizado.getCliente() != null ? presupuestoActualizado.getCliente().getId() : "null",
-                presupuestoActualizado.getTareas() != null ? presupuestoActualizado.getTareas().size() : 0);
-        Presupuesto actualizado = presupuestoService.updatePresupuesto(id, presupuestoActualizado);
-        return ResponseEntity.ok(actualizado);
+        try {
+            Presupuesto existing = presupuestoService.getPresupuestoById(id);
+            if (!existing.getUserCode().equals(presupuestoActualizado.getUserCode())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permiso para modificar este presupuesto"));
+            }
+            log.debug("[Presupuesto] PUT id={} nombre={} clienteId={} tareas={}",
+                    id, presupuestoActualizado.getName(),
+                    presupuestoActualizado.getCliente() != null ? presupuestoActualizado.getCliente().getId() : "null",
+                    presupuestoActualizado.getTareas() != null ? presupuestoActualizado.getTareas().size() : 0);
+            Presupuesto actualizado = presupuestoService.updatePresupuesto(id, presupuestoActualizado);
+            return ResponseEntity.ok(actualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("error", e.getMessage()));
+        }
     }
 }
