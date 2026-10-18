@@ -437,6 +437,13 @@ public class AuthenticationService {
         userSessionRepository.deleteByAccessCodeCode(ac.getCode());
     }
 
+    /** Borra físicamente sesiones con lastHeartbeat anterior al TTL (limpieza periódica). */
+    @Transactional
+    public void cleanStaleSessions() {
+        Instant cutoff = Instant.now().minusSeconds(SESSION_TIMEOUT_MINUTES * 60L);
+        userSessionRepository.deleteStaleSessionsBefore(cutoff);
+    }
+
     private void validateCodeFormat(String code) {
         if (code == null) {
             throw new IllegalArgumentException("El codigo es obligatorio");

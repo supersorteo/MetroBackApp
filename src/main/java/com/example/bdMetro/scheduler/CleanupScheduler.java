@@ -19,4 +19,10 @@ public class CleanupScheduler {
             System.out.println("[CleanupScheduler] Datos eliminados de " + cleaned + " usuario(s) con código vencido hace más de 90 días.");
         }
     }
+
+    // Cada 20 minutos: elimina registros de sesión con lastHeartbeat expirado
+    @Scheduled(fixedRate = 20 * 60 * 1000)
+    public void cleanStaleSessions() {
+        authenticationService.cleanStaleSessions();
+    }
 }
