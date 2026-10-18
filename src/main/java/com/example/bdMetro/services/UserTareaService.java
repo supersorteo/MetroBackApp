@@ -57,4 +57,9 @@ public class UserTareaService {
         tarea.setDeleted(true);
         userTareaRepository.save(tarea);
     }
+
+    @Transactional
+    public void deleteAllByUserCode(String userCode) {
+        userTareaRepository.softDeleteAllByUserCode(userCode);
+    }
 }
