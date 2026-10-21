@@ -440,7 +440,7 @@ public class AuthenticationService {
     /** Borra físicamente sesiones con lastHeartbeat anterior al TTL (limpieza periódica). */
     @Transactional
     public void cleanStaleSessions() {
-        Instant cutoff = Instant.now().minusSeconds(SESSION_TIMEOUT_MINUTES * 60L);
+        Instant cutoff = Instant.now().minusSeconds(24 * 60 * 60L);
         userSessionRepository.deleteStaleSessionsBefore(cutoff);
     }
 
