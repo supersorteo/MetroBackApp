@@ -1,6 +1,7 @@
 package com.example.bdMetro.payments.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -178,14 +179,19 @@ public class PayPalPaymentService {
         Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("intent", "CAPTURE");
 
+        String fmtAmount = formatAmount(order.getAmount());
+
         Map<String, Object> amount = new LinkedHashMap<>();
         amount.put("currency_code", order.getCurrencyCode());
-        amount.put("value", order.getAmount().toPlainString());
+        amount.put("value", fmtAmount);
+        amount.put("breakdown", Map.of(
+                "item_total", Map.of("currency_code", order.getCurrencyCode(), "value", fmtAmount)
+        ));
 
         Map<String, Object> item = new LinkedHashMap<>();
         item.put("name", "Membresia Metro " + order.getPlanMonths() + " meses");
         item.put("quantity", "1");
-        item.put("unit_amount", Map.of("currency_code", order.getCurrencyCode(), "value", order.getAmount().toPlainString()));
+        item.put("unit_amount", Map.of("currency_code", order.getCurrencyCode(), "value", fmtAmount));
 
         Map<String, Object> purchaseUnit = new LinkedHashMap<>();
         purchaseUnit.put("reference_id", order.getExternalId());
@@ -343,5 +349,9 @@ public class PayPalPaymentService {
         return new PayPalPaymentStatusResponse(o.getExternalId(), o.getPaypalOrderId(), o.getStatus(),
                 o.getStatusDetail(), o.getAccessCode(), o.getPayerPhone(), o.getCountryCode(), o.getCurrencyCode(),
                 o.getPlanMonths(), o.getAmount(), o.getBaseUsdAmount(), o.getExchangeRateApplied(), o.getPaidAt());
+    }
+
+    private String formatAmount(BigDecimal amount) {
+        return amount.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
 }
