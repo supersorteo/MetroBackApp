@@ -8,12 +8,17 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
 @Service
 public class PrecioMaterialService {
@@ -73,5 +78,40 @@ public class PrecioMaterialService {
 
     public List<PrecioMaterial> getPreciosByPais(String pais) {
         return precioMaterialRepository.findByPaisIgnoreCase(pais);
+    }
+
+    public Page<PrecioMaterial> getAdminPage(String pais, int page, int size, String buscar, List<String> categorias) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("categoriaNombre", "nombre"));
+        String b = (buscar == null) ? "" : buscar.trim();
+        List<String> cats = (categorias == null) ? Collections.emptyList() : categorias;
+        if (!cats.isEmpty()) {
+            return precioMaterialRepository.searchAdminByCategorias(pais, cats, b, pageable);
+        }
+        return precioMaterialRepository.searchAdmin(pais, b, pageable);
+    }
+
+    public List<String> getCategoriasByPais(String pais) {
+        return precioMaterialRepository.findDistinctCategoriasByPais(pais);
+    }
+
+    public PrecioMaterial create(PrecioMaterial pm) {
+        return precioMaterialRepository.save(pm);
+    }
+
+    public PrecioMaterial update(Long id, PrecioMaterial data) {
+        PrecioMaterial pm = precioMaterialRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Material no encontrado: " + id));
+        pm.setNombre(data.getNombre());
+        pm.setCategoriaNombre(data.getCategoriaNombre());
+        pm.setCategoriaId(data.getCategoriaId());
+        pm.setUnidad(data.getUnidad());
+        pm.setNombreUnidad(data.getNombreUnidad());
+        pm.setPrecio(data.getPrecio());
+        pm.setMoneda(data.getMoneda());
+        return precioMaterialRepository.save(pm);
+    }
+
+    public void delete(Long id) {
+        precioMaterialRepository.deleteById(id);
     }
 }
