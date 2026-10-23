@@ -67,10 +67,11 @@ public class AuthenticationController {
     }
 
 
-    @GetMapping("/codes")
-    public List<AccessCode> getAllCodes() {
-        return authenticationService.getAllCodes();
-    }
+    // DISABLED: devuelve todos los códigos con emails y datos de todos los usuarios — usar /codes/pais/{pais}
+    // @GetMapping("/codes")
+    // public List<AccessCode> getAllCodes() {
+    //     return authenticationService.getAllCodes();
+    // }
 
     /** GET /auth/codes/pais/{pais} — códigos filtrados por país */
     @GetMapping("/codes/pais/{pais}")
@@ -159,6 +160,35 @@ public class AuthenticationController {
         return ResponseEntity.noContent().build();
     }
 
+    /** Registra retroactivamente una sesión para usuarios logueados antes del deploy de la feature.
+     *  Si el límite está lleno, devuelve sessionToken:null en lugar de 409 — el usuario no se kickea. */
+    @PostMapping("/session/register")
+    public ResponseEntity<?> registerSession(@RequestBody Map<String, String> body) {
+        String code = body.get("code");
+        String deviceId = body.get("deviceId");
+        if (code == null || code.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "code requerido"));
+        }
+        try {
+            String sessionToken = authenticationService.loginWithDevice(code, deviceId);
+            return ResponseEntity.ok(Map.of("sessionToken", sessionToken));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.ok(Map.of("sessionToken", ""));
+        } catch (RuntimeException e) {
+            return ResponseEntity.ok(Map.of("sessionToken", ""));
+        }
+    }
+
+    /** Termina una sesión vía POST — permite uso con navigator.sendBeacon() en beforeunload. */
+    @PostMapping("/session/terminate")
+    public ResponseEntity<Void> terminateSessionBeacon(@RequestBody Map<String, String> body) {
+        String sessionToken = body.get("sessionToken");
+        if (sessionToken != null && !sessionToken.isBlank()) {
+            authenticationService.terminateSession(sessionToken);
+        }
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/codes/{code}/sessions")
     public ResponseEntity<?> getActiveSessions(@PathVariable String code) {
         AccessCode ac = authenticationService.getCode(code);
@@ -227,8 +257,9 @@ public class AuthenticationController {
         String expiredCode = request.get("expiredCode");
         String newCode = request.get("newCode");
         String email = request.get("email");
+        String deviceId = request.get("deviceId");
         try {
-            AccessCode updated = authenticationService.reactivateCode(expiredCode, newCode, email);
+            AccessCode updated = authenticationService.reactivateCode(expiredCode, newCode, email, deviceId);
             return ResponseEntity.ok(updated);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("email", e.getMessage()));

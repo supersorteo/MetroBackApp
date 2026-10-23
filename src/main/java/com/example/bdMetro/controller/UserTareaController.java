@@ -59,4 +59,10 @@ public class UserTareaController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @DeleteMapping("/by-user/{userCode}")
+    public ResponseEntity<?> deleteAllByUserCode(@PathVariable String userCode) {
+        userTareaService.deleteAllByUserCode(userCode);
+        return ResponseEntity.noContent().build();
+    }
 }

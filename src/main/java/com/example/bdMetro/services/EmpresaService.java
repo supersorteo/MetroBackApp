@@ -4,6 +4,7 @@ import com.example.bdMetro.entity.Empresa;
 import com.example.bdMetro.repository.EmpresaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,6 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 public class EmpresaService {
     @Autowired
     private EmpresaRepository empresaRepository;
@@ -69,6 +71,7 @@ public class EmpresaService {
         return empresaRepository.save(empresa);
     }*/
 
+    @Transactional
     public Empresa saveEmpresa(Empresa empresa) {
         if (empresa.getName() == null || empresa.getName().trim().isEmpty()) {
             throw new IllegalArgumentException("El nombre de la empresa es obligatorio");
@@ -90,6 +93,7 @@ public class EmpresaService {
         return empresaRepository.save(empresa);
     }
 
+    @Transactional
     public Empresa updateEmpresa(Long id, Empresa empresaDetails) {
         Empresa empresa = empresaRepository.findById(id).orElseThrow(() -> new RuntimeException("Empresa no encontrada"));
         empresa.setName(empresaDetails.getName());
@@ -132,6 +136,7 @@ public class EmpresaService {
     }*/
 
 
+    @Transactional
     public void deleteEmpresa(Long id) {
         Optional<Empresa> optionalEmpresa = empresaRepository.findById(id);
         if (optionalEmpresa.isEmpty()) {

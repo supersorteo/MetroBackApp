@@ -5,7 +5,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.Instant;
 
 @Entity
-@Table(name = "empresa")
+@Table(name = "empresa", indexes = @Index(name = "idx_empresa_user_code", columnList = "user_code"))
 public class Empresa {
 
     @Id

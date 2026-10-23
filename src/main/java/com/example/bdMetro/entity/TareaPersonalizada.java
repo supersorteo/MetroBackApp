@@ -3,7 +3,7 @@ package com.example.bdMetro.entity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "tarea_personalizada")
+@Table(name = "tarea_personalizada", indexes = @Index(name = "idx_tarea_personalizada_user_code", columnList = "user_code"))
 public class TareaPersonalizada {
 
     @Id

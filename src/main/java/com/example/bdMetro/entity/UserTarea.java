@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "user_tarea")
+@Table(name = "user_tarea", indexes = @Index(name = "idx_user_tarea_user_code", columnList = "user_code"))
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserTarea {
 

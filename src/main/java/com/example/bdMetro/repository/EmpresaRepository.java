@@ -23,6 +23,6 @@ public interface EmpresaRepository extends JpaRepository<Empresa, Long> {
     void deleteByUserCode(String userCode);
 
     @Modifying
-    @Query("UPDATE Empresa e SET e.userCode = :newCode WHERE e.userCode = :oldCode")
+    @Query("UPDATE Empresa e SET e.userCode = :newCode WHERE LOWER(e.userCode) = LOWER(:oldCode)")
     void updateUserCode(@Param("oldCode") String oldCode, @Param("newCode") String newCode);
 }

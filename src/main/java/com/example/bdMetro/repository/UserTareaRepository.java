@@ -22,6 +22,6 @@ public interface UserTareaRepository extends JpaRepository<UserTarea, Long> {
     void softDeleteAllByUserCode(@Param("userCode") String userCode);
 
     @Modifying
-    @Query("UPDATE UserTarea ut SET ut.userCode = :newCode WHERE ut.userCode = :oldCode")
+    @Query("UPDATE UserTarea ut SET ut.userCode = :newCode WHERE LOWER(ut.userCode) = LOWER(:oldCode)")
     void updateUserCode(@Param("oldCode") String oldCode, @Param("newCode") String newCode);
 }

@@ -13,6 +13,6 @@ public interface TareaPersonalizadaRepository extends JpaRepository<TareaPersona
     void deleteByUserCode(String userCode);
 
     @org.springframework.data.jpa.repository.Modifying
-    @org.springframework.data.jpa.repository.Query("UPDATE TareaPersonalizada t SET t.userCode = :newCode WHERE t.userCode = :oldCode")
+    @org.springframework.data.jpa.repository.Query("UPDATE TareaPersonalizada t SET t.userCode = :newCode WHERE LOWER(t.userCode) = LOWER(:oldCode)")
     void updateUserCode(@org.springframework.data.repository.query.Param("oldCode") String oldCode, @org.springframework.data.repository.query.Param("newCode") String newCode);
 }

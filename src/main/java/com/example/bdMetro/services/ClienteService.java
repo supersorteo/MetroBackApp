@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@Transactional(readOnly = true)
 public class ClienteService {
 
     @Autowired
@@ -27,6 +28,7 @@ public class ClienteService {
         return clienteRepository.findByUserCode(userCode);
     }
 
+    @Transactional
     public Cliente saveCliente(Cliente cliente) {
         if (cliente.getEmail() == null || cliente.getEmail().isEmpty()) {
             throw new IllegalArgumentException("El email es requerido para guardar el cliente");
@@ -53,6 +55,7 @@ public class ClienteService {
         return clienteRepository.findByEmpresaId(empresaId);
     }
 
+    @Transactional
     public Cliente updateCliente(Long id, Cliente clienteDetails) {
         Cliente cliente = clienteRepository.findById(id).orElseThrow(() -> new RuntimeException("Cliente no encontrado con ID: " + id));
         cliente.setName(clienteDetails.getName());

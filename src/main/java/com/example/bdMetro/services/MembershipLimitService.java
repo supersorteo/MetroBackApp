@@ -105,7 +105,7 @@ public class MembershipLimitService {
     }
 
     private AccessCode requireAccessCode(String userCode) {
-        AccessCode accessCode = accessCodeRepository.findByCode(userCode);
+        AccessCode accessCode = accessCodeRepository.findByCodeIgnoreCase(userCode);
         if (accessCode == null) {
             throw new IllegalArgumentException("No se encontró un código de acceso válido para aplicar los límites.");
         }

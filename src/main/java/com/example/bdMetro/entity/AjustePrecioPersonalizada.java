@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "ajuste_precio_personalizada")
+@Table(name = "ajuste_precio_personalizada", indexes = @Index(name = "idx_ajuste_personalizada_user_code", columnList = "user_code"))
 public class AjustePrecioPersonalizada {
 
     @Id
