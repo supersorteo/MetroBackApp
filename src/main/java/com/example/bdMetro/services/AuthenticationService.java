@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.bdMetro.dto.UserDataSummaryDto;
 import com.example.bdMetro.entity.AccessCode;
+import com.example.bdMetro.entity.Empresa;
 import com.example.bdMetro.entity.UserSession;
 import com.example.bdMetro.repository.AccessCodeRepository;
 import com.example.bdMetro.repository.CalculoMaterialRepository;
@@ -36,6 +37,7 @@ public class AuthenticationService {
     @Autowired private TareaPersonalizadaRepository tareaPersonalizadaRepository;
     @Autowired private CalculoMaterialRepository calculoMaterialRepository;
     @Autowired private UserSessionRepository userSessionRepository;
+    @Autowired private CloudinaryService cloudinaryService;
 
     private static final int MAX_DEVICES = 2;
     private static final int SESSION_TIMEOUT_MINUTES = 30;
@@ -325,7 +327,11 @@ public class AuthenticationService {
         // 4. Clientes (hard-delete)
         clienteRepository.deleteByUserCode(code);
 
-        // 5. Empresas (hard-delete)
+        // 5. Empresas — limpiar logos en Cloudinary antes del hard-delete
+        List<Empresa> empresas = empresaRepository.findByUserCode(code);
+        for (Empresa e : empresas) {
+            cloudinaryService.delete(e.getLogoUrl());
+        }
         empresaRepository.deleteByUserCode(code);
 
         // 6. TareasPersonalizadas y CalculoMateriales
