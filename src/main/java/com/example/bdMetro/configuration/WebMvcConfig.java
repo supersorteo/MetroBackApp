@@ -8,9 +8,12 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final ExpiryInterceptor expiryInterceptor;
+    private final RateLimitInterceptor rateLimitInterceptor;
 
-    public WebMvcConfig(ExpiryInterceptor expiryInterceptor) {
+    public WebMvcConfig(ExpiryInterceptor expiryInterceptor,
+                        RateLimitInterceptor rateLimitInterceptor) {
         this.expiryInterceptor = expiryInterceptor;
+        this.rateLimitInterceptor = rateLimitInterceptor;
     }
 
     @Override
@@ -22,5 +25,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                     "/ping",
                     "/api/payments/**"
                 );
+
+        registry.addInterceptor(rateLimitInterceptor)
+                .addPathPatterns("/auth/**");
     }
 }
