@@ -227,16 +227,28 @@ public class EmpresaClienteController {
     // }
 
     @DeleteMapping("/uploads/{filename:.+}")
-    public ResponseEntity<Map<String, Object>> deleteImage(@PathVariable String filename) {
+    public ResponseEntity<Map<String, Object>> deleteImage(
+            @PathVariable String filename,
+            @RequestParam String userCode) {
         try {
             if (isProduction()) {
+                String publicId = cloudinaryService.extractPublicId(filename);
+                if (!publicId.startsWith("metro/logos/" + userCode + "_")) {
+                    log.warn("[Security] Intento de borrar imagen ajena. userCode={} publicId={}", userCode, publicId);
+                    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                            .body(Map.of("error", "Sin permiso para eliminar esta imagen"));
+                }
                 cloudinaryService.delete(filename);
             } else {
-                String safeFilename = StringUtils.cleanPath(filename);
-                Path filePath = Paths.get(getUploadDir() + safeFilename);
+                Path baseDir = Paths.get(getUploadDir()).toAbsolutePath().normalize();
+                Path filePath = baseDir.resolve(StringUtils.cleanPath(filename)).normalize();
+                if (!filePath.startsWith(baseDir)) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(Map.of("error", "Ruta de archivo inválida"));
+                }
                 if (!Files.exists(filePath)) {
                     return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                            .body(Map.of("error", "Imagen no encontrada: " + safeFilename));
+                            .body(Map.of("error", "Imagen no encontrada: " + filename));
                 }
                 Files.delete(filePath);
             }

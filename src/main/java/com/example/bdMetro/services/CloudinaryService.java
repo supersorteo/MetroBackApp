@@ -51,20 +51,18 @@ public class CloudinaryService {
     }
 
     public String extractPublicId(String input) {
-        if (input == null) return input;
-        if (input.contains("/upload/")) {
-            // URL completa de Cloudinary
-            String after = input.substring(input.indexOf("/upload/") + "/upload/".length());
-            if (after.matches("v\\d+/.*")) {
-                after = after.substring(after.indexOf("/") + 1);
-            }
-            int dot = after.lastIndexOf(".");
-            return dot > 0 ? after.substring(0, dot) : after;
-        } else {
-            // Solo nombre de archivo (ej: "userCode_123456.jpg") — reconstruir public_id
-            int dot = input.lastIndexOf(".");
-            String nameWithoutExt = dot > 0 ? input.substring(0, dot) : input;
-            return "metro/logos/" + nameWithoutExt;
+        if (input == null || input.isBlank()) return input;
+        if (input.contains("..") || input.contains("%") || input.contains("\\")) {
+            throw new IllegalArgumentException("URL de imagen inválida");
         }
+        if (!input.contains("/upload/")) {
+            throw new IllegalArgumentException("URL de imagen inválida: no es una URL de Cloudinary");
+        }
+        String after = input.substring(input.indexOf("/upload/") + "/upload/".length());
+        if (after.matches("v\\d+/.*")) {
+            after = after.substring(after.indexOf("/") + 1);
+        }
+        int dot = after.lastIndexOf(".");
+        return dot > 0 ? after.substring(0, dot) : after;
     }
 }
