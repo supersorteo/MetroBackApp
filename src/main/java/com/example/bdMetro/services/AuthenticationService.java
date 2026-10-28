@@ -184,7 +184,13 @@ public class AuthenticationService {
 
     @Transactional
     public void deleteCode(String code) {
-        accessCodeRepository.deleteById(norm(code));
+        // deleteById usa el PK exacto (case-sensitive en PostgreSQL). Si el código
+        // fue generado con minúsculas, norm() lo convierte a mayúsculas y no matchea.
+        // findByCodeIgnoreCase obtiene la entidad con el PK real almacenado.
+        AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
+        if (ac != null) {
+            accessCodeRepository.delete(ac);
+        }
     }
 
     @Transactional
