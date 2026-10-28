@@ -25,7 +25,7 @@ public class CacheConfig {
 
         manager.registerCustomCache("tareas",
             Caffeine.newBuilder()
-                .expireAfterWrite(10, TimeUnit.MINUTES)
+                .expireAfterWrite(2, TimeUnit.MINUTES)
                 .maximumSize(50)
                 .build());
 
