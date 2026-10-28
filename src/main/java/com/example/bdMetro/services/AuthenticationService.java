@@ -330,7 +330,16 @@ public class AuthenticationService {
         // 5. Empresas — limpiar logos en Cloudinary antes del hard-delete
         List<Empresa> empresas = empresaRepository.findByUserCode(code);
         for (Empresa e : empresas) {
-            cloudinaryService.delete(e.getLogoUrl());
+            String logoUrl = e.getLogoUrl();
+            if (logoUrl == null || logoUrl.isBlank()) continue;
+            try {
+                String publicId = cloudinaryService.extractPublicId(logoUrl);
+                if (publicId.startsWith("metro/logos/" + code + "_")) {
+                    cloudinaryService.delete(logoUrl);
+                }
+            } catch (Exception ex) {
+                // URL inválida o no-Cloudinary (ej: /api/uploads/...) — ignorar, continuar con el delete
+            }
         }
         empresaRepository.deleteByUserCode(code);
 
