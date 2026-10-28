@@ -4,6 +4,7 @@ import com.example.bdMetro.entity.Cliente;
 import com.example.bdMetro.entity.Empresa;
 import com.example.bdMetro.entity.Presupuesto;
 import com.example.bdMetro.services.ClienteService;
+import com.example.bdMetro.services.CloudinaryService;
 import com.example.bdMetro.services.EmpresaService;
 import com.example.bdMetro.services.PresupuestoService;
 
@@ -27,6 +28,8 @@ import java.net.MalformedURLException;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.*;
+import java.util.Set;
+import java.util.UUID;
 
 
 @RestController
@@ -38,9 +41,10 @@ public class EmpresaClienteController {
     private EmpresaService empresaService;
     @Autowired
     private ClienteService clienteService;
-
     @Autowired
     private PresupuestoService presupuestoService;
+    @Autowired
+    private CloudinaryService cloudinaryService;
 
     @Value("${app.base-url:${APP_BASE_URL:http://localhost:8080}}")
     private String baseUrl;
@@ -59,6 +63,25 @@ public class EmpresaClienteController {
         return UPLOAD_DIR_LOCAL;
     }
 
+    private boolean isProduction() {
+        String railwayEnv = System.getenv("RAILWAY_ENVIRONMENT");
+        return railwayEnv != null && !railwayEnv.isBlank();
+    }
+
+    private static final Set<String> ALLOWED_IMAGE_EXTS = Set.of(".jpg", ".jpeg", ".png", ".webp", ".gif");
+    private static final Set<String> ALLOWED_CONTENT_TYPES = Set.of(
+            "image/jpeg", "image/png", "image/webp", "image/gif");
+
+    private String safeImageExtension(String originalFilename) {
+        if (originalFilename == null) throw new IllegalArgumentException("Nombre de archivo nulo");
+        int dot = originalFilename.lastIndexOf('.');
+        if (dot < 0) throw new IllegalArgumentException("El archivo no tiene extension");
+        String ext = originalFilename.substring(dot).toLowerCase();
+        if (!ALLOWED_IMAGE_EXTS.contains(ext))
+            throw new IllegalArgumentException("Tipo de archivo no permitido: " + ext);
+        return ext;
+    }
+
 
     @PostMapping("/upload/image")
     public ResponseEntity<Map<String, Object>> uploadImage(
@@ -67,50 +90,115 @@ public class EmpresaClienteController {
         List<String> urls = new ArrayList<>();
         Map<String, Object> response = new HashMap<>();
         try {
-            File uploadDir = new File(getUploadDir());
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-            }
-            for (MultipartFile file : files) {
-                if (!file.isEmpty()) {
-                    String fileName = StringUtils.cleanPath(userCode + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename());
-                    Path filePath = Paths.get(getUploadDir() + fileName);
-                    Files.write(filePath, file.getBytes());
-                    String fileUrl = baseUrl + "/api/uploads/" + fileName;
-                    urls.add(fileUrl);
+            if (isProduction()) {
+                // Cloudinary (Railway)
+                for (MultipartFile file : files) {
+                    if (!file.isEmpty()) {
+                        String publicId = userCode + "_" + System.currentTimeMillis();
+                        urls.add(cloudinaryService.upload(file.getBytes(), publicId));
+                    }
                 }
+            } else {
+                // Local — disco (UUID + extension allowlist + containment check)
+                Path base = Paths.get(getUploadDir()).toAbsolutePath();
+                Files.createDirectories(base);
+                for (MultipartFile file : files) {
+                    if (!file.isEmpty()) {
+                        String ext = safeImageExtension(file.getOriginalFilename());
+                        String fileName = UUID.randomUUID() + ext;
+                        Path target = base.resolve(fileName).normalize();
+                        if (!target.startsWith(base))
+                            throw new SecurityException("Path traversal detectado");
+                        Files.write(target, file.getBytes());
+                        urls.add(baseUrl + "/api/uploads/" + fileName);
+                    }
+                }
+                // --- CODIGO ANTERIOR (vulnerable a path traversal) ---
+                // File uploadDir = new File(getUploadDir());
+                // if (!uploadDir.exists()) { uploadDir.mkdirs(); }
+                // for (MultipartFile file : files) {
+                //     if (!file.isEmpty()) {
+                //         String fileName = StringUtils.cleanPath(userCode + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename());
+                //         Path filePath = Paths.get(getUploadDir() + fileName);
+                //         Files.write(filePath, file.getBytes());
+                //         urls.add(baseUrl + "/api/uploads/" + fileName);
+                //     }
+                // }
             }
             response.put("urls", urls);
             return ResponseEntity.ok(response);
-        } catch (IOException e) {
+        } catch (Exception e) {
             response.put("error", "Error al subir las imágenes");
             response.put("details", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
+    // --- CODIGO ANTERIOR upload (volumen Railway) ---
+    // @PostMapping("/upload/image")
+    // public ResponseEntity<Map<String, Object>> uploadImageLocal(
+    //         @RequestParam("files") List<MultipartFile> files,
+    //         @RequestParam("userCode") String userCode) {
+    //     List<String> urls = new ArrayList<>();
+    //     Map<String, Object> response = new HashMap<>();
+    //     try {
+    //         File uploadDir = new File(getUploadDir());
+    //         if (!uploadDir.exists()) { uploadDir.mkdirs(); }
+    //         for (MultipartFile file : files) {
+    //             if (!file.isEmpty()) {
+    //                 String fileName = StringUtils.cleanPath(userCode + "_" + System.currentTimeMillis() + "_" + file.getOriginalFilename());
+    //                 Path filePath = Paths.get(getUploadDir() + fileName);
+    //                 Files.write(filePath, file.getBytes());
+    //                 String fileUrl = baseUrl + "/api/uploads/" + fileName;
+    //                 urls.add(fileUrl);
+    //             }
+    //         }
+    //         response.put("urls", urls);
+    //         return ResponseEntity.ok(response);
+    //     } catch (IOException e) {
+    //         response.put("error", "Error al subir las imágenes");
+    //         response.put("details", e.getMessage());
+    //         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    //     }
+    // }
 
 
+
+    // En produccion (Railway) no se usa: Cloudinary sirve las imagenes desde CDN directamente
     @GetMapping("/uploads/{filename:.+}")
     public ResponseEntity<byte[]> getImage(@PathVariable String filename) {
         try {
-            Path filePath = Paths.get(getUploadDir() + StringUtils.cleanPath(filename));
-            File file = filePath.toFile();
-            if (!file.exists()) {
+            Path base = Paths.get(getUploadDir()).toAbsolutePath();
+            Path filePath = base.resolve(StringUtils.cleanPath(filename)).normalize();
+            if (!filePath.startsWith(base)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            }
+            if (!filePath.toFile().exists()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
             }
             byte[] imageBytes = Files.readAllBytes(filePath);
-            String contentType = Files.probeContentType(filePath);
-            if (contentType == null) {
-                contentType = "application/octet-stream";
-            }
+            String probed = Files.probeContentType(filePath);
+            String contentType = ALLOWED_CONTENT_TYPES.contains(probed) ? probed : "application/octet-stream";
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.parseMediaType(contentType));
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+            headers.add("X-Content-Type-Options", "nosniff");
+            headers.add("Content-Security-Policy", "sandbox; default-src 'none'");
+            headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline");
             return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
+        // --- CODIGO ANTERIOR (sin containment check ni content-type allowlist) ---
+        // Path filePath = Paths.get(getUploadDir() + StringUtils.cleanPath(filename));
+        // File file = filePath.toFile();
+        // if (!file.exists()) { return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); }
+        // byte[] imageBytes = Files.readAllBytes(filePath);
+        // String contentType = Files.probeContentType(filePath);
+        // if (contentType == null) { contentType = "application/octet-stream"; }
+        // HttpHeaders headers = new HttpHeaders();
+        // headers.setContentType(MediaType.parseMediaType(contentType));
+        // headers.add(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"");
+        // return new ResponseEntity<>(imageBytes, headers, HttpStatus.OK);
     }
 
     // DISABLED: lista todos los archivos de todos los usuarios sin filtro
@@ -141,16 +229,18 @@ public class EmpresaClienteController {
     @DeleteMapping("/uploads/{filename:.+}")
     public ResponseEntity<Map<String, Object>> deleteImage(@PathVariable String filename) {
         try {
-            String safeFilename = StringUtils.cleanPath(filename);
-            Path filePath = Paths.get(getUploadDir() + safeFilename);
-
-            if (!Files.exists(filePath)) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "Imagen no encontrada: " + safeFilename));
+            if (isProduction()) {
+                cloudinaryService.delete(filename);
+            } else {
+                String safeFilename = StringUtils.cleanPath(filename);
+                Path filePath = Paths.get(getUploadDir() + safeFilename);
+                if (!Files.exists(filePath)) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body(Map.of("error", "Imagen no encontrada: " + safeFilename));
+                }
+                Files.delete(filePath);
             }
-
-            Files.delete(filePath);
-            return ResponseEntity.ok(Map.of("message", "Imagen eliminada con éxito: " + safeFilename));
+            return ResponseEntity.ok(Map.of("message", "Imagen eliminada: " + filename));
         } catch (AccessDeniedException e) {
             log.error("Permisos insuficientes para eliminar: {}", filename, e);
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
@@ -253,15 +343,26 @@ public class EmpresaClienteController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permiso para eliminar esta empresa"));
             }
 
-            // Eliminar imagen si existe
-            if (empresa.getLogoUrl() != null) {
-                String fileName = empresa.getLogoUrl().substring(empresa.getLogoUrl().lastIndexOf("/") + 1);
-                String safeFileName = StringUtils.cleanPath(fileName);
-                Path filePath = Paths.get(getUploadDir() + safeFileName);
-
-                if (Files.exists(filePath)) {
-                    Files.delete(filePath);
-                    log.info("Imagen eliminada al borrar empresa {}: {}", id, safeFileName);
+            // Eliminar logo
+            String logoUrl = empresa.getLogoUrl();
+            if (logoUrl != null && !logoUrl.isBlank()) {
+                if (isProduction()) {
+                    // Cloudinary — validar que la imagen pertenece al userCode (anti-IDOR)
+                    String publicId = cloudinaryService.extractPublicId(logoUrl);
+                    if (publicId.startsWith("metro/logos/" + empresa.getUserCode() + "_")) {
+                        cloudinaryService.delete(logoUrl);
+                    } else {
+                        log.warn("[Security] logoUrl no pertenece a userCode={}: {}", empresa.getUserCode(), logoUrl);
+                    }
+                } else {
+                    // Local — disco
+                    String fileName = logoUrl.substring(logoUrl.lastIndexOf("/") + 1);
+                    String safeFileName = StringUtils.cleanPath(fileName);
+                    Path filePath = Paths.get(getUploadDir() + safeFileName);
+                    if (Files.exists(filePath)) {
+                        Files.delete(filePath);
+                        log.info("Imagen eliminada al borrar empresa {}: {}", id, safeFileName);
+                    }
                 }
             }
 
@@ -275,6 +376,9 @@ public class EmpresaClienteController {
             log.error("Error IO al eliminar imagen de empresa {}: {}", id, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("error", "No se pudo eliminar la imagen", "details", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             log.error("Error al eliminar empresa {}: {}", id, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

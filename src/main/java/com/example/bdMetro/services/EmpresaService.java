@@ -2,6 +2,7 @@ package com.example.bdMetro.services;
 
 import com.example.bdMetro.entity.Empresa;
 import com.example.bdMetro.repository.EmpresaRepository;
+import com.example.bdMetro.repository.PresupuestoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,9 @@ import java.util.Optional;
 public class EmpresaService {
     @Autowired
     private EmpresaRepository empresaRepository;
+
+    @Autowired
+    private PresupuestoRepository presupuestoRepository;
 
     @Autowired
     private MembershipLimitService membershipLimitService;
@@ -84,12 +88,14 @@ public class EmpresaService {
         if (currentCount >= maxAllowed) {
             throw new IllegalArgumentException("Tu plan permite crear hasta " + maxAllowed + " empresa(s).");
         }
-        if (empresa.getLogoUrl() != null && !empresa.getLogoUrl().isEmpty()) {
-            Path filePath = Paths.get(getUploadDir() + empresa.getLogoUrl().substring(empresa.getLogoUrl().lastIndexOf("/") + 1));
-            if (!Files.exists(filePath)) {
-                throw new IllegalArgumentException("La imagen especificada no existe en el servidor");
-            }
-        }
+        // --- CODIGO ANTERIOR validacion archivo local (volumen Railway) ---
+        // if (empresa.getLogoUrl() != null && !empresa.getLogoUrl().isEmpty()) {
+        //     Path filePath = Paths.get(getUploadDir() + empresa.getLogoUrl().substring(empresa.getLogoUrl().lastIndexOf("/") + 1));
+        //     if (!Files.exists(filePath)) {
+        //         throw new IllegalArgumentException("La imagen especificada no existe en el servidor");
+        //     }
+        // }
+        // --- Cloudinary: la URL retornada por el upload ya es valida ---
         return empresaRepository.save(empresa);
     }
 
@@ -143,15 +149,18 @@ public class EmpresaService {
             throw new RuntimeException("Empresa no encontrada");
         }
         Empresa empresa = optionalEmpresa.get();
-        if (empresa.getLogoUrl() != null && !empresa.getLogoUrl().isEmpty()) {
-            String filename = empresa.getLogoUrl().substring(empresa.getLogoUrl().lastIndexOf("/") + 1);
-            Path filePath = Paths.get(getUploadDir() + filename);
-            try {
-                Files.deleteIfExists(filePath);
-            } catch (IOException e) {
-                throw new RuntimeException("Error al eliminar la imagen asociada: " + e.getMessage());
-            }
+
+        int presupuestosCount = presupuestoRepository.findByEmpresaId(id).size();
+        if (presupuestosCount > 0) {
+            throw new IllegalStateException(
+                "No se puede eliminar \"" + empresa.getName() + "\" porque tiene " +
+                presupuestosCount + " presupuesto" + (presupuestosCount > 1 ? "s" : "") +
+                " asociado" + (presupuestosCount > 1 ? "s" : "") + ". " +
+                "Eliminá los presupuestos primero y luego podrás eliminar la empresa."
+            );
         }
+
+        // --- Cloudinary: el delete lo maneja EmpresaClienteController ---
         empresaRepository.deleteById(id);
     }
 
