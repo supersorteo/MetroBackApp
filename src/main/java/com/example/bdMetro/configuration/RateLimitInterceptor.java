@@ -42,8 +42,6 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     }
 
     private String getClientIp(HttpServletRequest req) {
-        String forwarded = req.getHeader("X-Forwarded-For");
-        return (forwarded != null) ? forwarded.split(",")[0].trim()
-                                   : req.getRemoteAddr();
+        return req.getRemoteAddr();
     }
 }
