@@ -4,8 +4,17 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+
 @Entity
-@Table(name = "access_code")
+@Table(
+    name = "access_code",
+    indexes = {
+        @Index(name = "idx_ac_pais",        columnList = "pais"),
+        @Index(name = "idx_ac_vencimiento", columnList = "fecha_vencimiento"),
+        @Index(name = "idx_ac_disabled",    columnList = "disabled"),
+        @Index(name = "idx_ac_pais_venc",   columnList = "pais,fecha_vencimiento")
+    }
+)
 public class AccessCode {
     @Id
 

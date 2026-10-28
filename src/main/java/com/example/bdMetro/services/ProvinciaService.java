@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import com.example.bdMetro.entity.Provincia;
@@ -38,6 +39,7 @@ public class ProvinciaService {
         return provinciaRepository.findAll();
     }
 
+    @Cacheable(value = "provincias", key = "#pais.toLowerCase()")
     public List<Provincia> getProvinciasByPais(String pais) {
         return provinciaRepository.findByPaisIgnoreCase(CountryCatalog.displayName(pais));
     }

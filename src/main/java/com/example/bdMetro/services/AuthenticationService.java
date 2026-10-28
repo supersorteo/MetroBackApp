@@ -7,6 +7,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -63,10 +65,12 @@ public class AuthenticationService {
         return accessCodeRepository.findByPaisIgnoreCaseAndLegacyFalse(CountryCatalog.displayName(pais));
     }
 
+    @Cacheable(value = "accessCodes", key = "#code.toUpperCase()")
     public AccessCode getCode(String code) {
         return accessCodeRepository.findByCodeIgnoreCase(norm(code));
     }
 
+    @CacheEvict(value = "accessCodes", key = "#code.toUpperCase()")
     @Transactional
     public AccessCode updateCode(String code, String email, String username, String telefono, String provincia, String pais) {
         String normalizedCode = norm(code);
@@ -173,6 +177,7 @@ public class AuthenticationService {
         };
     }
 
+    @CacheEvict(value = "accessCodes", key = "#code.toUpperCase()")
     @Transactional
     public AccessCode updatePreferences(String code, Long selectedEmpresaId, Long selectedClienteId) {
         AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
@@ -182,6 +187,7 @@ public class AuthenticationService {
         return accessCodeRepository.save(ac);
     }
 
+    @CacheEvict(value = "accessCodes", key = "#code.toUpperCase()")
     @Transactional
     public void deleteCode(String code) {
         // findByCodeIgnoreCase obtiene la entidad con el PK real almacenado
@@ -275,6 +281,7 @@ public class AuthenticationService {
         return toClean.size();
     }
 
+    @CacheEvict(value = "accessCodes", key = "#code.toUpperCase()")
     @Transactional
     public AccessCode disableCode(String code) {
         AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
@@ -283,6 +290,7 @@ public class AuthenticationService {
         return accessCodeRepository.save(ac);
     }
 
+    @CacheEvict(value = "accessCodes", key = "#code.toUpperCase()")
     @Transactional
     public AccessCode enableCode(String code) {
         AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));

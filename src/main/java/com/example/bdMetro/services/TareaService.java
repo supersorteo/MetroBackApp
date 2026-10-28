@@ -6,6 +6,8 @@ import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -678,6 +680,7 @@ public class TareaService {
         return tareaRepository.findAll();
     }
 
+    @Cacheable(value = "tareas", key = "#pais.toLowerCase()")
     public List<Tarea> getTareasByPais(String pais) {
         return tareaRepository.findByPaisIgnoreCase(CountryCatalog.displayName(pais));
     }
@@ -686,10 +689,12 @@ public class TareaService {
         return tareaRepository.findById(id);
     }
 
+    @CacheEvict(value = "tareas", allEntries = true)
     public Tarea addTarea(Tarea tarea) {
         return tareaRepository.save(tarea);
     }
 
+    @CacheEvict(value = "tareas", allEntries = true)
     public Tarea updateTarea(Long id, Tarea tareaDetails) {
         Tarea tarea = tareaRepository.findById(id).orElseThrow(() -> new RuntimeException("Tarea no encontrada"));
         tarea.setTarea(tareaDetails.getTarea());
@@ -702,6 +707,7 @@ public class TareaService {
         tarea.setArea(tareaDetails.getArea());
         return tareaRepository.save(tarea);
     }
+    @CacheEvict(value = "tareas", allEntries = true)
     public void deleteTarea(Long id) {
         tareaRepository.deleteById(id);
     }
