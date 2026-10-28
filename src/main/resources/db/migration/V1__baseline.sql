@@ -1,0 +1,4 @@
+-- Baseline de la base de datos existente.
+-- Este archivo NO se ejecuta en bases de datos ya existentes (baseline-on-migrate=true).
+-- Solo sirve como punto de partida para migraciones futuras.
+-- Las migraciones nuevas deben crearse como V2__descripcion.sql, V3__descripcion.sql, etc.
