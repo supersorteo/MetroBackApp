@@ -479,10 +479,14 @@ public class EmpresaClienteController {
     @PutMapping("/presupuestos/{id}")
     public ResponseEntity<?> updatePresupuesto(
             @PathVariable Long id,
-            @RequestBody Presupuesto presupuestoActualizado) {
+            @RequestBody Presupuesto presupuestoActualizado,
+            @RequestHeader(value = "X-User-Code", required = false) String userCodeHeader) {
         try {
             Presupuesto existing = presupuestoService.getPresupuestoById(id);
-            if (!existing.getUserCode().equals(presupuestoActualizado.getUserCode())) {
+            String callerCode = (userCodeHeader != null && !userCodeHeader.isBlank())
+                    ? userCodeHeader
+                    : presupuestoActualizado.getUserCode();
+            if (callerCode == null || !existing.getUserCode().equalsIgnoreCase(callerCode)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Sin permiso para modificar este presupuesto"));
             }
             log.debug("[Presupuesto] PUT id={} nombre={} clienteId={} tareas={}",

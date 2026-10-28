@@ -16,10 +16,10 @@ import java.util.Optional;
 @Repository
 public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> {
 
-    @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.tareas WHERE p.userCode = :userCode ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.tareas LEFT JOIN FETCH p.empresa LEFT JOIN FETCH p.cliente WHERE p.userCode = :userCode ORDER BY p.createdAt DESC")
     List<Presupuesto> findByUserCode(@Param("userCode") String userCode);
 
-    @EntityGraph(attributePaths = {"tareas"})
+    @EntityGraph(attributePaths = {"tareas", "empresa", "cliente"})
     Page<Presupuesto> findByUserCodeOrderByCreatedAtDesc(String userCode, Pageable pageable);
 
     @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.cliente WHERE p.cliente.userCode = :userCode ORDER BY p.createdAt DESC")
@@ -42,8 +42,11 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> 
     @Query("SELECT p FROM Presupuesto p WHERE p.empresa.id = :empresaId")
     List<Presupuesto> findByEmpresaId(@Param("empresaId") Long empresaId);
 
-    @EntityGraph(attributePaths = {"tareas"})
+    @EntityGraph(attributePaths = {"tareas", "empresa"})
     Optional<Presupuesto> findById(Long id);
+
+    @Query("SELECT p FROM Presupuesto p LEFT JOIN FETCH p.tareas LEFT JOIN FETCH p.empresa LEFT JOIN FETCH p.cliente WHERE p.id = :id")
+    Optional<Presupuesto> findByIdWithRelations(@Param("id") Long id);
 
     @Modifying
     @Query("UPDATE Presupuesto p SET p.userCode = :newCode WHERE LOWER(p.userCode) = LOWER(:oldCode)")

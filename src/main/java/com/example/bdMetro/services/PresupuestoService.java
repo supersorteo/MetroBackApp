@@ -79,7 +79,20 @@ public class PresupuestoService {
             }
         }
 
-        return presupuestoRepository.save(presupuesto);
+        Cliente clienteParaSave = null;
+        if (presupuesto.getCliente() != null && presupuesto.getCliente().getId() != null) {
+            clienteParaSave = clienteRepository.findById(presupuesto.getCliente().getId()).orElse(null);
+        }
+        presupuesto.setCliente(clienteParaSave);
+
+        Empresa empresaParaSave = null;
+        if (presupuesto.getEmpresa() != null && presupuesto.getEmpresa().getId() != null) {
+            empresaParaSave = empresaRepository.findById(presupuesto.getEmpresa().getId()).orElse(null);
+        }
+        presupuesto.setEmpresa(empresaParaSave);
+
+        Presupuesto saved = presupuestoRepository.save(presupuesto);
+        return presupuestoRepository.findByIdWithRelations(saved.getId()).orElse(saved);
     }
 
 
@@ -164,14 +177,20 @@ public class PresupuestoService {
             throw new IllegalArgumentException("El nombre del presupuesto es requerido");
         }
 
-        // PASO 1: Actualizar campos básicos
+        // PASO 1: Actualizar campos básicos — cargar entidades gestionadas para evitar stub en L1 cache
         presupuesto.setName(presupuestoActualizado.getName());
-        if (presupuestoActualizado.getCliente() != null) {
-            presupuesto.setCliente(presupuestoActualizado.getCliente());
+
+        Cliente clienteActualizado = null;
+        if (presupuestoActualizado.getCliente() != null && presupuestoActualizado.getCliente().getId() != null) {
+            clienteActualizado = clienteRepository.findById(presupuestoActualizado.getCliente().getId()).orElse(null);
         }
-        if (presupuestoActualizado.getEmpresa() != null) {
-            presupuesto.setEmpresa(presupuestoActualizado.getEmpresa());
+        presupuesto.setCliente(clienteActualizado);
+
+        Empresa empresaActualizada = null;
+        if (presupuestoActualizado.getEmpresa() != null && presupuestoActualizado.getEmpresa().getId() != null) {
+            empresaActualizada = empresaRepository.findById(presupuestoActualizado.getEmpresa().getId()).orElse(null);
         }
+        presupuesto.setEmpresa(empresaActualizada);
 
         // PASO 2: Procesar las tareas (REEMPLAZAR COMPLETAMENTE)
         if (presupuestoActualizado.getTareas() != null && !presupuestoActualizado.getTareas().isEmpty()) {
@@ -198,7 +217,8 @@ public class PresupuestoService {
         }
 
         // PASO 3: Guardar y devolver
-        return presupuestoRepository.save(presupuesto);
+        Presupuesto saved = presupuestoRepository.save(presupuesto);
+        return presupuestoRepository.findByIdWithRelations(saved.getId()).orElse(saved);
     }
 
 
