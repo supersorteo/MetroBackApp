@@ -17,6 +17,7 @@ import com.example.bdMetro.payments.dto.CreateMembershipPaymentResponse;
 import com.example.bdMetro.payments.dto.MembershipCatalogResponse;
 import com.example.bdMetro.payments.dto.MembershipPaymentStatusResponse;
 import com.example.bdMetro.payments.service.MembershipPaymentService;
+import com.example.bdMetro.payments.service.WebhookAsyncDispatcher;
 
 import jakarta.validation.Valid;
 
@@ -26,9 +27,12 @@ import jakarta.validation.Valid;
 public class MembershipPaymentController {
 
     private final MembershipPaymentService membershipPaymentService;
+    private final WebhookAsyncDispatcher webhookAsyncDispatcher;
 
-    public MembershipPaymentController(MembershipPaymentService membershipPaymentService) {
+    public MembershipPaymentController(MembershipPaymentService membershipPaymentService,
+                                       WebhookAsyncDispatcher webhookAsyncDispatcher) {
         this.membershipPaymentService = membershipPaymentService;
+        this.webhookAsyncDispatcher = webhookAsyncDispatcher;
     }
 
     @GetMapping("/catalog")
@@ -57,7 +61,7 @@ public class MembershipPaymentController {
             @RequestParam(value = "type", required = false) String type,
             @RequestBody(required = false) String rawBody
     ) {
-        membershipPaymentService.processMercadoPagoWebhook(xSignature, xRequestId, dataId, type, rawBody);
+        webhookAsyncDispatcher.dispatchMercadoPago(xSignature, xRequestId, dataId, type, rawBody);
         return ResponseEntity.ok().build();
     }
 }

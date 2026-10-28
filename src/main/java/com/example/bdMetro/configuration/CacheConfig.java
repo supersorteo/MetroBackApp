@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 
 @Configuration
 @EnableCaching
+@org.springframework.scheduling.annotation.EnableAsync
 public class CacheConfig {
 
     @Bean

@@ -22,4 +22,8 @@ public interface UserSessionRepository extends JpaRepository<UserSession, String
     @Modifying
     @Query("DELETE FROM UserSession s WHERE s.accessCode.code = :code")
     void deleteByAccessCodeCode(@Param("code") String code);
+
+    @Modifying
+    @Query("UPDATE UserSession s SET s.lastHeartbeat = :now WHERE s.id = :id")
+    int touchHeartbeat(@Param("id") String id, @Param("now") Instant now);
 }
