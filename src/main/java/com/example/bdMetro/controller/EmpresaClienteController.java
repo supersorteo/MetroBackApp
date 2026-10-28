@@ -23,6 +23,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.io.IOException;
@@ -229,7 +230,12 @@ public class EmpresaClienteController {
     @DeleteMapping("/uploads/{filename:.+}")
     public ResponseEntity<Map<String, Object>> deleteImage(
             @PathVariable String filename,
-            @RequestParam String userCode) {
+            HttpServletRequest request) {
+        String userCode = request.getHeader("X-User-Code");
+        if (userCode == null || userCode.isBlank()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Autenticación requerida"));
+        }
         try {
             if (isProduction()) {
                 String publicId = cloudinaryService.extractPublicId(filename);
