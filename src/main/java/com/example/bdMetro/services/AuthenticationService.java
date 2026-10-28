@@ -319,7 +319,9 @@ public class AuthenticationService {
         // 2. UserTareas (soft-delete por userCode)
         userTareaRepository.softDeleteAllByUserCode(code);
 
-        // 3. Presupuestos (hard-delete — FK a Cliente no puede quedar huérfana)
+        // 3. Presupuestos (hard-delete por userCode — cubre presupuestos con clientes
+        //    de otros usuarios y presupuestos sin cliente, que deleteAllByClienteIdIn omitía)
+        presupuestoRepository.deleteAllByUserCode(code);
         if (!clienteIds.isEmpty()) {
             presupuestoRepository.deleteAllByClienteIdIn(clienteIds);
         }

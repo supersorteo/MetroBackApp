@@ -51,4 +51,8 @@ public interface PresupuestoRepository extends JpaRepository<Presupuesto, Long> 
     @Modifying
     @Query("UPDATE Presupuesto p SET p.userCode = :newCode WHERE LOWER(p.userCode) = LOWER(:oldCode)")
     void updateUserCode(@Param("oldCode") String oldCode, @Param("newCode") String newCode);
+
+    @Modifying
+    @Query("DELETE FROM Presupuesto p WHERE LOWER(p.userCode) = LOWER(:userCode)")
+    void deleteAllByUserCode(@Param("userCode") String userCode);
 }
