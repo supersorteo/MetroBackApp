@@ -184,7 +184,14 @@ public class AuthenticationService {
 
     @Transactional
     public void deleteCode(String code) {
-        accessCodeRepository.deleteById(norm(code));
+        // findByCodeIgnoreCase obtiene la entidad con el PK real almacenado
+        // (deleteById falla silenciosamente si el PK tiene distinto case en PostgreSQL).
+        AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
+        if (ac != null) {
+            // Eliminar sesiones antes de borrar el AccessCode para respetar la FK.
+            userSessionRepository.deleteByAccessCodeCode(ac.getCode());
+            accessCodeRepository.delete(ac);
+        }
     }
 
     @Transactional
