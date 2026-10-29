@@ -457,6 +457,17 @@ public class AuthenticationService {
         return userSessionRepository.countByAccessCodeCodeAndLastHeartbeatAfter(ac.getCode(), cutoff);
     }
 
+    @Transactional
+    public void saveLastPresupuesto(String userCode, Long id) {
+        AccessCode ac = accessCodeRepository.findByCode(userCode);
+        if (ac != null) ac.setLastPresupuestoId(id);
+    }
+
+    public Long getLastPresupuesto(String userCode) {
+        AccessCode ac = accessCodeRepository.findByCode(userCode);
+        return ac != null ? ac.getLastPresupuestoId() : null;
+    }
+
     /** Elimina todas las sesiones activas de un código (kick de todos los dispositivos). */
     @Transactional
     public void terminateAllSessions(String code) {

@@ -198,6 +198,15 @@ public class AuthenticationController {
         return ResponseEntity.ok(Map.of("active", active, "limit", limit));
     }
 
+    @GetMapping("/sessions/summary")
+    public ResponseEntity<Map<String, Integer>> getSessionsSummary(@RequestParam List<String> codes) {
+        Map<String, Integer> result = new HashMap<>();
+        for (String code : codes) {
+            result.put(code, authenticationService.getActiveSessionCount(code));
+        }
+        return ResponseEntity.ok(result);
+    }
+
     @DeleteMapping("/codes/{code}/sessions")
     public ResponseEntity<Void> terminateAllSessions(@PathVariable String code) {
         authenticationService.terminateAllSessions(code);
@@ -360,6 +369,21 @@ public class AuthenticationController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
         return ResponseEntity.ok(accessCode);
+    }
+
+    @PutMapping("/last-presupuesto")
+    public ResponseEntity<?> saveLastPresupuesto(jakarta.servlet.http.HttpServletRequest req,
+                                                  @RequestBody Map<String, Long> body) {
+        String userCode = req.getHeader("X-User-Code");
+        if (userCode == null || userCode.isBlank()) return ResponseEntity.status(401).build();
+        authenticationService.saveLastPresupuesto(userCode, body.get("id"));
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/last-presupuesto/{userCode}")
+    public ResponseEntity<Map<String, Long>> getLastPresupuesto(@PathVariable String userCode) {
+        Long id = authenticationService.getLastPresupuesto(userCode);
+        return id != null ? ResponseEntity.ok(Map.of("id", id)) : ResponseEntity.noContent().build();
     }
 
 }

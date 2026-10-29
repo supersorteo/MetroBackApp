@@ -43,6 +43,9 @@ public class AccessCode {
     @Column(name = "max_devices")
     private Integer maxDevices;
 
+    @Column(name = "last_presupuesto_id")
+    private Long lastPresupuestoId;
+
     @Transient
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Boolean sessionKicked;
@@ -155,6 +158,14 @@ public class AccessCode {
 
     public void setMaxDevices(Integer maxDevices) {
         this.maxDevices = maxDevices;
+    }
+
+    public Long getLastPresupuestoId() {
+        return lastPresupuestoId;
+    }
+
+    public void setLastPresupuestoId(Long lastPresupuestoId) {
+        this.lastPresupuestoId = lastPresupuestoId;
     }
 
     public Boolean getSessionKicked() {
