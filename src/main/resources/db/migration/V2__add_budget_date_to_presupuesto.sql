@@ -1,0 +1,1 @@
+ALTER TABLE presupuesto ADD COLUMN IF NOT EXISTS budget_date DATE;
