@@ -179,6 +179,7 @@ public class PresupuestoService {
 
         // PASO 1: Actualizar campos básicos — cargar entidades gestionadas para evitar stub en L1 cache
         presupuesto.setName(presupuestoActualizado.getName());
+        presupuesto.setBudgetDate(presupuestoActualizado.getBudgetDate());
 
         Cliente clienteActualizado = null;
         if (presupuestoActualizado.getCliente() != null && presupuestoActualizado.getCliente().getId() != null) {

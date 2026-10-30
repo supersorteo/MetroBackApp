@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import com.example.bdMetro.entity.Empresa;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +26,9 @@ public class Presupuesto {
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @Column(nullable = true)
+    private LocalDate budgetDate;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cliente_id")
@@ -82,6 +86,9 @@ public class Presupuesto {
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
+
+    public LocalDate getBudgetDate() { return budgetDate; }
+    public void setBudgetDate(LocalDate budgetDate) { this.budgetDate = budgetDate; }
 
     public Cliente getCliente() {
         return cliente;
