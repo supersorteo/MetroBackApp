@@ -30,9 +30,6 @@ public class ClienteService {
 
     @Transactional
     public Cliente saveCliente(Cliente cliente) {
-        if (cliente.getEmail() == null || cliente.getEmail().isEmpty()) {
-            throw new IllegalArgumentException("El email es requerido para guardar el cliente");
-        }
         if (cliente.getUserCode() == null || cliente.getUserCode().trim().isEmpty()) {
             throw new IllegalArgumentException("El userCode es requerido para guardar el cliente");
         }
@@ -41,7 +38,8 @@ public class ClienteService {
         if (currentCount >= maxAllowed) {
             throw new IllegalArgumentException("Tu plan permite crear hasta " + maxAllowed + " cliente(s).");
         }
-        if (clienteRepository.existsByEmailAndUserCode(cliente.getEmail(), cliente.getUserCode().trim())) {
+        if (cliente.getEmail() != null && !cliente.getEmail().isBlank() &&
+                clienteRepository.existsByEmailAndUserCode(cliente.getEmail(), cliente.getUserCode().trim())) {
             throw new IllegalArgumentException("Ya tenés un cliente registrado con el email '" + cliente.getEmail() + "'");
         }
         return clienteRepository.save(cliente);
