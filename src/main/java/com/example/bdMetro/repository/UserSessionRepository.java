@@ -13,7 +13,7 @@ public interface UserSessionRepository extends JpaRepository<UserSession, String
 
     Optional<UserSession> findByAccessCodeCodeAndDeviceId(String code, String deviceId);
 
-    int countByAccessCodeCodeAndLastHeartbeatAfter(String code, Instant cutoff);
+    int countByAccessCodeCodeAndLastHeartbeatAfterAndKickedFalse(String code, Instant cutoff);
 
     @Modifying
     @Query("DELETE FROM UserSession s WHERE s.lastHeartbeat < :cutoff")
