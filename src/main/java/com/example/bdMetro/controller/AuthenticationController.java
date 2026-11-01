@@ -141,17 +141,22 @@ public class AuthenticationController {
     @GetMapping("/codes/{code}")
     public ResponseEntity<AccessCode> getCode(@PathVariable String code,
                                                @RequestHeader(value = "X-Session-Token", required = false) String sessionToken) {
-        boolean sessionActive = true;
-        if (sessionToken != null && !sessionToken.isBlank()) {
-            sessionActive = authenticationService.updateHeartbeat(sessionToken);
-        }
         AccessCode accessCode = authenticationService.getCode(code);
-        if (accessCode != null) {
-            if (!sessionActive) accessCode.setSessionKicked(true);
-            return ResponseEntity.ok(accessCode);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        if (accessCode == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+
+        if (sessionToken != null && !sessionToken.isBlank()) {
+            int result = authenticationService.checkAndUpdateHeartbeat(sessionToken);
+            // -1 = kicked explícitamente por admin → notificar al cliente
+            // 0  = no encontrado/expirado (ej: deploy) → no kickear, el cliente re-registra
+            // 1  = sesión activa → normal
+            if (result == -1) {
+                // Evict antes de mutar: el objeto cacheado es la misma referencia;
+                // si se muta sin evictar, todos los heartbeats futuros ven sessionKicked=true
+                authenticationService.evictAccessCode(code);
+                accessCode.setSessionKicked(true);
+            }
         }
+        return ResponseEntity.ok(accessCode);
     }
 
     @DeleteMapping("/session/{sessionToken}")

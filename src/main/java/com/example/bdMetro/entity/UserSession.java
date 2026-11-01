@@ -26,6 +26,9 @@ public class UserSession {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Column(name = "kicked", nullable = false, columnDefinition = "boolean not null default false")
+    private boolean kicked = false;
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
@@ -40,4 +43,7 @@ public class UserSession {
 
     public Instant getCreatedAt() { return createdAt; }
     public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+    public boolean isKicked() { return kicked; }
+    public void setKicked(boolean kicked) { this.kicked = kicked; }
 }

@@ -73,6 +73,9 @@ public class AuthenticationService {
     }
 
     @CacheEvict(value = "accessCodes", key = "#code.toUpperCase()")
+    public void evictAccessCode(String code) {}
+
+    @CacheEvict(value = "accessCodes", key = "#code.toUpperCase()")
     @Transactional
     public AccessCode updateCode(String code, String email, String username, String telefono, String provincia, String pais) {
         String normalizedCode = norm(code);
@@ -408,14 +411,18 @@ public class AuthenticationService {
         Instant now = Instant.now();
         Instant cutoff = now.minusSeconds(SESSION_TIMEOUT_MINUTES * 60L);
 
-        // Reusar sesión del mismo dispositivo si ya existe (activa o no)
+        // Reusar sesión del mismo dispositivo si ya existe y no fue kicked
         Optional<UserSession> existing = userSessionRepository
                 .findByAccessCodeCodeAndDeviceId(codeKey, effectiveDeviceId);
         if (existing.isPresent()) {
             UserSession session = existing.get();
-            session.setLastHeartbeat(now);
-            userSessionRepository.save(session);
-            return session.getId();
+            if (!session.isKicked()) {
+                session.setLastHeartbeat(now);
+                userSessionRepository.save(session);
+                return session.getId();
+            }
+            // Sesión kicked — borrar registro stale y crear uno nuevo
+            userSessionRepository.delete(session);
         }
 
         // Contar sesiones activas de otros dispositivos
@@ -437,10 +444,13 @@ public class AuthenticationService {
         return session.getId();
     }
 
-    /** Actualiza el lastHeartbeat. Devuelve true si la sesión existe, false si fue terminada externamente. */
+    /** Actualiza el heartbeat. Retorna: 1=activo, -1=kicked por admin, 0=no encontrado/expirado. */
     @Transactional
-    public boolean updateHeartbeat(String sessionToken) {
-        return userSessionRepository.touchHeartbeat(sessionToken, Instant.now()) > 0;
+    public int checkAndUpdateHeartbeat(String sessionToken) {
+        int updated = userSessionRepository.touchHeartbeat(sessionToken, Instant.now());
+        if (updated > 0) return 1;
+        if (userSessionRepository.existsKickedById(sessionToken)) return -1;
+        return 0;
     }
 
     /** Elimina la sesión (logout explícito). */
@@ -468,12 +478,12 @@ public class AuthenticationService {
         return ac != null ? ac.getLastPresupuestoId() : null;
     }
 
-    /** Elimina todas las sesiones activas de un código (kick de todos los dispositivos). */
+    /** Marca como kicked todas las sesiones de un código (soft-delete para que el cliente lo detecte). */
     @Transactional
     public void terminateAllSessions(String code) {
         AccessCode ac = accessCodeRepository.findByCodeIgnoreCase(norm(code));
         if (ac == null) return;
-        userSessionRepository.deleteByAccessCodeCode(ac.getCode());
+        userSessionRepository.kickByAccessCodeCode(ac.getCode());
     }
 
     /** Borra físicamente sesiones con lastHeartbeat anterior al TTL (limpieza periódica). */
@@ -481,6 +491,8 @@ public class AuthenticationService {
     public void cleanStaleSessions() {
         Instant cutoff = Instant.now().minusSeconds(24 * 60 * 60L);
         userSessionRepository.deleteStaleSessionsBefore(cutoff);
+        Instant kickedCutoff = Instant.now().minusSeconds(2 * 60 * 60L);
+        userSessionRepository.deleteKickedSessionsBefore(kickedCutoff);
     }
 
     private void validateCodeFormat(String code) {
