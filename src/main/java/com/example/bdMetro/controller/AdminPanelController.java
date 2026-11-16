@@ -101,7 +101,7 @@ public class AdminPanelController {
         }
         try {
             adminPanelService.updateMensaje(id, sanitized);
-            adminSseService.broadcastPublic("mensaje-updated", Map.of("mensaje", sanitized));
+            // adminSseService.broadcastPublic("mensaje-updated", Map.of("mensaje", sanitized)); // SSE público reemplazado por polling
             return ResponseEntity.ok(Map.of("ok", true));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();

@@ -37,10 +37,10 @@ public class AuthenticationController {
         return ResponseEntity.ok(adminSseService.subscribe());
     }
 
-    @GetMapping(value = "/public/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<SseEmitter> streamPublicEvents() {
-        return ResponseEntity.ok(adminSseService.subscribePublic());
-    }
+    // @GetMapping(value = "/public/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE) // SSE público reemplazado por polling
+    // public ResponseEntity<SseEmitter> streamPublicEvents() {
+    //     return ResponseEntity.ok(adminSseService.subscribePublic());
+    // }
 
 
     @PostMapping("/login")
