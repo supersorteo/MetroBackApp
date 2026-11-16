@@ -15,7 +15,12 @@ public class AdminSseService {
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
     public SseEmitter subscribe() {
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        if (emitters.size() >= 50) {
+            SseEmitter rejected = new SseEmitter();
+            rejected.completeWithError(new IllegalStateException("Too many subscribers"));
+            return rejected;
+        }
+        SseEmitter emitter = new SseEmitter(300_000L);
         emitters.add(emitter);
         emitter.onCompletion(() -> emitters.remove(emitter));
         emitter.onTimeout(() -> emitters.remove(emitter));

@@ -130,7 +130,7 @@ public class AuthenticationController {
     public ResponseEntity<Map<String, String>> assignEmail(@RequestBody AccessCode accessCode) {
         Map<String, String> response = new HashMap<>(); try {
             AccessCode updatedCode = authenticationService.addCode(accessCode);
-            adminSseService.broadcast("code-registered", Map.of("code", updatedCode.getCode(), "pais", updatedCode.getPais() != null ? updatedCode.getPais() : ""));
+            adminSseService.broadcast("code-registered", Map.of("pais", updatedCode.getPais() != null ? updatedCode.getPais() : ""));
             response.put("message", "Datos asignados con éxito");
             response.put("code", updatedCode.getCode());
             response.put("email", updatedCode.getEmail());

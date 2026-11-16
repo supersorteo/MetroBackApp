@@ -124,7 +124,7 @@ public class LegacyCodeController {
                             request.getTelefono(),
                             request.getProvincia())
                     .map(ac -> {
-                        adminSseService.broadcast("legacy-claimed", Map.of("code", ac.getCode(), "pais", ac.getPais() != null ? ac.getPais() : ""));
+                        adminSseService.broadcast("legacy-claimed", Map.of("pais", ac.getPais() != null ? ac.getPais() : ""));
                         Map<String, String> resp = new HashMap<>();
                         resp.put("message", "Código activado con éxito");
                         resp.put("code", ac.getCode());
