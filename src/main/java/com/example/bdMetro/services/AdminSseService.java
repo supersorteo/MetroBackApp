@@ -13,6 +13,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class AdminSseService {
 
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+    private final List<SseEmitter> publicEmitters = new CopyOnWriteArrayList<>();
 
     public SseEmitter subscribe() {
         if (emitters.size() >= 50) {
@@ -28,6 +29,20 @@ public class AdminSseService {
         return emitter;
     }
 
+    public SseEmitter subscribePublic() {
+        if (publicEmitters.size() >= 200) {
+            SseEmitter rejected = new SseEmitter();
+            rejected.completeWithError(new IllegalStateException("Too many subscribers"));
+            return rejected;
+        }
+        SseEmitter emitter = new SseEmitter(300_000L);
+        publicEmitters.add(emitter);
+        emitter.onCompletion(() -> publicEmitters.remove(emitter));
+        emitter.onTimeout(() -> publicEmitters.remove(emitter));
+        emitter.onError(e -> publicEmitters.remove(emitter));
+        return emitter;
+    }
+
     public void broadcast(String eventName, Object data) {
         List<SseEmitter> dead = new ArrayList<>();
         for (SseEmitter emitter : emitters) {
@@ -38,6 +53,18 @@ public class AdminSseService {
             }
         }
         emitters.removeAll(dead);
+    }
+
+    public void broadcastPublic(String eventName, Object data) {
+        List<SseEmitter> dead = new ArrayList<>();
+        for (SseEmitter emitter : publicEmitters) {
+            try {
+                emitter.send(SseEmitter.event().name(eventName).data(data, MediaType.APPLICATION_JSON));
+            } catch (Exception e) {
+                dead.add(emitter);
+            }
+        }
+        publicEmitters.removeAll(dead);
     }
 
     @Scheduled(fixedDelay = 20000)
@@ -51,5 +78,14 @@ public class AdminSseService {
             }
         }
         emitters.removeAll(dead);
+        List<SseEmitter> deadPublic = new ArrayList<>();
+        for (SseEmitter emitter : publicEmitters) {
+            try {
+                emitter.send(SseEmitter.event().name("ping").data(""));
+            } catch (Exception e) {
+                deadPublic.add(emitter);
+            }
+        }
+        publicEmitters.removeAll(deadPublic);
     }
 }

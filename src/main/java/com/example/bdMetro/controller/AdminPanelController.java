@@ -3,6 +3,7 @@ package com.example.bdMetro.controller;
 import com.example.bdMetro.dto.AdminMembershipLimitsDto;
 import com.example.bdMetro.entity.AdminPanel;
 import com.example.bdMetro.services.AdminPanelService;
+import com.example.bdMetro.services.AdminSseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +17,9 @@ public class AdminPanelController {
 
     @Autowired
     private AdminPanelService adminPanelService;
+
+    @Autowired
+    private AdminSseService adminSseService;
 
     /** GET /admin-panel — todos los admins */
     @GetMapping
@@ -75,6 +79,33 @@ public class AdminPanelController {
         return adminPanelService.updateLimits(id, payload)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /** GET /admin-panel/pais/{pais}/mensaje — mensaje burbuja (público, lo usa el login) */
+    @GetMapping("/pais/{pais}/mensaje")
+    public ResponseEntity<Map<String, String>> getMensaje(@PathVariable String pais) {
+        return adminPanelService.getByPais(pais)
+                .map(ap -> ResponseEntity.ok(Map.of("mensaje", ap.getMensajeBurbuja() != null ? ap.getMensajeBurbuja() : "")))
+                .orElse(ResponseEntity.ok(Map.of("mensaje", "")));
+    }
+
+    /** PUT /admin-panel/{id}/mensaje — actualiza el mensaje desde el panel admin */
+    @PutMapping("/{id}/mensaje")
+    public ResponseEntity<?> updateMensaje(@PathVariable String id,
+                                           @RequestBody Map<String, String> body) {
+        String raw = body.get("mensaje");
+        // Strip HTML tags and enforce max length to prevent stored XSS
+        String sanitized = raw == null ? "" : raw.replaceAll("<[^>]*>", "").trim();
+        if (sanitized.length() > 200) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El mensaje no puede superar 200 caracteres."));
+        }
+        try {
+            adminPanelService.updateMensaje(id, sanitized);
+            adminSseService.broadcastPublic("mensaje-updated", Map.of("mensaje", sanitized));
+            return ResponseEntity.ok(Map.of("ok", true));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     /** DELETE /admin-panel/{id} — solo backend, no expuesto en frontend */

@@ -59,6 +59,7 @@ public class AdminPanelService {
         a.setUsername(username);
         a.setPassword(password);
         a.setFlag(flag);
+        a.setMensajeBurbuja("Precios de {mes} Actualizados");
         applyDefaultLimits(a);
         return a;
     }
@@ -192,7 +193,19 @@ public class AdminPanelService {
             applyDefaultPrices(admin);
             dirty = true;
         }
+        if (admin.getMensajeBurbuja() == null) {
+            admin.setMensajeBurbuja("Precios de {mes} Actualizados");
+            dirty = true;
+        }
         return dirty;
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void updateMensaje(String id, String mensaje) {
+        AdminPanel ap = adminPanelRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Admin no encontrado"));
+        ap.setMensajeBurbuja(mensaje != null ? mensaje.trim() : "");
+        adminPanelRepository.save(ap);
     }
 
     private boolean nullOrZero(Integer v) { return v == null || v <= 0; }

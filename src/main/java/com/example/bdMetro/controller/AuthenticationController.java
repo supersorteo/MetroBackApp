@@ -5,6 +5,7 @@ import com.example.bdMetro.entity.AccessCode;
 import com.example.bdMetro.services.AdminSseService;
 import com.example.bdMetro.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -25,9 +26,20 @@ public class AuthenticationController {
     @Autowired
     private AdminSseService adminSseService;
 
+    @Value("${ADMIN_SSE_TOKEN:}")
+    private String adminSseToken;
+
     @GetMapping(value = "/admin/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamAdminEvents() {
-        return adminSseService.subscribe();
+    public ResponseEntity<SseEmitter> streamAdminEvents(@RequestParam(required = false) String token) {
+        if (!adminSseToken.isBlank() && !adminSseToken.equals(token)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(adminSseService.subscribe());
+    }
+
+    @GetMapping(value = "/public/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public ResponseEntity<SseEmitter> streamPublicEvents() {
+        return ResponseEntity.ok(adminSseService.subscribePublic());
     }
 
 

@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 @RestControllerAdvice
@@ -52,6 +53,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IOException.class)
     public ResponseEntity<Void> handleClientDisconnect(IOException ex) {
         return ResponseEntity.ok().build();
+    }
+
+    /** SSE emitter timeout — normal, el cliente reconecta automáticamente; no escribir nada */
+    @ExceptionHandler(AsyncRequestTimeoutException.class)
+    public void handleAsyncTimeout(AsyncRequestTimeoutException ex) {
+        // Swallowed intentionally: SSE connections time out normally.
+        // onTimeout callback in AdminSseService already removes the dead emitter.
     }
 
     /** Cualquier otro error no controlado — 500 sin exponer stack trace */

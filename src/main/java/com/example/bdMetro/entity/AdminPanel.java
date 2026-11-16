@@ -73,6 +73,9 @@ public class AdminPanel {
     @Column(length = 10)
     private String moneda;
 
+    @Column(name = "mensaje_burbuja", length = 200)
+    private String mensajeBurbuja;
+
     public String getId()           { return id; }
     public void   setId(String id)  { this.id = id; }
 
@@ -138,4 +141,7 @@ public class AdminPanel {
 
     public String getMoneda() { return moneda; }
     public void setMoneda(String v) { this.moneda = v; }
+
+    public String getMensajeBurbuja() { return mensajeBurbuja; }
+    public void setMensajeBurbuja(String v) { this.mensajeBurbuja = v; }
 }
