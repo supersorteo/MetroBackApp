@@ -5,6 +5,7 @@ import com.example.bdMetro.dto.ImportResultDTO;
 import com.example.bdMetro.dto.LegacyCodeDTO;
 import com.example.bdMetro.entity.AccessCode;
 import com.example.bdMetro.entity.LegacyCode;
+import com.example.bdMetro.services.AdminSseService;
 import com.example.bdMetro.services.LegacyCodeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,9 @@ public class LegacyCodeController {
 
     @Autowired
     private LegacyCodeService legacyCodeService;
+
+    @Autowired
+    private AdminSseService adminSseService;
 
     @PostMapping("/api/admin/legacy-codes/import")
     public ResponseEntity<?> importCodes() {
@@ -99,7 +104,7 @@ public class LegacyCodeController {
         }
     }
 
-    /** Verifica si un código es legacy válido y vigente (no reclamado). */
+    /** Verifica si un código es legacy no reclamado (vigente o vencido). Devuelve expired=true si está vencido. */
     @GetMapping("/api/legacy-codes/check/{code}")
     public ResponseEntity<LegacyCodeDTO> checkCode(@PathVariable String code) {
         return legacyCodeService.checkCode(code)
@@ -119,6 +124,7 @@ public class LegacyCodeController {
                             request.getTelefono(),
                             request.getProvincia())
                     .map(ac -> {
+                        adminSseService.broadcast("legacy-claimed", Map.of("code", ac.getCode(), "pais", ac.getPais() != null ? ac.getPais() : ""));
                         Map<String, String> resp = new HashMap<>();
                         resp.put("message", "Código activado con éxito");
                         resp.put("code", ac.getCode());
@@ -148,6 +154,7 @@ public class LegacyCodeController {
         dto.setClaimed(lc.isClaimed());
         dto.setClaimedByEmail(lc.getClaimedByEmail());
         dto.setClaimedAt(lc.getClaimedAt());
+        dto.setExpired(lc.getFechaVencimiento() != null && lc.getFechaVencimiento().isBefore(LocalDate.now()));
         return dto;
     }
 }

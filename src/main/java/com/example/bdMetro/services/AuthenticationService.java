@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,9 +93,9 @@ public class AuthenticationService {
 
         boolean firstAssignment = accessCode.getEmail() == null && normalizedEmail != null;
         accessCode.setEmail(normalizedEmail);
-        accessCode.setTelefono(telefono);
-        accessCode.setProvincia(provincia);
-        accessCode.setPais(resolveCountryForRegistration(accessCode.getPais(), pais));
+        if (telefono != null) accessCode.setTelefono(telefono);
+        if (provincia != null) accessCode.setProvincia(provincia);
+        if (pais != null) accessCode.setPais(resolveCountryForRegistration(accessCode.getPais(), pais));
         if (firstAssignment) {
             accessCode.setFechaRegistro(LocalDate.now());
             accessCode.setFechaVencimiento(calcularFechaVencimiento(normalizedCode));
@@ -143,6 +144,7 @@ public class AuthenticationService {
         return accessCodeRepository.saveAll(accessCodes);
     }
 
+    @CacheEvict(value = "accessCodes", key = "#accessCode.code.toUpperCase()")
     @Transactional
     public AccessCode addCode(AccessCode accessCode) {
         accessCode.setCode(norm(accessCode.getCode()));
@@ -205,11 +207,16 @@ public class AuthenticationService {
         }
     }
 
+    @CacheEvict(value = "accessCodes", key = "#ac.code.toUpperCase()")
     @Transactional
     public AccessCode save(AccessCode ac) {
         return accessCodeRepository.save(ac);
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "accessCodes", key = "#expiredCode.toUpperCase()"),
+        @CacheEvict(value = "accessCodes", key = "#newCode.toUpperCase()")
+    })
     @Transactional
     public AccessCode reactivateCode(String expiredCode, String newCode, String email, String deviceId) {
         String normExpired = norm(expiredCode);
@@ -314,6 +321,7 @@ public class AuthenticationService {
         return new UserDataSummaryDto(ac.getEmail(), empresas, clientes, presupuestos, tareas);
     }
 
+    @CacheEvict(value = "accessCodes", key = "#code.toUpperCase()")
     @Transactional
     public void deleteUserData(String code) {
         // 1. IDs de clientes del usuario

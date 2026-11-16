@@ -1,5 +1,6 @@
 package com.example.bdMetro.configuration;
 
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -45,6 +46,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NoHandlerFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(NoHandlerFoundException ex) {
         return error(HttpStatus.NOT_FOUND, "Recurso no encontrado: " + ex.getRequestURL());
+    }
+
+    /** Cliente desconectó (cerró tab, navegó fuera) — típico en SSE, no loguear como error */
+    @ExceptionHandler(IOException.class)
+    public ResponseEntity<Void> handleClientDisconnect(IOException ex) {
+        return ResponseEntity.ok().build();
     }
 
     /** Cualquier otro error no controlado — 500 sin exponer stack trace */

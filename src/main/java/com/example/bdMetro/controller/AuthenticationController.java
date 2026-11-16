@@ -2,11 +2,14 @@ package com.example.bdMetro.controller;
 
 import com.example.bdMetro.dto.UserDataSummaryDto;
 import com.example.bdMetro.entity.AccessCode;
+import com.example.bdMetro.services.AdminSseService;
 import com.example.bdMetro.services.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -18,6 +21,14 @@ import java.util.Map;
 public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
+
+    @Autowired
+    private AdminSseService adminSseService;
+
+    @GetMapping(value = "/admin/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamAdminEvents() {
+        return adminSseService.subscribe();
+    }
 
 
     @PostMapping("/login")
@@ -119,6 +130,7 @@ public class AuthenticationController {
     public ResponseEntity<Map<String, String>> assignEmail(@RequestBody AccessCode accessCode) {
         Map<String, String> response = new HashMap<>(); try {
             AccessCode updatedCode = authenticationService.addCode(accessCode);
+            adminSseService.broadcast("code-registered", Map.of("code", updatedCode.getCode(), "pais", updatedCode.getPais() != null ? updatedCode.getPais() : ""));
             response.put("message", "Datos asignados con éxito");
             response.put("code", updatedCode.getCode());
             response.put("email", updatedCode.getEmail());

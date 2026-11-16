@@ -89,11 +89,8 @@ public class LegacyCodeService {
     }
 
     public Optional<LegacyCode> checkCode(String code) {
-        return legacyCodeRepository.findByCode(code.trim().toUpperCase()).filter(lc ->
-            !lc.isClaimed() &&
-            lc.getFechaVencimiento() != null &&
-            !lc.getFechaVencimiento().isBefore(LocalDate.now())
-        );
+        return legacyCodeRepository.findByCode(code.trim().toUpperCase())
+            .filter(lc -> !lc.isClaimed());
     }
 
     @Transactional
@@ -102,8 +99,6 @@ public class LegacyCodeService {
         return legacyCodeRepository.findByCode(normalizedCode).map(lc -> {
             if (lc.isClaimed())
                 throw new IllegalStateException("Este código ya fue reclamado.");
-            if (lc.getFechaVencimiento() == null || lc.getFechaVencimiento().isBefore(LocalDate.now()))
-                throw new IllegalStateException("Este código está vencido.");
 
             String normalizedEmail = email.trim().toLowerCase();
             if (accessCodeRepository.findByEmail(normalizedEmail) != null)

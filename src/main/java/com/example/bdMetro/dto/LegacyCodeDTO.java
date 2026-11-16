@@ -13,6 +13,7 @@ public class LegacyCodeDTO {
     private boolean claimed;
     private String claimedByEmail;
     private LocalDateTime claimedAt;
+    private boolean expired;
 
     public String getCode() { return code; }
     public void setCode(String code) { this.code = code; }
@@ -37,4 +38,7 @@ public class LegacyCodeDTO {
 
     public LocalDateTime getClaimedAt() { return claimedAt; }
     public void setClaimedAt(LocalDateTime claimedAt) { this.claimedAt = claimedAt; }
+
+    public boolean isExpired() { return expired; }
+    public void setExpired(boolean expired) { this.expired = expired; }
 }
